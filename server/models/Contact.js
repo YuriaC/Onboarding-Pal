@@ -4,7 +4,7 @@ const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
 const refType = Schema.Types.ObjectId;
 
-const PersonSchema = new Schema({
+const ContactSchema = new Schema({
     firstName: { type: String, required: true },
     lastName: { type: String, required: true },
     middleName: { type: String },
@@ -14,6 +14,6 @@ const PersonSchema = new Schema({
     relationshipToId: { type: refType, ref: 'Employee' },
 });
 
-const Person = mongoose.model('Person', PersonSchema);
+const Contact = mongoose.model('Contact', ContactSchema);
 
-module.exports = Person;
+module.exports = Contact;
