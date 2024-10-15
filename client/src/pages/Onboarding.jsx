@@ -3,80 +3,100 @@ import { useState } from 'react'
 const Onboarding = () => {
 
     const [formData, setFormData] = useState({
+        firstName: '',
+        lastName: '',
+        middleName: '',
+        preferredName: '',
+        profilePicture: null,
+        building: '',
+        street: '',
+        city: '',
+        state: '',
+        zip: null,
+        ssn: null,
+        dob: null,
+        gender: 'Male',
+        carMake: '',
+        carModel: '',
+        CarColor: '',
+        cellPhone: '',
+        workPhone: '',
         isPermRes: '',
-        nonPermWorkAuth: '',
+        nonPermWorkAuth: 'H1-B',
         hasDriversLicense: '',
         isReferred: '',
     })
 
     const handleChange = (e) => {
-        const { name, value } = e.target
+        const { type, name, value } = e.target
+        console.log('type:', type)
         console.log('name:', name)
         console.log('value:', value)
         setFormData({
             ...formData,
-            [name]: value,
+            [name]: type === 'file' ? e.target.files[0] : value,
         })
     }
 
     const handleSubmit = (e) => {
         e.preventDefault()
+        console.log('formData:', formData)
     }
 
     return (
         <div>
             <form onSubmit={handleSubmit}>
                 <label>First Name: </label>
-                <input type='text' name='firstName' required />
+                <input type='text' name='firstName' onChange={handleChange} required />
                 <label>Last Name: </label>
-                <input type='text' name='lastName' required />
+                <input type='text' name='lastName' onChange={handleChange} required />
                 <label>Middle Name: </label>
-                <input type='text' name='middleName' />
+                <input type='text' name='middleName' onChange={handleChange} />
                 <label>Preferred Name: </label>
-                <input type='text' name='preferredName' />
+                <input type='text' name='preferredName' onChange={handleChange} />
                 <label>Profile Picture: </label>
-                <input type='file' name='preferredName' /> {/* Default placeholder??? */}
+                <input type='file' name='profilePicture' onChange={handleChange} /> {/* Default placeholder??? */}
                 <fieldset>
                     <legend>Address</legend>
                     <label>Building/Apartment #: </label>
-                    <input type='text' name='building' required />
+                    <input type='text' name='building' onChange={handleChange} required />
                     <label>Street Name: </label>
-                    <input type='text' name='street' required />
+                    <input type='text' name='street' onChange={handleChange} required />
                     <label>City: </label>
-                    <input type='text' name='city' required />
+                    <input type='text' name='city' onChange={handleChange} required />
                     <label>State: </label>
-                    <input type='text' name='state' required />
+                    <input type='text' name='state' onChange={handleChange} required />
                     <label>ZIP: </label>
-                    <input type='number' name='zip' min={10000} max={99999} required />
+                    <input type='number' name='zip' min={10000} max={99999} onChange={handleChange} required />
                 </fieldset>
                 <br />
                 <fieldset>
                     <legend>Phone Numbers</legend>
                     <label>Cell Phone Number: </label>
-                    <input type='tel' name='cellPhone' required />
+                    <input type='tel' name='cellPhone' onChange={handleChange} required />
                     <label>Work Phone Number: </label>
-                    <input type='tel' name='workPhone' />
+                    <input type='tel' name='workPhone' onChange={handleChange} />
                 </fieldset>
                 <br />
                 <fieldset>
                     <legend>Car Info</legend>
                     <label>Make: </label>
-                    <input type='text' name='carMake' />
+                    <input type='text' name='carMake' onChange={handleChange} />
                     <label>Model: </label>
-                    <input type='text' name='carModel' />
+                    <input type='text' name='carModel' onChange={handleChange} />
                     <label>Color: </label>
-                    <input type='text' name='carColor' />
+                    <input type='text' name='carColor' onChange={handleChange} />
                 </fieldset>
                 <br />
                 <label>Email: </label>
                 <input type='text' name='email' disabled />
                 <label>SSN: </label>
-                <input type='password' name='ssn' required />
+                <input type='password' name='ssn' onChange={handleChange} required />
                 <label>Date of Birth: </label>
-                <input type='date' name='dob' required />
+                <input type='date' name='dob' onChange={handleChange} required />
                 <label>Gender: </label>
-                <select name='gender'>
-                    <option value='Male'>Male</option>
+                <select name='gender' onChange={handleChange}>
+                    <option value='Male' selected>Male</option>
                     <option value='Female'>Female</option>
                     <option value='I do not wish to answer'>I do not wish to answer</option>
                 </select>
@@ -103,7 +123,7 @@ const Onboarding = () => {
                             <br />
                             <label>What is your work authorization? </label>
                             <select name='nonPermWorkAuth' onChange={handleChange} required>
-                                <option value='H1-B'>H1-B</option>
+                                <option value='H1-B' selected>H1-B</option>
                                 <option value='L2'>L2</option>
                                 <option value='F1(CPT/OPT)'>F1(CPT/OPT)</option>
                                 <option value='H4'>H4</option>
@@ -125,10 +145,10 @@ const Onboarding = () => {
                             }
                             <br />
                             <label>Work authorization start date: </label>
-                            <input type='date' name='visaStartDate' />
+                            <input type='date' name='visaStartDate' onChange={handleChange} />
                             <br />
                             <label>Work authorization end date: </label>
-                            <input type='date' name='visaEndDate' />
+                            <input type='date' name='visaEndDate' onChange={handleChange} />
                         </>
                     }
                 </fieldset>
@@ -144,13 +164,13 @@ const Onboarding = () => {
                         <>
                             <br />
                             <label>Driver&#39;s License Number: </label>
-                            <input type='number' name='dlNum' required />
+                            <input type='number' name='dlNum' onChange={handleChange} required />
                             <br />
                             <label>Driver&#39;s License Expiration: </label>
-                            <input type='date' name='dlExpDate' required />
+                            <input type='date' name='dlExpDate' onChange={handleChange} required />
                             <br />
                             <label>Driver&#39;s License Copy: </label>
-                            <input type='file' name='licenseCopy' required />
+                            <input type='file' name='licenseCopy' onChange={handleChange} required />
                         </>
                     }
                 </fieldset>
@@ -166,17 +186,17 @@ const Onboarding = () => {
                         <>
                             <br />
                             <label>First Name: </label>
-                            <input type='text' name='refFirstName' required />
+                            <input type='text' name='refFirstName' onChange={handleChange} required />
                             <label>Last Name: </label>
-                            <input type='text' name='refLastName' required />
+                            <input type='text' name='refLastName' onChange={handleChange} required />
                             <label>Middle Name: </label>
-                            <input type='text' name='refMiddleName' />
+                            <input type='text' name='refMiddleName' onChange={handleChange} />
                             <label>Phone: </label>
-                            <input type='tel' name='refPhone' required />
+                            <input type='tel' name='refPhone' onChange={handleChange} required />
                             <label>Email: </label>
-                            <input type='email' name='refEmail' required />
+                            <input type='email' name='refEmail' onChange={handleChange} required />
                             <label>Relationship: </label>
-                            <input type='text' name='refRelationship' required />
+                            <input type='text' name='refRelationship' onChange={handleChange} required />
                         </>
                     }
                 </fieldset>
@@ -196,6 +216,7 @@ const Onboarding = () => {
                     <label>Relationship</label>
                     <input type='text' name='emergencyRelationship' onChange={handleChange} required />
                 </fieldset>
+                <input type='submit' value='Submit' />
             </form>
         </div>
     )
