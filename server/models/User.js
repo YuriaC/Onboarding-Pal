@@ -4,7 +4,7 @@ const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
 const refType = Schema.Types.ObjectId;
 
-const EmployeeSchema = new Schema({
+const UserSchema = new Schema({
     firstName: { type: String, required: true },
     lastName: { type: String, required: true },
     middleName: { type: String },
@@ -18,21 +18,21 @@ const EmployeeSchema = new Schema({
     carColor: { type: String },
     email: { type: String, required: true },
     ssn: { type: String, required: true },
-    birthday: { type: String, required: true },
+    birthday: { type: Date, required: true },
     gender: { type: String },
     workAuth: { type: String, required: true },
     workAuthFile: { type: String },
     visaTitle: { type: String },
-    visaTitle: { type: String },
-    visaStartDate: { type: String },
-    visaEndDate: { type: String },
+    visaStartDate: { type: Date },
+    visaEndDate: { type: Date },
     driversLicenseNumber: { type: String },
-    driversLicenseExpDate: { type: String },
+    driversLicenseExpDate: { type: Date },
     driversLicenseCopy: { type: String },
-    ref: { type: refType, ref: 'Contact' },
+    reference: { type: refType, ref: 'Contact' },
     emergencyContacts: [{ type: refType, ref: 'Contact' }],
+    role: { type: String, enum: ['employee', 'hr'], required: true },
 });
 
-const Employee = mongoose.model('Employee', EmployeeSchema);
+const User = mongoose.model('User', UserSchema);
 
-module.exports = Employee;
+module.exports = User;

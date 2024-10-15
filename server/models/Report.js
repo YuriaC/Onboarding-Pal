@@ -9,7 +9,7 @@ const ReportSchema = new Schema({
     description: { type: String, required: true },
     createdBy: { type: String, required: true },
     timestamp: { type: Date, default: Date.now },
-    status: { type: String, required: true },
+    status: { type: String, enum: ['Open', 'In Progress', 'Closed'], required: true },
 });
 
 const Report = mongoose.model('Report', ReportSchema);

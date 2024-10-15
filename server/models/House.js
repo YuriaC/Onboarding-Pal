@@ -14,7 +14,7 @@ const HouseSchema = new Schema({
     numTables: { type: Number, required: true },
     numChairs: { type: Number, required: true },
     reports: [{ type: refType, ref: 'Report' }],
-    employees: [{ type: refType, ref: 'Employee' }],
+    employees: [{ type: refType, ref: 'User' }],
 });
 
 const House = mongoose.model('House', HouseSchema);
