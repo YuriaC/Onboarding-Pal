@@ -4,7 +4,7 @@ const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
 const refType = Schema.Types.ObjectId;
 
-const EmployeeSchema = new Schema({
+const UserSchema = new Schema({
     firstName: { type: String, required: true },
     lastName: { type: String, required: true },
     middleName: { type: String },
@@ -33,6 +33,6 @@ const EmployeeSchema = new Schema({
     role: { type: String, enum: ['employee', 'hr'], required: true },
 });
 
-const Employee = mongoose.model('Employee', EmployeeSchema);
+const User = mongoose.model('User', UserSchema);
 
-module.exports = Employee;
+module.exports = User;
