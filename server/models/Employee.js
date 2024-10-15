@@ -23,7 +23,6 @@ const EmployeeSchema = new Schema({
     workAuth: { type: String, required: true },
     workAuthFile: { type: String },
     visaTitle: { type: String },
-    visaTitle: { type: String },
     visaStartDate: { type: String },
     visaEndDate: { type: String },
     driversLicenseNumber: { type: String },
@@ -31,6 +30,7 @@ const EmployeeSchema = new Schema({
     driversLicenseCopy: { type: String },
     ref: { type: refType, ref: 'Contact' },
     emergencyContacts: [{ type: refType, ref: 'Contact' }],
+    role: { type: String },
 });
 
 const Employee = mongoose.model('Employee', EmployeeSchema);
