@@ -27,6 +27,17 @@ const Onboarding = () => {
         isReferred: '',
     })
 
+    const [emergencyContacts, setEmergencyContacts] = useState([
+        {
+            firstName: '',
+            lastName: '',
+            middleName: '',
+            phone: '',
+            email: '',
+            relationship: '',
+        }
+    ])
+
     const handleChange = (e) => {
         const { type, name, value } = e.target
         console.log('type:', type)
@@ -38,9 +49,40 @@ const Onboarding = () => {
         })
     }
 
+    const handleEmContactChange = (e, index) => {
+        const { name, value } = e.target
+        const newContacts = [...emergencyContacts]
+        newContacts[index][name] = value
+        setEmergencyContacts(newContacts)
+    }
+
     const handleSubmit = (e) => {
         e.preventDefault()
         console.log('formData:', formData)
+    }
+
+    const addEmergencyContact = (e) => {
+        e.preventDefault()
+        setEmergencyContacts([
+            ...emergencyContacts,
+            {
+                firstName: '',
+                lastName: '',
+                middleName: '',
+                phone: '',
+                email: '',
+                relationship: '',
+            }
+        ])
+    }
+
+    const removeEmergencyContact = (e, index) => {
+        e.preventDefault()
+        if (emergencyContacts.length === 1) {
+            return
+        }
+        const newContacts = emergencyContacts.filter((_, i) => i !== index)
+        setEmergencyContacts(newContacts)
     }
 
     return (
@@ -203,18 +245,27 @@ const Onboarding = () => {
                 <br />
                 <fieldset>
                     <legend>Emergency Contacts</legend>
-                    <label>First Name</label>
-                    <input type='text' name='emergencyFirstName' onChange={handleChange} required />
-                    <label>Last Name</label>
-                    <input type='text' name='emergencyLastName' onChange={handleChange} required />
-                    <label>Middle Name</label>
-                    <input type='text' name='emergencyMiddleName' onChange={handleChange} />
-                    <label>Phone</label>
-                    <input type='tel' name='emergencyPhone' required />
-                    <label>Email</label>
-                    <input type='email' name='emergencyEmail' onChange={handleChange} required />
-                    <label>Relationship</label>
-                    <input type='text' name='emergencyRelationship' onChange={handleChange} required />
+                    {emergencyContacts.map((contact, index) => (
+                        <>
+                            <label>First Name</label>
+                            <input type='text' name='firstName' value={contact.firstName} onChange={(e) => handleEmContactChange(e, index)} required />
+                            <label>Last Name</label>
+                            <input type='text' name='lastName' value={contact.lastNameName} onChange={(e) => handleEmContactChange(e, index)} required />
+                            <label>Middle Name</label>
+                            <input type='text' name='middleName' value={contact.middleNameName} onChange={(e) => handleEmContactChange(e, index)} />
+                            <label>Phone</label>
+                            <input type='tel' name='phone' value={contact.phone} onChange={(e) => handleEmContactChange(e, index)} required />
+                            <label>Email</label>
+                            <input type='email' name='email' value={contact.email} onChange={(e) => handleEmContactChange(e, index)} required />
+                            <label>Relationship</label>
+                            <input type='text' name='relationship' value={contact.relationship} onChange={(e) => handleEmContactChange(e, index)} required />
+                            {emergencyContacts.length !== 1 &&
+                                <button onClick={(e) => removeEmergencyContact(e, index)}>Remove Contact</button>
+                            }
+                            <br />
+                        </>
+                    ))}
+                    <button onClick={addEmergencyContact}>Add Contact</button>
                 </fieldset>
                 <input type='submit' value='Submit' />
             </form>
