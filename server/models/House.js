@@ -5,6 +5,16 @@ const Schema = mongoose.Schema;
 const refType = Schema.Types.ObjectId;
 
 const HouseSchema = new Schema({
+    address: { type: String, required: true },
+    landlordName: { type: String, required: true },
+    landlordPhone: { type: String, required: true },
+    landlordEmail: { type: String, required: true },
+    numBeds: { type: Number, required: true },
+    numMattresses: { type: Number, required: true },
+    numTables: { type: Number, required: true },
+    numChairs: { type: Number, required: true },
+    reports: [{ type: refType, ref: 'Report' }],
+    employees: [{ type: refType, ref: 'Employee' }],
 });
 
 const House = mongoose.model('House', HouseSchema);
