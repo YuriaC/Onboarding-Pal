@@ -2,6 +2,14 @@
 import validator from 'validator';
 import {USERNAME_MIN_LEN, USERNAME_MAX_LEN, EMAIL_MIN_LEN, PWD_MIN_LEN} from "../model/User.js";
 
+
+// global variables
+const USERNAME_MIN_LEN = 5;
+const USERNAME_MAX_LEN = 12;
+const EMAIL_MIN_LEN = 5;
+const PWD_MIN_LEN = 8;
+
+
 // helper function for password validation msg display
 function passWordValidationMsg(password, minLength = PWD_MIN_LEN) {
     const hasUpperCase = /[A-Z]/.test(password);   // Checks for uppercase letter
@@ -28,15 +36,14 @@ function passWordValidationMsg(password, minLength = PWD_MIN_LEN) {
     return 'Invalid password.';
 }
 
-
-const userRegistrationValidation = (req, res, next) => {
-    const {userName, email, password, rePassword} = req.body;
+const employeeRegistrationValidation = (req, res, next) => {
+    const {username, email, password, rePassword} = req.body;
     if ( // if any input fields are empty
-        !userName ||
-        !email ||
+        !username ||
+        !email || 
         !password || 
         !rePassword ||
-        validator.isEmpty(userName) ||
+        validator.isEmpty(username) ||
         validator.isEmpty(email) ||
         validator.isEmpty(password) ||
         validator.isEmpty(rePassword)
@@ -45,12 +52,12 @@ const userRegistrationValidation = (req, res, next) => {
     }
 
     // username must be of alphanumeric
-    if (!validator.isAlphanumeric(userName)) {
+    if (!validator.isAlphanumeric(username)) {
         return res.status(400).json({ message: 'Username must not contain special symbol' });
     }
 
     // if username too short
-    if (userName.length < USERNAME_MIN_LEN) {
+    if (username.length < USERNAME_MIN_LEN) {
         return res.status(400).json({ message: `Username must contain at least ${USERNAME_MIN_LEN} characters` });
     }
     
@@ -83,8 +90,8 @@ const userRegistrationValidation = (req, res, next) => {
     next();
 }
 
-// user Login Validation
-const userLoginValidation = (req, res, next) => {
+// user Login Validation, can use both email or username to login
+const employeeLoginValidation = (req, res, next) => {
     const { credential, password } = req.body;
     if (
         !credential ||
@@ -102,4 +109,4 @@ const userLoginValidation = (req, res, next) => {
     next();
 };
 
-export { userRegistrationValidation, userLoginValidation };
+export { employeeRegistrationValidation, employeeLoginValidation };

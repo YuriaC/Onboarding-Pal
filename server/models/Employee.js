@@ -5,6 +5,7 @@ const Schema = mongoose.Schema;
 const refType = Schema.Types.ObjectId;
 
 const EmployeeSchema = new Schema({
+    username: {type: String, required: true, unique: true},  // added username for registration and login purpose
     firstName: { type: String, required: true },
     lastName: { type: String, required: true },
     middleName: { type: String },
