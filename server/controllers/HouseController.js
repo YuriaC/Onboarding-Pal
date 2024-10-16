@@ -28,7 +28,7 @@ const getHouses = async (req, res) => {
       houses,
     });
   } catch (err) {
-    console.error("Error in getAllProducts:", err);
+    console.error("Error in getHouses:", err);
     res.status(500).json({ message: "Server error" });
   }
 };

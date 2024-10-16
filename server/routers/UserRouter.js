@@ -1,0 +1,25 @@
+const express = require('express');
+const router = express.Router;
+
+const userController = require('../controllers/UserController');;
+const { isHR } = require('../middlewares/UserMiddleware');
+
+
+
+// NOTE : ADD MIDDLEWARES 
+
+
+router.post('/registration',userController.register)
+    .post('/login',userController.login)
+    .get('/onboardstatus',userController.getOnboardingStatus)
+    .post('/applicationinput',userController.applicationInput)
+    .get('/navinfo',userController.getNavinfo)
+    .get('/personalinfo',userController.getPersonalinfo)
+    .get('/housedetails',userController.getHousedetails)
+    .post('/facilityreport',userController.addFacilityreport)
+    .get('/facilityreport',userController.getFacilityreport)
+    .post('/reportcomment',userController.addReportcomment)
+    .get('/reportcomment',userController.getReportcomment)
+    .post('/updateworkauthdoc',userController.updateWorkauthdoc);
+
+module.exports = router;
