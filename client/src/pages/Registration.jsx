@@ -57,7 +57,7 @@ const Registration = () => {
 
         if (validatorForm()) {
             //axios fetch
-            navigate('/')
+            navigate('/auth/login')
         }
     }
 

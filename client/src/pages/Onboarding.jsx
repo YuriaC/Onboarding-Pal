@@ -246,7 +246,7 @@ const Onboarding = () => {
                 <fieldset>
                     <legend>Emergency Contacts</legend>
                     {emergencyContacts.map((contact, index) => (
-                        <>
+                        <div key={contact.email}>
                             <label>First Name</label>
                             <input type='text' name='firstName' value={contact.firstName} onChange={(e) => handleEmContactChange(e, index)} required />
                             <label>Last Name</label>
@@ -263,7 +263,7 @@ const Onboarding = () => {
                                 <button onClick={(e) => removeEmergencyContact(e, index)}>Remove Contact</button>
                             }
                             <br />
-                        </>
+                        </div>
                     ))}
                     <button onClick={addEmergencyContact}>Add Contact</button>
                 </fieldset>

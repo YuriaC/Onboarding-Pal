@@ -9,26 +9,20 @@ const Login = () => {
     const navigate = useNavigate();
 
     const [form, setForm] = useState({
-        username: '',//
-        email: '',//
+        userInput: '',
         password: ''
     });
 
     const [formErrors, setFormErrors] = useState({
-        username: '',
-        email: '',
+        userInput: '',
         password: ''
     });
 
     const validatorForm = () => {
         let errors = {};
 
-        if (!validator.isLength(form.username, { min: 3, max: 15 })) {
-            errors.username = 'Username must be between 3 and 15 characters';
-        }
-
-        if (!validator.isEmail(form.email)) {
-            errors.email = 'Please enter a valid email';
+        if(!validator.isEmail(form.userInput) && !validator.isLength(form.userInput, { min: 3, max: 15 })){
+            errors.userInput = 'Username must be between 3 and 15 characters';
         }
 
         if (!validator.isStrongPassword(form.password, {
@@ -52,7 +46,8 @@ const Login = () => {
 
         if (validatorForm()) {
             //axios fetch
-            navigate('/')
+            localStorage.setItem('token', 'token');//fake authorication
+            navigate('/');
         }
     }
 
@@ -64,21 +59,12 @@ const Login = () => {
         <div className={`register-form ${isVisible ? 'visible' : ''}`}>
             <form>
                 <div className="form-group">
-                    <label htmlFor='username'>Username: <span className="required">*</span></label>
-                    <input type="text" required name="username" placeholder="Your username"
-                        value={form.username}
-                        onChange={(e) => { setForm({ ...form, username: e.target.value }) }}
-                    />
-                    {formErrors.username && <p className="error">{formErrors.username}</p>}
-                </div>
-
-                <div className="form-group">
-                    <label htmlFor='email'>Email: <span className="required">*</span></label>
-                    <input type="email" required name="email" placeholder="your@email.com"
+                    <label htmlFor='userInput'>Username or Email: <span className="required">*</span></label>
+                    <input type="text" required name="userInput" placeholder="your username or Email"
                         value={form.email}
-                        onChange={(e) => { setForm({ ...form, email: e.target.value }) }}
+                        onChange={(e) => { setForm({ ...form, userInput: e.target.value }) }}
                     />
-                    {formErrors.email && <p className="error">{formErrors.email}</p>}
+                    {formErrors.userInput && <p className="error">{formErrors.userInput}</p>}
                 </div>
 
                 <div className="form-group">
@@ -97,7 +83,7 @@ const Login = () => {
 
                 <div className='registerButtonAndLink'>
                     <button type="submit" onClick={userLogin}>Login</button>
-                    <div>Don’t have an account? <NavLink to="/auth/registration">Sign ip</NavLink></div>
+                    <div>Don’t have an account? <NavLink to="/auth/registration">Sign up</NavLink></div>
                 </div>
             </form>
         </div>
