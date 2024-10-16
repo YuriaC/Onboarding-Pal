@@ -6,7 +6,7 @@ const refType = Schema.Types.ObjectId;
 
 const CommentSchema = new Schema({
     description: { type: String, required: true },
-    createdBy: { type: String, required: true },
+    createdBy: { type: String, required: true, default: 'Ryan George' },
     timestamp: { type: Date, default: Date.now },
 });
 

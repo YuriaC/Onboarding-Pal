@@ -10,6 +10,7 @@ const ReportSchema = new Schema({
     createdBy: { type: String, required: true, default: '蓝湛' },
     timestamp: { type: Date, default: Date.now },
     status: { type: String, enum: ['Open', 'In Progress', 'Closed'], required: true, default: 'Open' },
+    comments: [{ type: refType, ref: 'Comment' }],
 });
 
 const Report = mongoose.model('Report', ReportSchema);
