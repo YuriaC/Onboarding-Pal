@@ -1,11 +1,14 @@
 const houseRouter = require("express").Router();
-const { addHouse, getHouses, deleteHouse } = require('../controllers/HouseController')
+const houseController = require('../controllers/HouseController')
+
 
 //  Sample router
+
+// NOTE : ADD MIDDLEWARES
 houseRouter
-    .get('/', getHouses)
-    .post('/', addHouse)
-    .delete('/delete/:houseId', deleteHouse)
+    .get('/', houseController.getHouses)
+    .post('/', houseController.addHouse)
+    .delete('/delete/:houseId', houseController.deleteHouse)
 
 // code gen
 module.exports = houseRouter;
