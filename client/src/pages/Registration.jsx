@@ -101,7 +101,7 @@ const Registration = () => {
 
                 <div className="form-group">
                     <label htmlFor='repeatPassword'>Repeat Password: <span className="required">*</span></label>
-                    <input type="password" requiredname="repeatPassword" placeholder="Repeat password"
+                    <input type="password" required name="repeatPassword" placeholder="Repeat password"
                         value={form.repeatPassword}
                         onChange={(e) => { setForm({ ...form, repeatPassword: e.target.value }) }}
                     />
