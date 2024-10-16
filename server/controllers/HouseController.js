@@ -57,7 +57,22 @@ const addHouse = async (request, response) => {
   }
 }
 
+const deleteHouse = async (request, response) => {
+  try {
+    const { houseId } = request.params
+    const house = await House.findByIdAndDelete(houseId)
+    if (!house) {
+      return response.status(404).json('House not found!')
+    }
+    response.status(200).json(house)
+  }
+  catch (error) {
+    response.status(500).json(error)
+  }
+}
+
 module.exports = {
   getHouses,
   addHouse,
+  deleteHouse,
 }
