@@ -5,7 +5,6 @@ const Schema = mongoose.Schema;
 const refType = Schema.Types.ObjectId;
 
 const EmployeeSchema = new Schema({
-    username: {type: String, required: true, unique: true},  // added username for registration and login purpose
     firstName: { type: String, required: true },
     lastName: { type: String, required: true },
     middleName: { type: String },
@@ -15,7 +14,7 @@ const EmployeeSchema = new Schema({
     cellPhone: { type: String, required: true },
     workPhone: { type: String },
     carMake: { type: String },
-    carMmodel: { type: String },
+    carModel: { type: String },
     carColor: { type: String },
     email: { type: String, required: true },
     ssn: { type: String, required: true },
