@@ -1,9 +1,10 @@
-const router = require("express").Router();
-const HouseController = require('../controllers/HouseController');
-
+const houseRouter = require("express").Router();
+const { addHouse, getHouses } = require('../controllers/HouseController')
 
 //  Sample router
-// router.get('/', HouseController.getHouses);
+houseRouter
+    .get('/', getHouses)
+    .post('/', addHouse)
 
 // code gen
-module.exports = router;
+module.exports = houseRouter;

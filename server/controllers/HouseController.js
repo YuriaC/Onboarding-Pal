@@ -1,4 +1,6 @@
-exports.getHouses = async (req, res) => {
+const House = require("../models/House");
+
+const getHouses = async (req, res) => {
   try {
     //   const page = parseInt(req.query.page) || 1;
     //   const limit = parseInt(req.query.limit) || 9; // Default limit is 9
@@ -30,3 +32,32 @@ exports.getHouses = async (req, res) => {
     res.status(500).json({ message: "Server error" });
   }
 };
+
+const addHouse = async (request, response) => {
+  try {
+    // const {
+    //   address,
+    //   landlordName,
+    //   landlordPhone,
+    //   landlordEmail,
+    //   numBeds,
+    //   numMattresses,
+    //   numTables,
+    //   numChairs,
+    // } = request.body
+
+    const house = await House.create({
+      ...request.body
+    })
+
+    response.status(200).json(house)
+  }
+  catch (error) {
+    response.status(500).json(error)
+  }
+}
+
+module.exports = {
+  getHouses,
+  addHouse,
+}
