@@ -18,6 +18,26 @@ const addReport = async (request, response) => {
     }
 }
 
+const getReports = async (request, response) => {
+    try {
+        const { createdBy } = request.body
+
+        console.log('createdBy:', createdBy)
+
+        const reports = await Report.find({ createdBy }).populate('comments').exec()
+
+        if (!reports) {
+            return response.status(404).json('No reports found!')
+        }
+
+        response.status(200).json(reports)
+    }
+    catch (error) {
+        response.status(500).json(error)
+    }
+}
+
 module.exports = {
     addReport,
+    getReports,
 }
