@@ -1,11 +1,24 @@
 import './App.css'
-import Onboarding from './pages/Onboarding'
+import { BrowserRouter as Router, useRoutes } from 'react-router-dom'
+import { Onboarding, Housing, Login, Registration, HousingMgmt } from './pages'
+
+function AppRoutes() {
+  return useRoutes([
+    { path: '/', element: <Onboarding /> },
+    { path: '/housingmgmt', element: <HousingMgmt /> },
+    { path: '/housing', element: <Housing /> },
+    { path: '/login', element: <Login /> },
+    { path: '/register', element: <Registration /> },
+  ])
+}
 
 function App() {
 
   return (
     <>
-      <Onboarding />
+      <Router>
+        <AppRoutes />
+      </Router>
     </>
   )
 }
