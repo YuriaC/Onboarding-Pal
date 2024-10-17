@@ -23,6 +23,9 @@ const HousingMgmt = () => {
                 console.log('response.data:', response.data)
                 setHouses(response.data)
             })
+            .catch(error => {
+                toast.error(`Error fetching houses! Error: ${error.response.data}`)
+            })
     }, [])
 
     const handleDelete = (e, houseId, address) => {

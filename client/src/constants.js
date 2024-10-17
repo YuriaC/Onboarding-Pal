@@ -6,4 +6,7 @@ export const CONTACT_ENDPOINT = `${API_BASE_URL}/contacts`
 export const REPORT_ENDPOINT = `${API_BASE_URL}/reports`
 export const COMMENT_ENDPOINT = `${API_BASE_URL}/comments`
 
-export const token = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MTIzLCJ1c2VybmFtZSI6ImFiYyIsInJvbGUiOiJociIsImlhdCI6MTcyOTE0MzYxMSwiZXhwIjoxNzI5MTQ3MjExfQ.HyhuABhnUmXufPq1gD5IsCOzmAoijf8jmrnHHiJIaWM'
+// HR
+export const token = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MTIzLCJ1c2VybmFtZSI6ImFiYyIsInJvbGUiOiJociIsImlhdCI6MTcyOTIwMDEyMCwiZXhwIjoxNzI5MjAzNzIwfQ.Z751fRVdruTSC3jFFL7KK-MWjaC_vUu84QXvB0ocyDs'
+// Employee
+// export const token = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MTIzLCJ1c2VybmFtZSI6ImFiYyIsInJvbGUiOiJlbXBsb3llZSIsImlhdCI6MTcyOTIwMDA1NSwiZXhwIjoxNzI5MjAzNjU1fQ.8vhX1HE-lxGF1F5InY3GP7Y78gb1qdxn70pCk83VwV4'

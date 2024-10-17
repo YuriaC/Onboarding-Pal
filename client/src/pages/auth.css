@@ -82,3 +82,7 @@ button:hover {
     font-size: 0.8em;
     color: red;
 }
+
+.signButton {
+    color: #646cff;
+}
