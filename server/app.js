@@ -26,12 +26,6 @@ app.use(morgan(':method :url :status :response-time ms'));
 const Routes = require("./routers/index.js");
 Routes(app);
 
-// const userRouter = require("./routers/UserRouter.js");
-// const prodcutRouter = require("./routers/ProductRouter.js");
-
-// app.use("/api/users", userRouter);
-// app.use("/api/products", prodcutRouter);
-
 // // Frontend Routes
 
 
