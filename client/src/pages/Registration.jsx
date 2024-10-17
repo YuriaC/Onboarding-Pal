@@ -110,7 +110,7 @@ const Registration = () => {
 
                 <div className='registerButtonAndLink'>
                     <button type="submit" onClick={userRegister}>Register</button>
-                    <div>Already have an account? <NavLink to="/auth/login">Sign in</NavLink></div>
+                    <div>Already have an account? <NavLink to="/auth/login" className="signButton">Sign in</NavLink></div>
                 </div>
             </form>
         </div>
