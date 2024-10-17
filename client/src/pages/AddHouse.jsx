@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { HOUSE_ENDPOINT } from '../constants'
+import { HOUSE_ENDPOINT, token } from '../constants'
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import axios from 'axios'
@@ -28,7 +28,11 @@ const AddHouse = () => {
 
     const handleSubmit = (e) => {
         e.preventDefault()
-        axios.post(HOUSE_ENDPOINT, formData)
+        axios.post(HOUSE_ENDPOINT, formData, {
+            headers: {
+                'Authorization': `Bearer ${token}`
+            }
+        })
             .then(response => {
                 console.log('response:', response)
                 toast.success(`Successfully added ${formData.address}!`)
@@ -36,7 +40,7 @@ const AddHouse = () => {
             })
             .catch(error => {
                 console.log('error:', error)
-                toast.error('Erroring adding new house!')
+                toast.error(`Error adding new house! Error: ${error.response.data}`)
             })
     }
 

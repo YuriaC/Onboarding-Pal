@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { HOUSE_ENDPOINT } from '../constants';
+import { HOUSE_ENDPOINT, token } from '../constants';
 import axios from 'axios'
 import { useNavigate } from 'react-router-dom';
 import { ToastContainer, toast } from 'react-toastify';
@@ -11,7 +11,11 @@ const HousingMgmt = () => {
     const [houses, setHouses] = useState([])
 
     useEffect(() => {
-        axios.get(HOUSE_ENDPOINT)
+        axios.get(HOUSE_ENDPOINT, {
+            headers: {
+                'Authorization': `Bearer ${token}`
+            }
+        })
             .then(response => {
                 console.log('response.data:', response.data)
                 setHouses(response.data)
@@ -27,7 +31,7 @@ const HousingMgmt = () => {
                 toast.success(`Successfully deleted ${address}!`)
             })
             .catch(error => {
-                toast.error('Error deleting house! Error:', error)
+                toast.error(`Error deleting house! Error: ${error.response.data}`)
             })
     }
 
