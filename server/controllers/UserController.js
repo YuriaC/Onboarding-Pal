@@ -1,3 +1,4 @@
+
 const User = require('../models/User');
 
 const register = async (req,res) =>{
@@ -37,10 +38,5 @@ module.exports = {
     applicationInput,
     getNavinfo,
     getPersonalinfo,
-    getHousedetails,
-    addFacilityreport,
-    getFacilityreport,
-    addReportcomment,
-    getReportcomment,
     updateWorkauthdoc
 }

@@ -4,7 +4,7 @@ import {BrowserRouter, Routes, Route} from 'react-router-dom'
 import Auth from './components/Auth';
 import Guard from './components/Guard';
 import Redirect from './components/Redirect';
-
+import AddHouse from './pages/AddHouse';
 
 
 function App() {
@@ -24,7 +24,9 @@ function App() {
             <Route path="/housing" element={<Housing />} />
           </Route>
 
+          {/* For testing */}
           {/* <Route path='/managehousing' element={<HousingMgmt />} /> */}
+          {/* <Route path='/addhouse' element={<AddHouse />} /> */}
           <Route path="*" element={<Redirect />} />
         </Routes>
       </BrowserRouter>

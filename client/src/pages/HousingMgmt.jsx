@@ -1,72 +1,49 @@
-import { useState } from 'react'
-import { HOUSE_ENDPOINT } from '../constants'
-import { ToastContainer, toast } from 'react-toastify';
-import 'react-toastify/dist/ReactToastify.css';
+import { useState, useEffect } from 'react'
+import { HOUSE_ENDPOINT } from '../constants';
 import axios from 'axios'
+import { useNavigate } from 'react-router-dom';
+import { ToastContainer, toast } from 'react-toastify';
 
 const HousingMgmt = () => {
 
-    const [formData, setFormData] = useState({
-        address: '',
-        landlordName: '',
-        landlordPhone: '',
-        landlordEmail: '',
-        numBeds: 0,
-        numMattresses: 0,
-        numTables: 0,
-        numChairs: 0,
-    })
+    const navigate = useNavigate()
 
-    const handleChange = (e) => {
-        const { name, value } = e.target
-        setFormData({
-            ...formData,
-            [name]: value,
-        })
-    }
+    const [houses, setHouses] = useState([])
 
-    const handleSubmit = (e) => {
+    useEffect(() => {
+        axios.get(HOUSE_ENDPOINT)
+            .then(response => {
+                console.log('response.data:', response.data)
+                setHouses(response.data)
+            })
+    }, [])
+
+    const handleDelete = (e, houseId, address) => {
         e.preventDefault()
-        axios.post(HOUSE_ENDPOINT, formData)
+        axios.delete(`${HOUSE_ENDPOINT}/delete/${houseId}`)
             .then(response => {
                 console.log('response:', response)
-                toast.success('Successfully added new house!')
+                setHouses(prev => prev.filter(house => house._id !== houseId))
+                toast.success(`Successfully deleted ${address}!`)
             })
             .catch(error => {
-                console.log('error:', error)
-                toast.error('Erroring adding new house!')
+                toast.error('Error deleting house! Error:', error)
             })
     }
 
     return (
         <div>
-            <form onSubmit={handleSubmit}>
-                <fieldset>
-                    <legend>Address</legend>
-                    <input className='address-input' type='text' value={formData.address} name='address' onChange={handleChange} required />
-                </fieldset>
-                <fieldset>
-                    <legend>Landlord Information</legend>
-                    <label>Name:</label>
-                    <input type='text' value={formData.landlordName} name='landlordName' onChange={handleChange} required />
-                    <label>Phone:</label>
-                    <input type='tel' value={formData.landlordPhone} name='landlordPhone' onChange={handleChange} required />
-                    <label>Email:</label>
-                    <input type='email' value={formData.landlordEmail} name='landlordEmail' onChange={handleChange} required />
-                </fieldset>
-                <fieldset>
-                    <legend>Facility Information</legend>
-                    <label>Number of Beds:</label>
-                    <input type='number' value={formData.numBeds} name='numBeds' min={0} onChange={handleChange} required />
-                    <label>Number of Mattresses:</label>
-                    <input type='number' value={formData.numMattresses} name='numMattresses' min={0} onChange={handleChange} required />
-                    <label>Number of Tables:</label>
-                    <input type='number' value={formData.numTables} name='numTables' min={0} onChange={handleChange} required />
-                    <label>Number of Chairs:</label>
-                    <input type='number' value={formData.numChairs} name='numChairs' min={0} onChange={handleChange} required />
-                </fieldset>
-                <input type='submit' value='Submit' />
-            </form>
+            <h1>Housing Management</h1>
+            <button onClick={() => navigate('/addhouse')}>Add House</button>
+            {houses.map((house) => {
+                return (
+                    <div key={house.address}>
+                        <h3>{house.address}</h3>
+                        <p>{house.landlordName}: {house.landlordPhone}, {house.landlordEmail}</p>
+                        <p>Number of residents: {house.employees.length}</p>
+                        <button onClick={(e) => handleDelete(e, house._id, house.address)}>Delete House</button>
+                    </div>
+            )})}
             <ToastContainer />
         </div>
     )
