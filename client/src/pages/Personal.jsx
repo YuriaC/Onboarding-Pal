@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import './Personal.css'; 
+import './Personal.css';
 
 const Personal = () => {
     const [isEditing, setIsEditing] = useState(false);
@@ -44,7 +44,7 @@ const Personal = () => {
 
 
 
-    useEffect(()=>{
+    useEffect(() => {
         setFormDataClone(JSON.parse(JSON.stringify(formData)))
     }, [isEditing])
 
@@ -77,9 +77,9 @@ const Personal = () => {
         }));
     };
 
-    const handleEmployeeChange = (e) =>{
-        const {name, value} = e.target;
-        setFormData((prevData)=>{
+    const handleEmployeeChange = (e) => {
+        const { name, value } = e.target;
+        setFormData((prevData) => {
             return {
                 ...prevData,
                 employment: {
@@ -106,6 +106,32 @@ const Personal = () => {
         setIsEditing(false);
     };
 
+    const handleDocumentUpload = (e) => {
+        const files = Array.from(e.target.files);
+        const updatedDocuments = [...formData.documents, ...files];
+        setFormData((prevData) => ({
+            ...prevData,
+            documents: updatedDocuments,
+        }));
+    };
+
+    const previewDocument = (doc) => {
+        const fileURL = URL.createObjectURL(doc);
+        window.open(fileURL, '_blank');
+    };
+
+    const downloadDocument = (doc) => {
+        const fileURL = URL.createObjectURL(doc);
+        const link = document.createElement('a');
+        link.href = fileURL;
+        link.download = doc.name;  
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+    };
+    
+    
+
     return (
         <div className="personal-information">
             <h2>Personal Information</h2>
@@ -113,8 +139,8 @@ const Personal = () => {
                 <h3>Name</h3>
                 {isEditing ? (
                     <div>
-                        <img src={formData.profilePicture} alt='profilePicture' width={100} height={100}/>
-                        <input type='file' name='profilePicture' onChange={handleChange} accept='image/*'/>
+                        <img src={formData.profilePicture} alt='profilePicture' width={100} height={100} />
+                        <input type='file' name='profilePicture' onChange={handleChange} accept='image/*' />
                         <input type="text" name="firstName" placeholder="First Name" value={formData.firstName} onChange={handleChange} />
                         <input type="text" name="lastName" placeholder="Last Name" value={formData.lastName} onChange={handleChange} />
                         <input type="text" name="middleName" placeholder="Middle Name" value={formData.middleName} onChange={handleChange} />
@@ -125,23 +151,23 @@ const Personal = () => {
                         <select name="gender" value={formData.gender} onChange={handleChange}>
                             <option value="Male">Male</option>
                             <option value="Female">Female</option>
-                            <option value="Other">Other</option>    
+                            <option value="Other">Other</option>
                         </select>
                     </div>
                 ) : (
                     <div>
-                        <img src={formData.profilePicture} alt='profilePicture' width={100} height={100}/>
-                        <input type="text" name="firstName" placeholder="First Name" value={formData.firstName} disabled={true}/>
-                        <input type="text" name="lastName" placeholder="Last Name" value={formData.lastName} disabled={true}/>
-                        <input type="text" name="middleName" placeholder="Middle Name" value={formData.middleName} disabled={true}/>
-                        <input type="text" name="preferredName" placeholder="Preferred Name" value={formData.preferredName} disabled={true}/>
+                        <img src={formData.profilePicture} alt='profilePicture' width={100} height={100} />
+                        <input type="text" name="firstName" placeholder="First Name" value={formData.firstName} disabled={true} />
+                        <input type="text" name="lastName" placeholder="Last Name" value={formData.lastName} disabled={true} />
+                        <input type="text" name="middleName" placeholder="Middle Name" value={formData.middleName} disabled={true} />
+                        <input type="text" name="preferredName" placeholder="Preferred Name" value={formData.preferredName} disabled={true} />
                         <input type="email" name="email" placeholder="email" value={formData.email} disabled={true} />
                         <input type="text" name="ssn" placeholder="ssn" value={formData.ssn} disabled={true} />
                         <input type="text" name="dob" placeholder="Date of Birth" value={formData.dob} disabled={true} />
                         <select name="gender" value={formData.gender} disabled={true}>
                             <option value="Male">Male</option>
                             <option value="Female">Female</option>
-                            <option value="Other">Other</option>    
+                            <option value="Other">Other</option>
                         </select>
                     </div>
                 )}
@@ -188,43 +214,79 @@ const Personal = () => {
             <div className='section'>
                 <h3>Employment Status</h3>
                 {
-                    isEditing?
-                    <div>
-                        <input type='text' name='visaTitle' placeholder='Visa Title' value={formData.employment.visaTitle || ''} onChange={handleEmployeeChange} />
-                        <input type='text' name='startDate' placeholder='Start Date' value={formData.employment.startDate || ''} onChange={handleEmployeeChange} />
-                        <input type='text' name='endDate' placeholder='End Date' value={formData.employment.endDate || ''} onChange={handleEmployeeChange} />
-                    </div>
-                    :
-                    <div>
-                        <input type='text' name='visaTitle' placeholder='Visa Title' value={formData.employment.visaTitle || ''} disabled={true} />
-                        <input type='text' name='startDate' placeholder='Start Date' value={formData.employment.startDate || ''} disabled={true} />
-                        <input type='text' name='endDate' placeholder='End Date' value={formData.employment.endDate || ''} disabled={true} />
-                    </div>
+                    isEditing ?
+                        <div>
+                            <input type='text' name='visaTitle' placeholder='Visa Title' value={formData.employment.visaTitle || ''} onChange={handleEmployeeChange} />
+                            <input type='text' name='startDate' placeholder='Start Date' value={formData.employment.startDate || ''} onChange={handleEmployeeChange} />
+                            <input type='text' name='endDate' placeholder='End Date' value={formData.employment.endDate || ''} onChange={handleEmployeeChange} />
+                        </div>
+                        :
+                        <div>
+                            <input type='text' name='visaTitle' placeholder='Visa Title' value={formData.employment.visaTitle || ''} disabled={true} />
+                            <input type='text' name='startDate' placeholder='Start Date' value={formData.employment.startDate || ''} disabled={true} />
+                            <input type='text' name='endDate' placeholder='End Date' value={formData.employment.endDate || ''} disabled={true} />
+                        </div>
                 }
             </div>
 
             <div className='section'>
                 <h3>Emergency Contact</h3>
                 {
-                    isEditing?
-                    <div>
-                        <input type='text' name='firstName' placeholder='First Name' value={formData.emergencyContact.firstName || ''} onChange={handleEmergencyContactChange} />
-                        <input type='text' name='lastName' placeholder='Last Name' value={formData.emergencyContact.lastName || ''} onChange={handleEmergencyContactChange} />
-                        <input type='text' name='middleName' placeholder='Middle Name' value={formData.emergencyContact.middleName || ''} onChange={handleEmergencyContactChange} />
-                        <input type='text' name='phone' placeholder='Phone' value={formData.emergencyContact.phone || ''} onChange={handleEmergencyContactChange} />
-                        <input type='email' name='email' placeholder='Email' value={formData.emergencyContact.email || ''} onChange={handleEmergencyContactChange} />
-                        <input type='relationship' name='relationship' placeholder='relationship' value={formData.emergencyContact.relationship || ''} onChange={handleEmergencyContactChange}/>
-                    </div>
-                    :
-                    <div>
-                        <input type='text' name='firstName' placeholder='First Name' value={formData.emergencyContact.firstName || ''} disabled={true} />
-                        <input type='text' name='lastName' placeholder='Last Name' value={formData.emergencyContact.lastName || ''} disabled={true} />
-                        <input type='text' name='middleName' placeholder='Middle Name' value={formData.emergencyContact.middleName || ''} disabled={true} />
-                        <input type='text' name='phone' placeholder='Phone' value={formData.emergencyContact.phone || ''} disabled={true} />
-                        <input type='email' name='email' placeholder='Email' value={formData.emergencyContact.email || ''} disabled={true} />
-                        <input type='relationship' name='relationship' placeholder='relationship' value={formData.emergencyContact.relationship || ''} disabled={true}/>
-                    </div>
+                    isEditing ?
+                        <div>
+                            <input type='text' name='firstName' placeholder='First Name' value={formData.emergencyContact.firstName || ''} onChange={handleEmergencyContactChange} />
+                            <input type='text' name='lastName' placeholder='Last Name' value={formData.emergencyContact.lastName || ''} onChange={handleEmergencyContactChange} />
+                            <input type='text' name='middleName' placeholder='Middle Name' value={formData.emergencyContact.middleName || ''} onChange={handleEmergencyContactChange} />
+                            <input type='text' name='phone' placeholder='Phone' value={formData.emergencyContact.phone || ''} onChange={handleEmergencyContactChange} />
+                            <input type='email' name='email' placeholder='Email' value={formData.emergencyContact.email || ''} onChange={handleEmergencyContactChange} />
+                            <input type='relationship' name='relationship' placeholder='relationship' value={formData.emergencyContact.relationship || ''} onChange={handleEmergencyContactChange} />
+                        </div>
+                        :
+                        <div>
+                            <input type='text' name='firstName' placeholder='First Name' value={formData.emergencyContact.firstName || ''} disabled={true} />
+                            <input type='text' name='lastName' placeholder='Last Name' value={formData.emergencyContact.lastName || ''} disabled={true} />
+                            <input type='text' name='middleName' placeholder='Middle Name' value={formData.emergencyContact.middleName || ''} disabled={true} />
+                            <input type='text' name='phone' placeholder='Phone' value={formData.emergencyContact.phone || ''} disabled={true} />
+                            <input type='email' name='email' placeholder='Email' value={formData.emergencyContact.email || ''} disabled={true} />
+                            <input type='relationship' name='relationship' placeholder='relationship' value={formData.emergencyContact.relationship || ''} disabled={true} />
+                        </div>
                 }
+            </div>
+
+            <div className="section">
+                <h3>Documents</h3>
+                {isEditing ? (
+                    <div>
+                        <input type="file" multiple onChange={handleDocumentUpload} accept=".pdf,.jpg,.jpeg,.png" />
+                        {formData.documents.length > 0 && (
+                            <ul>
+                                {formData.documents.map((doc, index) => (
+                                    <li key={doc.name}>
+                                        {doc.name}
+                                        <button onClick={() => previewDocument(doc)}>Preview</button>
+                                        <button onClick={() => downloadDocument(doc)}>Download</button>
+                                    </li>
+                                ))}
+                            </ul>
+                        )}
+                    </div>
+                ) : (
+                    <div>
+                        {formData.documents.length > 0 ? (
+                            <ul>
+                                {formData.documents.map((doc, index) => (
+                                    <li key={index}>
+                                        {doc.name}
+                                        <button onClick={() => previewDocument(doc)}>Preview</button>
+                                        <button onClick={() => downloadDocument(doc)}>Download</button>
+                                    </li>
+                                ))}
+                            </ul>
+                        ) : (
+                            <p>No documents uploaded</p>
+                        )}
+                    </div>
+                )}
             </div>
 
             <button onClick={handleEditToggle}>{isEditing ? 'Cancel' : 'Edit'}</button>
