@@ -21,8 +21,8 @@ const Login = () => {
     const validatorForm = () => {
         let errors = {};
 
-        if(!validator.isEmail(form.userInput) && !validator.isLength(form.userInput, { min: 3, max: 15 })){
-            errors.userInput = 'Username must be between 3 and 15 characters';
+        if(!validator.isEmail(form.userInput) && !validator.isLength(form.userInput, { min: 3, max: 16 })){
+            errors.userInput = 'Username must be between 3 and 16 characters';
         }
 
         if (!validator.isStrongPassword(form.password, {
@@ -48,6 +48,8 @@ const Login = () => {
             //axios fetch
             localStorage.setItem('token', 'token');//fake authorication
             navigate('/');
+
+            //navigate to hr
         }
     }
 

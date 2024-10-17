@@ -1,3 +1,9 @@
+
+.authContainer{
+    display:flex; 
+    width: 100vw;
+}
+
 .register-form {
     display: flex;
     flex-direction: column;

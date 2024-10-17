@@ -29,14 +29,14 @@ const Personal = () => {
             startDate: '',
             endDate: ''
         },
-        emergencyContact: {
+        emergencyContact: [{
             firstName: '',
             lastName: '',
             middleName: '',
             phone: '',
             email: '',
             relationship: ''
-        },
+        }],
         documents: [] // This could be a list of file objects or URLs
     });
 
@@ -69,12 +69,16 @@ const Personal = () => {
         }));
     };
 
-    const handleEmergencyContactChange = (e) => {
+    const handleEmergencyContactChange = (e, index) => {
         const { name, value } = e.target;
-        setFormData((prevData) => ({
-            ...prevData,
-            emergencyContact: { ...prevData.emergencyContact, [name]: value }
-        }));
+        setFormData((prevData) => {
+            const newEmergencyContact = [...prevData.emergencyContact];
+            newEmergencyContact[index] = { ...newEmergencyContact[index], [name]: value};
+            return{
+                ...prevData,
+                emergencyContact: newEmergencyContact
+            }
+        });
     };
 
     const handleEmployeeChange = (e) => {
@@ -124,13 +128,13 @@ const Personal = () => {
         const fileURL = URL.createObjectURL(doc);
         const link = document.createElement('a');
         link.href = fileURL;
-        link.download = doc.name;  
+        link.download = doc.name;
         document.body.appendChild(link);
         link.click();
         document.body.removeChild(link);
     };
-    
-    
+
+
 
     return (
         <div className="personal-information">
@@ -234,21 +238,33 @@ const Personal = () => {
                 {
                     isEditing ?
                         <div>
-                            <input type='text' name='firstName' placeholder='First Name' value={formData.emergencyContact.firstName || ''} onChange={handleEmergencyContactChange} />
-                            <input type='text' name='lastName' placeholder='Last Name' value={formData.emergencyContact.lastName || ''} onChange={handleEmergencyContactChange} />
-                            <input type='text' name='middleName' placeholder='Middle Name' value={formData.emergencyContact.middleName || ''} onChange={handleEmergencyContactChange} />
-                            <input type='text' name='phone' placeholder='Phone' value={formData.emergencyContact.phone || ''} onChange={handleEmergencyContactChange} />
-                            <input type='email' name='email' placeholder='Email' value={formData.emergencyContact.email || ''} onChange={handleEmergencyContactChange} />
-                            <input type='relationship' name='relationship' placeholder='relationship' value={formData.emergencyContact.relationship || ''} onChange={handleEmergencyContactChange} />
+                            {formData.emergencyContact.map((contact, index) => {
+                                return (
+                                    <>
+                                        <input type='text' name='firstName' placeholder='First Name' value={contact.firstName || ''} onChange={(e)=>{handleEmergencyContactChange(e, index)}} />
+                                        <input type='text' name='lastName' placeholder='Last Name' value={contact.lastName || ''} onChange={(e)=>{handleEmergencyContactChange(e, index)}} />
+                                        <input type='text' name='middleName' placeholder='Middle Name' value={contact.middleName || ''} onChange={(e)=>{handleEmergencyContactChange(e, index)}} />
+                                        <input type='text' name='phone' placeholder='Phone' value={contact.phone || ''} onChange={(e)=>{handleEmergencyContactChange(e, index)}} />
+                                        <input type='email' name='email' placeholder='Email' value={contact.email || ''} onChange={(e)=>{handleEmergencyContactChange(e, index)}} />
+                                        <input type='relationship' name='relationship' placeholder='relationship' value={contact.relationship || ''} onChange={(e)=>{handleEmergencyContactChange(e, index)}} />
+                                    </>
+                                )
+                            })}
                         </div>
                         :
                         <div>
-                            <input type='text' name='firstName' placeholder='First Name' value={formData.emergencyContact.firstName || ''} disabled={true} />
-                            <input type='text' name='lastName' placeholder='Last Name' value={formData.emergencyContact.lastName || ''} disabled={true} />
-                            <input type='text' name='middleName' placeholder='Middle Name' value={formData.emergencyContact.middleName || ''} disabled={true} />
-                            <input type='text' name='phone' placeholder='Phone' value={formData.emergencyContact.phone || ''} disabled={true} />
-                            <input type='email' name='email' placeholder='Email' value={formData.emergencyContact.email || ''} disabled={true} />
-                            <input type='relationship' name='relationship' placeholder='relationship' value={formData.emergencyContact.relationship || ''} disabled={true} />
+                            {formData.emergencyContact.map((contact, index) => {
+                                return (
+                                    <>
+                                        <input type='text' name='firstName' placeholder='First Name' value={contact.firstName || ''} disabled={true} />
+                                        <input type='text' name='lastName' placeholder='Last Name' value={contact.lastName || ''} disabled={true} />
+                                        <input type='text' name='middleName' placeholder='Middle Name' value={contact.middleName || ''} disabled={true} />
+                                        <input type='text' name='phone' placeholder='Phone' value={contact.phone || ''} disabled={true} />
+                                        <input type='email' name='email' placeholder='Email' value={contact.email || ''} disabled={true} />
+                                        <input type='relationship' name='relationship' placeholder='relationship' value={contact.relationship || ''} disabled={true} />
+                                    </>
+                                )
+                            })}
                         </div>
                 }
             </div>
