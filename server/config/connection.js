@@ -16,7 +16,7 @@ mongoose.connect(MONGO_URI)
             let houses = []
             for (let i = 0; i < 5; i++) {
                 houses.push({
-                    address: `${faker.location.streetAddress()}, ${faker.location.city()}, ${faker.location.state()} ${faker.location.zipCode()}, United States`,
+                    address: `${faker.location.streetAddress()}, ${faker.location.city()}, ${faker.location.state()} ${faker.location.zipCode()}`,
                     landlordName: faker.person.fullName(),
                     landlordPhone: faker.phone.number(),
                     landlordEmail: faker.internet.email(),
@@ -36,7 +36,7 @@ mongoose.connect(MONGO_URI)
                 })
         }
 
-        // seed().then(() => console.log('Successfully seeded')).catch(error => console.log('Error seeding:', error.message))
+        seed().then(() => console.log('Successfully seeded')).catch(error => console.log('Error seeding:', error.message))
     })
     .catch(error => console.log('Error connecting to MongoDB:', error))
 

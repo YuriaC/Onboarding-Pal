@@ -4,6 +4,8 @@ import axios from 'axios'
 import { useNavigate } from 'react-router-dom';
 import { ToastContainer, toast } from 'react-toastify';
 import DeleteIcon from '@mui/icons-material/Delete'
+import PhoneIcon from '@mui/icons-material/Phone';
+import MailIcon from '@mui/icons-material/Mail'
 
 const HousingMgmt = () => {
 
@@ -48,7 +50,8 @@ const HousingMgmt = () => {
                 return (
                     <div key={house.address}>
                         <h3>{house.address}</h3>
-                        <p>{house.landlordName}: {house.landlordPhone}, {house.landlordEmail}</p>
+                        <p>Landlord: {house.landlordName}</p>
+                        <p><PhoneIcon />{house.landlordPhone} <MailIcon />{house.landlordEmail}</p>
                         <p>Number of residents: {house.employees.length}</p>
                         <button onClick={(e) => handleDelete(e, house._id, house.address)}><DeleteIcon /></button>
                     </div>
