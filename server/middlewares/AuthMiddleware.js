@@ -16,7 +16,7 @@ const authenticateJWT = (req, res, next) => {
 
     jwt.verify(token, JWT_SECRET, (err, user) => {
       if (err) {
-        return res.status(403).json({ message: 'Invalid token' });
+        return res.status(403).json('Invalid token');
       }
 
       req.user = user; // Attach user info to request
@@ -29,14 +29,15 @@ const authenticateJWT = (req, res, next) => {
 
 const isHR = (req, res, next) => {
   
-  // get token from header
-  const token = req.headers.authorization.split(' ')[1];
-  if (!token || validator.isEmpty(token)) {
-    return res.status(401).json('No token provided');
-  }
-
+  
   // decode token
   try {
+    // get token from header
+    const token = req.headers.authorization.split(' ')[1];
+    if (!token || validator.isEmpty(token)) {
+      return res.status(401).json('No token provided');
+    }
+
     const decoded = jwt.verify(token, process.env.ACCESS_TOKEN_SECRET);
 
     if (decoded.role !== 'hr') {
@@ -48,9 +49,7 @@ const isHR = (req, res, next) => {
     req.body.username = decoded.username;
     req.body.role = decoded.role
   } catch (err) {
-    return res.status(401).json({
-      message: 'Invalid token',
-    });
+    return res.status(401).json('Invalid token');
   }
 
   next();

@@ -7,8 +7,9 @@ const { isHR } = require("../middlewares/AuthMiddleware");
 
 // NOTE : ADD MIDDLEWARES
 houseRouter
-    .get('/', houseController.getHouses)
-    .post('/', houseController.addHouse)
+    .get('/', isHR, houseController.getHouses)
+    .get('/details/:houseId', houseController.getHouseById)
+    .post('/', isHR, houseController.addHouse)
     .delete('/delete/:houseId', isHR, houseController.deleteHouse)
 
 // code gen
