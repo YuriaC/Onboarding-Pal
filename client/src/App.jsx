@@ -11,23 +11,23 @@ function App() {
 
   return (
 
-      <BrowserRouter>
-        <Routes>
-          <Route path='/auth' element={<Auth />}>
-            <Route path='login' element={<Login />} />
-            <Route path="registration" element={<Registration />} />
-          </Route>
+    <BrowserRouter>
+    <Routes>
+      <Route path='/auth' element={<Auth />}>
+        <Route path='login' element={<Login />} />
+        <Route path="registration" element={<Registration />} />
+      </Route>
 
-          <Route element={<Guard />}>
-            <Route path="/" element={<Onboarding />} />
-            <Route path="/housingmgmt" element={<HousingMgmt />} />
-            <Route path="/housing" element={<Housing />} />
-          </Route>
+      <Route element={<Guard />}>
+        <Route path="/" element={<Onboarding />} />
+        <Route path="/housingmgmt" element={<HousingMgmt />} />
+        <Route path="/housing" element={<Housing />} />
+      </Route>
 
 
-          <Route path="*" element={<Redirect />} />
-        </Routes>
-      </BrowserRouter>
+      <Route path="*" element={<Redirect />} />
+    </Routes>
+  </BrowserRouter>
   )
 }
 
