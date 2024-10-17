@@ -9,6 +9,10 @@ input {
   margin: 0.5rem;
 }
 
+.address-input {
+  width: 30rem;
+}
+
 /* .logo {
   height: 6em;
   padding: 1.5em;
