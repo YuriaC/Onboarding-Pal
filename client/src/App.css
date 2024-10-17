@@ -9,6 +9,10 @@ input {
   margin: 0.5rem;
 }
 
+.address-input {
+  width: 30rem;
+}
+
 /* .logo {
   height: 6em;
   padding: 1.5em;
@@ -44,3 +48,5 @@ input {
 .read-the-docs {
   color: #888;
 } */
+
+/* Registration.css */

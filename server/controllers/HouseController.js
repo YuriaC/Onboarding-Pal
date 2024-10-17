@@ -24,9 +24,7 @@ const getHouses = async (req, res) => {
     // .skip(skip)
     // .limit(limit);
 
-    res.status(200).json({
-      houses,
-    });
+    res.status(200).json(houses);
   } catch (err) {
     console.error("Error in getHouses:", err);
     res.status(500).json({ message: "Server error" });

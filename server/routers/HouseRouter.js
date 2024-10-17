@@ -1,5 +1,6 @@
 const houseRouter = require("express").Router();
-const houseController = require('../controllers/HouseController')
+const houseController = require('../controllers/HouseController');
+const { isHR } = require("../middlewares/AuthMiddleware");
 
 
 //  Sample router
@@ -8,7 +9,7 @@ const houseController = require('../controllers/HouseController')
 houseRouter
     .get('/', houseController.getHouses)
     .post('/', houseController.addHouse)
-    .delete('/delete/:houseId', houseController.deleteHouse)
+    .delete('/delete/:houseId', isHR, houseController.deleteHouse)
 
 // code gen
 module.exports = houseRouter;

@@ -1,3 +1,4 @@
+
 const User = require('../models/User');
 const House = require('../models/House');
 const Contact = require('../models/Contact');
@@ -292,26 +293,6 @@ const getPersonalinfo = async(req,res) =>{
 
 };
 
-const getHousedetails = async(req,res) =>{
-
-};
-
-const addFacilityreport = async(req,res) =>{
-
-};
-
-const getFacilityreport = async(req,res) =>{
-
-};
-
-const addReportcomment = async(req,res)=>{
-
-};
-
-const getReportcomment = async(req,res)=>{
-
-};
-
 const updateWorkauthdoc = async(req,res) =>{
 
 };
@@ -328,10 +309,5 @@ module.exports = {
     setContactInput,
     getNavinfo,
     getPersonalinfo,
-    getHousedetails,
-    addFacilityreport,
-    getFacilityreport,
-    addReportcomment,
-    getReportcomment,
     updateWorkauthdoc
 }

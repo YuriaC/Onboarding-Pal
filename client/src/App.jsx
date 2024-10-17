@@ -1,25 +1,35 @@
 import './App.css'
-import { BrowserRouter as Router, useRoutes } from 'react-router-dom'
 import { Onboarding, Housing, Login, Registration, HousingMgmt } from './pages'
+import {BrowserRouter, Routes, Route} from 'react-router-dom'
+import Auth from './components/Auth';
+import Guard from './components/Guard';
+import Redirect from './components/Redirect';
+import AddHouse from './pages/AddHouse';
 
-function AppRoutes() {
-  return useRoutes([
-    { path: '/', element: <Onboarding /> },
-    { path: '/housingmgmt', element: <HousingMgmt /> },
-    { path: '/housing', element: <Housing /> },
-    { path: '/login', element: <Login /> },
-    { path: '/register', element: <Registration /> },
-  ])
-}
 
 function App() {
 
   return (
-    <>
-      <Router>
-        <AppRoutes />
-      </Router>
-    </>
+
+      <BrowserRouter>
+        <Routes>
+          <Route path='/auth' element={<Auth />}>
+            <Route path='login' element={<Login />} />
+            <Route path="registration" element={<Registration />} />
+          </Route>
+
+          <Route element={<Guard />}>
+            <Route path="/" element={<Onboarding />} />
+            <Route path="/housingmgmt" element={<HousingMgmt />} />
+            <Route path="/housing" element={<Housing />} />
+          </Route>
+
+          {/* For testing */}
+          {/* <Route path='/managehousing' element={<HousingMgmt />} /> */}
+          {/* <Route path='/addhouse' element={<AddHouse />} /> */}
+          <Route path="*" element={<Redirect />} />
+        </Routes>
+      </BrowserRouter>
   )
 }
 
