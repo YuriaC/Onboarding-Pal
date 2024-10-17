@@ -62,8 +62,9 @@ const register = async (req,res) =>{
             onboardingStatus:'pending',
           });
         //add new employee to the house
-        const house_add = await House.updateOne({_id:randomHouse[0]._id},{
-            employees:newEmployee._id
+        const house_add = await House.updateOne(
+            {_id:randomHouse[0]._id},{
+            $push:{"employees":newEmployee._id}//push into the employee array
         });
         // generate JWT token
         const token = generateToken(newEmployee._id.toString(), username, role);
