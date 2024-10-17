@@ -3,6 +3,7 @@ import { HOUSE_ENDPOINT, token } from '../constants';
 import axios from 'axios'
 import { useNavigate } from 'react-router-dom';
 import { ToastContainer, toast } from 'react-toastify';
+import DeleteIcon from '@mui/icons-material/Delete'
 
 const HousingMgmt = () => {
 
@@ -24,7 +25,11 @@ const HousingMgmt = () => {
 
     const handleDelete = (e, houseId, address) => {
         e.preventDefault()
-        axios.delete(`${HOUSE_ENDPOINT}/delete/${houseId}`)
+        axios.delete(`${HOUSE_ENDPOINT}/delete/${houseId}`, {
+            headers: {
+                'Authorization': `Bearer ${token}`
+            }
+        })
             .then(response => {
                 console.log('response:', response)
                 setHouses(prev => prev.filter(house => house._id !== houseId))
@@ -45,7 +50,7 @@ const HousingMgmt = () => {
                         <h3>{house.address}</h3>
                         <p>{house.landlordName}: {house.landlordPhone}, {house.landlordEmail}</p>
                         <p>Number of residents: {house.employees.length}</p>
-                        <button onClick={(e) => handleDelete(e, house._id, house.address)}>Delete House</button>
+                        <button onClick={(e) => handleDelete(e, house._id, house.address)}><DeleteIcon /></button>
                     </div>
             )})}
             <ToastContainer />
