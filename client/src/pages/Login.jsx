@@ -83,7 +83,7 @@ const Login = () => {
 
                 <div className='registerButtonAndLink'>
                     <button type="submit" onClick={userLogin}>Login</button>
-                    <div>Don’t have an account? <NavLink to="/auth/registration">Sign up</NavLink></div>
+                    <div>Don’t have an account? <NavLink to="/auth/registration" className='signButton'>Sign up</NavLink></div>
                 </div>
             </form>
         </div>
