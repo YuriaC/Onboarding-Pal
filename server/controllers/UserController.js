@@ -7,6 +7,8 @@ const { JSDOM } = require('jsdom');
 const argon2 = require("argon2");
 const DOMPurify = require('isomorphic-dompurify');
 const generateToken = require("../utils/generateToken");
+const { sendMail } = require("../utils/sendMails");
+const jwt = require('jsonwebtoken');
 
 const registerSchema = Yup.object().shape({
     username: Yup.string()
@@ -44,6 +46,33 @@ const register = async (req,res) =>{
         if (duplicate) {
           return res.status(409).json({ message: 'Username already exists' });
         }
+      
+        /* If we're creating the user elsewhere */
+        const existingUser = await User.findOne({ email }).lean().exec();
+        if (existingUser) {
+            const hashedPassword = await argon2.hash(password);
+            // update user schema if user resend the link
+            const updatedUser = await User.updateOne(
+                { email: email },
+                {
+                    username,
+                    password: hashedPassword,
+                    role: 'employee',
+                    //house: find house id randomly assign one
+                    onboardingStatus: 'pending',
+                    registrationHistory: {
+                        $set: {
+                            email: email,
+                            status: 'registered',
+                        },
+                    },
+                }
+            );
+            return res.status(200).json('Register Successfully');
+        }
+        /* End section */
+        
+        /* If we're creating the user right here */
         const hashedPassword = await argon2.hash(password);
 
         // randomly fetch one house from db
@@ -71,10 +100,119 @@ const register = async (req,res) =>{
         // assign cookies
         res.cookie('auth_token', token);
         return res.status(201).json("register success!");
+        /* End section */
     }catch(error){
         return res.status(500).json({ message: error.message});
     }
 };
+const sendRegistrationLink = async (req,res) =>{
+    // Get user information
+    const { email } = req.body;
+    if (!email ) {
+        return res.status(400).json({ message: 'Email is required.' });
+      }
+      const sanitizedEmail = sanitizeInput(email);
+      const token = jwt.sign(
+        { email: sanitizedEmail },
+        process.env.ACCESS_TOKEN_SECRET,
+        { expiresIn: '3h' }
+      );
+      const frontendURL = process.env.FRONTEND_URL ? process.env.FRONTEND_URL : 'http://localhost:5173';
+      const registrationLink = `${frontendURL}/auth/registration?token=${token}`;
+      try {
+        // Check if user already exists
+        const existingUser = await User.findOne({ email: sanitizedEmail }).lean().exec();
+        if (existingUser) {
+            if(existingUser.registrationHistory.status === 'registered'){
+                return res.status(409).json({ message: 'User with this email already exists.' });
+            }
+            // Update user schema if user resend the link
+            const updatedUser = await User.updateOne(
+                { email: sanitizedEmail },
+                {
+                    registrationHistory: {
+                        $set: {
+                            email: sanitizedEmail,
+                            status: 'pending',
+                            expiresAt: Date.now() + 3 * 60 * 60 * 1000,
+                            token: token
+                            
+                        }
+                    }
+                });
+            if(!updatedUser.acknowledged){
+                return res.status(500).json({ message: 'Failed to update user.' });
+            }
+        }else{
+            // Create registration link and user schema when user first register
+              const newUser = await User.create({
+                email: sanitizedEmail,
+                password: '',
+                role: 'employee',
+                onboardingStatus: 'pending',
+                registrationHistory: {
+                  email: sanitizedEmail,
+                  status: 'pending',
+                  expiresAt: Date.now() + 3 * 60 * 60 * 1000,
+                  token: token
+                },
+              });
+              if(!newUser){
+                return res.status(500).json({ message: 'Failed to create user.' });
+              }
+              console.log(newUser,"USer Created");
+        }
+        // Send registration email
+        const mailResult = await sendMail(
+            registrationLink,
+            sanitizedEmail,
+            'Welcome to Beaconfire - Here is your Registration Link',
+            'dminhnguyen161@gmail.com'
+          );
+        if (mailResult.error) {
+            return res.status(500).json({ message: 'Failed to send email.', error: mailResult.error });
+        }
+        return res.status(200).json({ registrationLink, message: 'Registration link sent successfully to ' + sanitizedEmail });
+    } catch (error) {
+        return res.status(500).json({ message: 'Server error.', error: error.message });
+      }
+    };
+
+    // New checkRegister function
+const checkRegister = async (req, res) => {
+    const { token } = req.params;
+    if (!token) {
+      return res.status(400).json({ message: 'Token is required.' });
+    }
+    try {
+      // Verify and decode the token
+      const decoded = jwt.verify(token, process.env.ACCESS_TOKEN_SECRET);
+      const { email } = decoded;
+      // Find the user with the token
+      const user = await User.findOne({ email, 'registrationHistory.token': token }).exec();
+      if (!user) {
+        return res.status(400).json({ message: 'Invalid or expired token.' });
+      }
+  
+      // Check if token is expired
+      if (user.registrationHistory.expiresAt < Date.now()) {
+        return res.status(400).json({ message: 'Token has expired.' });
+      }
+  
+      // Check if the user has already registered
+      if (user.password) {
+        return res.status(400).json({ message: 'User has already registered.' });
+      }
+      // Allow access to registration page
+      return res.status(200).json({ email,message: 'Token is valid. Proceed to registration.' });
+    } catch (error) {
+      if (error.name === 'TokenExpiredError') {
+        return res.status(400).json({ message: 'Token has expired.' });
+      }
+      return res.status(400).json({ message: 'Invalid token.', error: error.message });
+    }
+  };
+
 
 const login = async(req,res)=>{ 
     // tested working
@@ -393,7 +531,6 @@ const updateWorkauthdoc = async(req,res) =>{
 };
 
 
-
 module.exports = {
     register,
     login,
@@ -404,5 +541,7 @@ module.exports = {
     setContactInput,
     getNavinfo,
     getPersonalinfo,
-    updateWorkauthdoc
+    updateWorkauthdoc,
+    checkRegister,
+    sendRegistrationLink
 }

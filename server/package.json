@@ -13,6 +13,7 @@
   "license": "ISC",
   "dependencies": {
     "@faker-js/faker": "^9.0.3",
+    "@sendgrid/mail": "^8.1.4",
     "argon2": "^0.41.1",
     "aws-sdk": "^2.1691.0",
     "bcryptjs": "^2.4.3",

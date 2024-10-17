@@ -3,6 +3,9 @@ import { NavLink } from 'react-router-dom';
 import validator from 'validator';
 import { useNavigate } from 'react-router-dom';
 import './auth.css';
+import axios from 'axios'
+
+
 
 const Registration = () => {
     const [isVisible, setIsVisible] = useState(false);
@@ -21,7 +24,6 @@ const Registration = () => {
         password: '',
         repeatPassword: '',
     });
-
     const validatorForm = () => {
         let errors = {};
 
@@ -56,12 +58,44 @@ const Registration = () => {
         e.preventDefault();
 
         if (validatorForm()) {
-            //axios fetch
+            registerUser();
             navigate('/auth/login')
         }
     }
+    const registerUser = async () => {
+        try {
+            await axios.post('http://localhost:3000/api/users/register', form);
+        } catch (error) {
+            console.log(error.response.data.message);
+            const message = error.response ? error.response.data.message : 'An error occurred';
+            navigate('/auth/login');
+        }
+    }
+    const checkToken = async (token) => {
+        try {
+            const response = await axios.get(`http://localhost:3000/api/users/register/${token}`);
+            const {email} = response.data;
+            setForm( (prev) => ({...prev, email: email}) );
+            console.log(email);
+        } catch (error) {
+
+            console.log(error.response.data.message);
+            const message = error.response ? error.response.data.message : 'An error occurred';
+            navigate('/auth/login');
+        }
+    }
+
 
     useEffect(() => {
+        const url = new URL(window.location.href);
+        // Protected against empty tokens
+        const token = url.searchParams.get('token');
+        if (!token) {
+            navigate('/auth/login');
+        }
+        if (token) {
+            checkToken(token);
+        }
         setTimeout(() => setIsVisible(true), 300);
     }, []);
 
@@ -95,7 +129,6 @@ const Registration = () => {
                     {formErrors.password && <p className="error">
                         {formErrors.password.slice(0, formErrors.password.length / 2)}    <br />
                         {formErrors.password.slice(formErrors.password.length / 2)}
-
                     </p>}
                 </div>
 
