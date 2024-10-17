@@ -30,5 +30,5 @@ const upload = multer({
 
 module.exports = {
     upload,
-    AWSCredentialsMiddlware,
+    AWSCredentialsMiddleware,
 }

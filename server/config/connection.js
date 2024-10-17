@@ -36,7 +36,7 @@ mongoose.connect(MONGO_URI)
                 })
         }
 
-        seed().then(() => console.log('Successfully seeded')).catch(error => console.log('Error seeding:', error.message))
+        // seed().then(() => console.log('Successfully seeded')).catch(error => console.log('Error seeding:', error.message))
     })
     .catch(error => console.log('Error connecting to MongoDB:', error))
 
