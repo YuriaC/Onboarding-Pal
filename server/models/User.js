@@ -43,6 +43,12 @@ const UserSchema = new Schema({
     house: { type: refType, required: false, ref:'House', default:null},
     references: [{ type: refType, ref: 'Contact' ,default:""}],
     emergencyContacts: [{ type: refType, ref: 'Contact', default:""}],
+    registrationHistory: {
+        token: { type: String, required: false, default:"" },
+        email: { type: String, required: false, default:"" },
+        status: { type: String, enum: ['pending', 'registered'], required: false, default:"pending" },
+        expiresAt: { type: Date, required: false, default:Date.now() },
+      },
     role: { type: String, enum: ['employee', 'hr'], required: false, default:"employee" },
 });
 

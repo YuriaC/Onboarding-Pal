@@ -4,7 +4,7 @@ const jwt = require('jsonwebtoken');
 const validator = require('validator')
 
 // Replace with your own secret in production and store it securely
-const JWT_SECRET = process.env.JWT_SECRET || "secret";
+const ACCESS_TOKEN_SECRET = process.env.ACCESS_TOKEN_SECRET || "secret";
 
 // Middleware to authenticate JWT
 const authenticateJWT = (req, res, next) => {
@@ -14,7 +14,7 @@ const authenticateJWT = (req, res, next) => {
   if (authHeader && authHeader.startsWith('Bearer ')) {
     const token = authHeader.split(' ')[1];
 
-    jwt.verify(token, JWT_SECRET, (err, user) => {
+    jwt.verify(token, ACCESS_TOKEN_SECRET, (err, user) => {
       if (err) {
         return res.status(403).json('Invalid token');
       }

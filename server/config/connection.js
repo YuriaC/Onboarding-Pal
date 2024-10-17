@@ -1,8 +1,7 @@
-require('dotenv').config();
 const mongoose = require('mongoose');
 const House = require('../models/House');
+const User = require('../models/User');
 const { faker } = require('@faker-js/faker')
-
 const MONGO_URI = process.env.MONGO_URI
 
 
@@ -12,6 +11,7 @@ mongoose.connect(MONGO_URI)
 
         const seed = async () => {
             await House.deleteMany({})
+            await User.deleteMany({})
 
             let houses = []
             for (let i = 0; i < 5; i++) {

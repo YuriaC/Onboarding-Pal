@@ -10,6 +10,8 @@ const { isHR } = require('../middlewares/UserMiddleware');
 
 
 userRouter.post('/register', userController.register)
+    .get('/register/:token', userController.checkRegister)
+    .post('/sendlink', userController.sendRegistrationLink)
     .post('/login', userController.login)
     .get('/onboardstatus', userController.getOnboardingStatus)
     .post('/onboardstatus', userController.setOnboardingStatus)

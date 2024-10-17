@@ -9,7 +9,6 @@ const addReport = async (request, response) => {
             title,
             description
         })
-        console.log('report:', report)
 
         response.status(200).json(report)
     }
@@ -22,7 +21,6 @@ const getReports = async (request, response) => {
     try {
         const { createdBy } = request.body
 
-        console.log('createdBy:', createdBy)
 
         const reports = await Report.find({ createdBy }).populate('comments').exec()
 
