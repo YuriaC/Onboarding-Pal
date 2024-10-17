@@ -10,7 +10,12 @@ const generateToken = (id, username, role) => {
   return token;
 };
 
-generateToken(123, 'abc', 'hr')
+if (process.argv[2] === 'hr') {
+  generateToken(123, 'abc', 'hr')
+}
+else {
+  generateToken(123, 'abc', 'employee')
+}
 
 // export default generateToken;
 module.exports = generateToken

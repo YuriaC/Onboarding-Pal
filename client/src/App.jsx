@@ -25,8 +25,8 @@ function App() {
           </Route>
 
           {/* For testing */}
-          {/* <Route path='/managehousing' element={<HousingMgmt />} /> */}
-          {/* <Route path='/addhouse' element={<AddHouse />} /> */}
+          <Route path='/managehousing' element={<HousingMgmt />} />
+          <Route path='/addhouse' element={<AddHouse />} />
           <Route path="*" element={<Redirect />} />
         </Routes>
       </BrowserRouter>
