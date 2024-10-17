@@ -1,9 +1,16 @@
-const router = require("express").Router();
-const HouseController = require('../controllers/HouseController');
+const houseRouter = require("express").Router();
+const houseController = require('../controllers/HouseController');
+const { isHR } = require("../middlewares/AuthMiddleware");
 
 
 //  Sample router
-// router.get('/', HouseController.getHouses);
+
+// NOTE : ADD MIDDLEWARES
+houseRouter
+    .get('/', isHR, houseController.getHouses)
+    .get('/details/:houseId', houseController.getHouseById)
+    .post('/', isHR, houseController.addHouse)
+    .delete('/delete/:houseId', isHR, houseController.deleteHouse)
 
 // code gen
-module.exports = router;
+module.exports = houseRouter;
