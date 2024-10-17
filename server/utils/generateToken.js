@@ -1,4 +1,3 @@
-
 // import jwt from 'jsonwebtoken';
 const jwt = require('jsonwebtoken')
 require('dotenv').config()
@@ -19,4 +18,4 @@ else {
 }
 
 // export default generateToken;
-module.exports = generateToken
+module.exports = generateToken;

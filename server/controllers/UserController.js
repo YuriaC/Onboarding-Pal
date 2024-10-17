@@ -6,7 +6,7 @@ const Yup = require('yup');
 const { JSDOM } = require('jsdom');
 const argon2 = require("argon2");
 const DOMPurify = require('isomorphic-dompurify');
-const {generateToken} = require("../utils/generateToken");
+const generateToken = require("../utils/generateToken");
 
 const registerSchema = Yup.object().shape({
     username: Yup.string()
@@ -34,7 +34,7 @@ const sanitizeInput = (input) => {
 }
 
 const register = async (req,res) =>{
-    //Todo: add house reference
+    //tested working
     await registerSchema.validate(req.body);
     const username = sanitizeInput(req.body.username);
     const email = sanitizeInput(req.body.email);
@@ -45,20 +45,30 @@ const register = async (req,res) =>{
           return res.status(409).json({ message: 'Username already exists' });
         }
         const hashedPassword = await argon2.hash(password);
+
+        // randomly fetch one house from db
+        const randomHouse = await House.aggregate([
+            { $sample: { size: 1 } } // Fetch a random document
+          ]);
+        
         // create user login
         const role = "employee";
-        const login = await User.create({
+        const newEmployee = await User.create({
             username,
             email,
             password: hashedPassword,
             role,
-            //house: find house id randomly assign one
+            house: randomHouse[0]._id,
             onboardingStatus:'pending',
-
           });
+        //add new employee to the house
+        const house_add = await House.updateOne(
+            {_id:randomHouse[0]._id},{
+            $push:{"employees":newEmployee._id}//push into the employee array
+        });
         // generate JWT token
-        const token = generateToken(login._id.toString(), username, role);
-        
+        const token = generateToken(newEmployee._id.toString(), username, role);
+        // assign cookies
         res.cookie('auth_token', token);
         return res.status(201).json("register success!");
     }catch(error){
@@ -158,27 +168,27 @@ const getEmail= async(req,res) =>{
 };
 
 const setApplicationInput = async(req,res) =>{
-    // not fully tested yet
+    // tested working
     const username = req.body.username;
-    const firstname = req.body.firstname;
-    const lastname = req.body.lastname;
-    const middlename = req.body.middlename;
-    const preferredname = req.body.preferredname;
-    const profile_url = req.body.profile_url;
+    const firstname = req.body.firstName;
+    const lastname = req.body.lastName;
+    const middlename = req.body.middleName;
+    const preferredname = req.body.preferredName;
+    const profile_url = req.body.profilePicture_url;
     const address = req.body.address;
-    const phone = req.body.phone;
-    const carmake = req.body.carmake;
-    const carmodel = req.body.carmodel;
-    const carcolor = req.body.color;
+    const phone = req.body.cellPhone;
+    const carmake = req.body.carMake;
+    const carmodel = req.body.carModel;
+    const carcolor = req.body.carColor;
     //const email;//prefilled can not edit retrieve from user register info
     const ssn = req.body.ssn;
-    const dob = req.body.dateofbirth;
+    const dob = req.body.birthday;
     const gender = req.body.gender;
-    const workauth = req.body.workauth; //gc,citizen,work auth type
-    const workauth_url = req.body.workauth_url;
-    const dlnum = req.body.driverlicence_num;
-    const dldate = req.body.driverlicence_expdate;
-    const dlurl = req.body.driverlicence_url;
+    const workauth = req.body.workAuth; //gc,citizen,work auth type
+    const workauth_url = req.body.workAuthFile_url;
+    const dlnum = req.body.driversLicenseNumber;
+    const dldate = req.body.driversLicenseExpDate;
+    const dlurl = req.body.driversLicenseCopy_url;
     try{   
         const user = await User.findOne({ username })
         .lean()
@@ -197,7 +207,7 @@ const setApplicationInput = async(req,res) =>{
                 "address":address,
                 "cellPhone":phone,
                 "carMake":carmake,
-                "carMmodel":carmodel,
+                "carModel":carmodel,
                 "carColor":carcolor,
                 "ssn":ssn,
                 "birthday":dob,
@@ -290,10 +300,95 @@ const getNavinfo = async(req,res) =>{
 };
 
 const getPersonalinfo = async(req,res) =>{
-
+    //tested working
+    const username = req.query.username;
+    try{
+        const user = await User.findOne({ username })
+        .lean()
+        .exec();
+        if (!user) {
+            return res.status(401).json({ message: 'User not Found!' });
+        }
+        return res.status(200).json({
+            firstName: user.firstName,
+            lastName: user.lastName,
+            middleName: user.middleName,
+            preferredName: user.preferredName,
+            profilePicture_url: user.profilePicture_url,
+            email: user.email,
+            ssn: user.ssn,
+            birthday: user.birthday,
+            gender: user.gender,
+            address: user.address,
+            cellPhone: user.cellPhone,
+            workPhone: user.workPhone,
+            visaTitle: user.visaTitle,
+            visaStartDate: user.visaStartDate,
+            visaEndDate: user.visaEndDate,
+            emergency_contact_ids: user.emergencyContacts,// an array of ids, should have at least one er contact
+            workAuthFile_url: user.workAuthFile_url,
+            driversLicenseCopy_url: user.driversLicenseCopy_url,
+            optUrl: user.optUrl,
+            eadUrl: user.eadUrl,
+            i983Url: user.i983Url,
+            i20Url: user.i20Url,
+        });
+    }catch (error) {
+        console.error(error);
+        return res.status(500).json({ message: error.message });
+    }
 };
 
 const updateWorkauthdoc = async(req,res) =>{
+    //tested working
+    const username = req.body.username;
+    const optUrl = req.body.optUrl;
+    const eadUrl = req.body.eadUrl;
+    const i983Url = req.body.i983Url;
+    const i20Url = req.body.i20Url;
+    try{
+        const user = await User.findOne({ username })
+        .lean()
+        .exec();
+        if (!user) {
+            return res.status(401).json({ message: 'User not Found!' });
+        }
+
+        let update_docs = { 
+        }
+        if(optUrl){
+            update_docs.optUrl = optUrl;
+        }
+        if(eadUrl){
+            update_docs.eadUrl = eadUrl;
+        }
+        if(i983Url){
+            update_docs.i983Url = i983Url;
+        }
+        if(i20Url){
+            update_docs.i20Url = i20Url;
+        }
+
+        function isObjectEmpty(obj) {
+            return obj && Object.keys(obj).length === 0;
+        }
+        if(isObjectEmpty(update_docs)){
+            return res.status(401).json(`no file to update`);
+        }
+
+        const result = await User.updateOne(
+            { _id: user._id },
+            { $set: update_docs
+        }
+        );
+        if(!result.acknowledged){
+            return res.status(401).json(`updated document for user ${result.acknowledged?"success":"failed"}`);
+        }
+        return res.status(200).json(`updated document ${result.acknowledged?"success":"failed"}`);
+    }catch (error) {
+        console.error(error);
+        return res.status(500).json({ message: error.message });
+    }
 
 };
 
