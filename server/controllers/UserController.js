@@ -295,7 +295,25 @@ const getEmail= async(req,res) =>{
 
 };
 
-const setApplicationInput = async(req, res) =>{
+const getHouse= async(req,res) =>{
+    //tested working
+    const username = req.query.username;
+    try{
+        const user = await User.findOne({ username })
+        .lean()
+        .exec();
+        if (!user) {
+            return res.status(401).json({ message: 'User not Found!' });
+        }
+        return res.status(200).json({house: user.house});
+    }catch (error) {
+        console.error(error);
+        return res.status(500).json({ message: error.message });
+    }
+
+};
+
+const setApplicationInput = async(req,res) =>{
     // tested working
     const username = req.body.username;
     const firstname = req.body.firstName;
@@ -426,15 +444,9 @@ const setApplicationInput = async(req, res) =>{
 };
 
 const setContactInput = async(req,res) =>{
-    // not tested yet
+    // tested working
     const username = req.body.username;
     const contact_type = req.body.contact_type;// emergency or reference
-    const cont_firstname = req.body.contact_firstname;
-    const cont_lastname = req.body.contact_lastname;
-    const cont_middlename = req.body.contact_middlename?req.body.contact_middlename:"";
-    const cont_phone = req.body.contact_phone;
-    const cont_email = req.body.contact_email;
-    const cont_relationship = req.body.contact_relationship;
 
     try{
         const user = await User.findOne({ username })
@@ -444,41 +456,77 @@ const setContactInput = async(req,res) =>{
             return res.status(401).json({ message: 'User not Found!' });
         }
 
-        const ref_result = await Contact.create({
-            firstName:cont_firstname,
-            lastName:cont_lastname,
-            middleName:cont_middlename,
-            cellPhone:cont_phone,
-            email:cont_email,
-            relationship:cont_relationship,
-            relationshipToId: [user._id]
-        });
-        if(ref_result.acknowledged){    
-            const contact = await Contact.findOne({ cont_firstname }).lean().exec();
-            if (!contact) {
-                return res.status(401).json({ message: 'contact not Found!' });
-            }
-            let query = null;
-            if(contact_type === "emergency"){
-                query={ 
-                    "emergencyContacts": contact._id,
+        const newContactQuery = {
+            firstName:req.body.contact_firstname,
+            lastName:req.body.contact_lastname,
+            middleName:req.body.contact_middlename,
+            cellPhone:req.body.contact_phone,
+            email:req.body.contact_email,
+            relationship:req.body.contact_relationship,
+        }
+
+        const updateEmployeeContacts = async (update_contact_type,contact_id,mongo_user)=>{
+            // update the contacts for employee
+
+            //first check if the contact already exists in user's contacts
+            if(contact_id){    
+                let query = null;
+                if(update_contact_type === "emergency"){
+                    const contactExists = mongo_user.emergencyContacts.some(id => id.equals(contact_id));
+                    if(contactExists){
+                        return res.status(401).json(`Emergency contacts exists`);
+                    }
+                    query={ 
+                        "emergencyContacts": contact_id,
+                    }
+                }else if(update_contact_type === "references"){
+                    const contactExists = mongo_user.references.some(id => id.equals(contact_id));
+                    if(contactExists){
+                        return res.status(401).json(`references contacts exists`);
+                    }
+                    query={ 
+                        "references": contact_id,
+                    }
                 }
-            }else if(contact_type === "references"){
-                query={ 
-                    "references": contact._id,
+                else{
+                    return res.status(401).json(`invalid contact type`);
                 }
+                const user_result = await User.updateOne(
+                    { _id: user._id },
+                    { $push: query
+                    }
+                );
+                if(!user_result.acknowledged){
+                    return res.status(401).json(`updated contact for user ${user_result.acknowledged?"success":"failed"}`);
+                }
+                return res.status(200).json(`updated status success}`);
+            }else{
+                return res.status(401).json(`updated contact failed`);
             }
-            const user_result = await User.updateOne(
-                { _id: user._id },
-                { $push: query
+        }
+
+        //check if the contact exist
+        const existingContact = await Contact.findOne(newContactQuery)
+        .lean()
+        .exec();
+
+        if(existingContact){
+            //if contact exist, update the contact relationshipToId
+            // update the employee emergency/reference contact
+            const existingContact_update = await Contact.updateOne(
+                { _id: existingContact._id },
+                { $push: {"relationshipToId":user._id}
                 }
             );
-            if(!user_result.acknowledged){
-                return res.status(401).json(`updated contact for user ${user_result.acknowledged?"success":"failed"}`);
-            }
-            return res.status(200).json(`updated status ${user_result.acknowledged?"success":"failed"}`);
-        }else{
-            return res.status(401).json(`updated contact ${ref_result.acknowledged?"success":"failed"}`);
+            //add contact id to user emerg/referenceid
+            updateEmployeeContacts(contact_type,existingContact._id,user);
+        }
+        else{//if contact does not exist
+            newContactQuery.relationshipToId=[user._id];
+            const newContact = await Contact.create(
+                newContactQuery
+            );
+            updateEmployeeContacts(contact_type,newContact._id,user);
         }
     }
     catch (error) {
@@ -488,9 +536,6 @@ const setContactInput = async(req,res) =>{
 
 };
 
-const getNavinfo = async(req,res) =>{
-
-};
 
 const getPersonalinfo = async(req,res) =>{
     //tested working
@@ -585,6 +630,58 @@ const updateWorkauthdoc = async(req,res) =>{
 
 };
 
+const updateWorkauthStatus = async(req,res) => {
+    //tested working
+    const username = req.body.username;
+    const optStatus = req.body.optStatus;
+    const eadStatus = req.body.eadStatus;
+    const i983Status = req.body.i983Status;
+    const i20Status = req.body.i20Status;
+    try{
+        const user = await User.findOne({ username })
+        .lean()
+        .exec();
+        if (!user) {
+            return res.status(401).json({ message: 'User not Found!' });
+        }
+
+        let update_status = { 
+        }
+        if(optStatus){
+            update_status.optStatus = optStatus;
+        }
+        if(eadStatus){
+            update_status.eadStatus = eadStatus;
+        }
+        if(i983Status){
+            update_status.i983Status = i983Status;
+        }
+        if(i20Status){
+            update_status.i20Status = i20Status;
+        }
+
+        function isObjectEmpty(obj) {
+            return obj && Object.keys(obj).length === 0;
+        }
+        if(isObjectEmpty(update_status)){
+            return res.status(401).json(`no file to update`);
+        }
+
+        const result = await User.updateOne(
+            { _id: user._id },
+            { $set: update_status
+        });
+        if(!result.acknowledged){
+            return res.status(401).json(`updated document status for user ${result.acknowledged?"success":"failed"}`);
+        }
+        return res.status(200).json(`updated document status ${result.acknowledged?"success":"failed"}`);
+
+    }
+    catch (error) {
+        console.error(error);
+        return res.status(500).json({ message: error.message });
+    }
+}
 
 module.exports = {
     register,
@@ -592,11 +689,12 @@ module.exports = {
     getOnboardingStatus,
     setOnboardingStatus,
     getEmail,
+    getHouse,
     setApplicationInput,
     setContactInput,
-    getNavinfo,
     getPersonalinfo,
     updateWorkauthdoc,
+    updateWorkauthStatus,
     checkRegister,
     sendRegistrationLink
 }
