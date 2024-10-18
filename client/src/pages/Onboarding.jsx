@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { ToastContainer, toast } from 'react-toastify'
-import { token, USER_ENDPOINT } from '../constants'
+import { token, USER_ENDPOINT, username } from '../constants'
 import axios from 'axios'
 
 const Onboarding = () => {
@@ -77,7 +77,7 @@ const Onboarding = () => {
     const createFormData = (data) => {
         const formData = new FormData();
         buildFormData(formData, data);
-        formData.append('username', 'EmployeeTest')
+        formData.append('username', username)
         return formData;
     }
 

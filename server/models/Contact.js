@@ -11,7 +11,7 @@ const ContactSchema = new Schema({
     cellPhone: { type: String, required: true },
     email: { type: String, required: true },
     relationship: { type: String, required: true },
-    relationshipToId: [{ type: refType, ref: 'User' }],
+    // relationshipToId: [{ type: refType, ref: 'User' }],
 });
 
 const Contact = mongoose.model('Contact', ContactSchema);
