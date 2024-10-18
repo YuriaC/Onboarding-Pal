@@ -11,6 +11,8 @@ const Onboarding = () => {
         middleName: '',
         preferredName: '',
         profilePicture: null,
+        optReceipt: null,
+        dlCopy: null,
         building: '',
         street: '',
         city: '',
@@ -269,7 +271,7 @@ const Onboarding = () => {
                             <input type='date' name='dlExpDate' onChange={handleChange} required />
                             <br />
                             <label>Driver&#39;s License Copy: </label>
-                            <input type='file' name='licenseCopy' onChange={handleChange} required />
+                            <input type='file' name='dlCopy' onChange={handleChange} required />
                         </>
                     }
                 </fieldset>

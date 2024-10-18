@@ -303,6 +303,8 @@ const setApplicationInput = async(req, res) =>{
     const middlename = req.body.middleName;
     const preferredname = req.body.preferredName;
     let profilePictureURL = ''
+    let optReceiptURL = ''
+    let dlCopyURL = ''
     const { files } = req
     console.log('files:', files)
     const { AccessKeyId, SecretAccessKey, SessionToken } = req.credentials
@@ -317,10 +319,9 @@ const setApplicationInput = async(req, res) =>{
     const dob = req.body.dob;
     const gender = req.body.gender;
     const workauth = req.body.nonPermWorkAuth; //gc,citizen,work auth type
-    const workauth_url = req.body.workAuthFile_url;
+    // const workauth_url = req.body.workAuthFile_url;
     const dlnum = req.body.dlNum;
     const dldate = req.body.dlExpDate;
-    const dlurl = req.body.driversLicenseCopy_url;
     const { refFirstName, refLastName, refMiddleName, refPhone, refEmail, refRelationship } = req.body
     const emergencyContacts = req.body.emergencyContacts
     // console.log('emergencyContacts:', emergencyContacts)
@@ -350,8 +351,16 @@ const setApplicationInput = async(req, res) =>{
 
             return s3.send(command).then(() => {
                 const fileURL = `https://${process.env.S3_BUCKET}.s3.amazonaws.com/${newFileName}`
-                if (file.fieldname === 'profilePicture') {
-                    profilePictureURL = fileURL
+                switch (file.fieldname) {
+                    case 'profilePicture':
+                        profilePictureURL = fileURL
+                        break
+                    case 'optReceipt':
+                        optReceiptURL = fileURL
+                        break
+                    case 'dlCopy':
+                        dlCopyURL = fileURL
+                        break
                 }
             })
         })
@@ -394,12 +403,13 @@ const setApplicationInput = async(req, res) =>{
                 "birthday": dob,
                 "gender": gender,
                 "workAuth": workauth,
-                "workAuthFile_url": workauth_url,
+                // "workAuthFile_url": workauth_url,
                 "driversLicenseNumber": dlnum,
                 "driversLicenseExpDate": dldate,
-                "driversLicenseCopy_url": dlurl,
+                "driversLicenseCopy_url": dlCopyURL,
                 "permResStatus": permResStatus,
                 "referer": reference._id,
+                "optUrl": optReceiptURL
             }
         }
         );
