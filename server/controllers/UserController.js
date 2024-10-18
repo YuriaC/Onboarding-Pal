@@ -9,6 +9,7 @@ const DOMPurify = require('isomorphic-dompurify');
 const generateToken = require("../utils/generateToken");
 const { sendMail } = require("../utils/sendMails");
 const jwt = require('jsonwebtoken');
+const { S3Client, PutObjectCommand } = require('@aws-sdk/client-s3')
 
 const registerSchema = Yup.object().shape({
     username: Yup.string()
@@ -319,49 +320,114 @@ const setApplicationInput = async(req,res) =>{
     const lastname = req.body.lastName;
     const middlename = req.body.middleName;
     const preferredname = req.body.preferredName;
-    const profile_url = req.body.profilePicture_url;
-    const address = req.body.address;
-    const phone = req.body.cellPhone;
-    const carmake = req.body.carMake;
-    const carmodel = req.body.carModel;
-    const carcolor = req.body.carColor;
+    let profilePictureURL = ''
+    let optReceiptURL = ''
+    let dlCopyURL = ''
+    const { files } = req
+    console.log('files:', files)
+    const { AccessKeyId, SecretAccessKey, SessionToken } = req.credentials
+    const { building, street, city, state, zip } = req.body
+    const address = `${building}, ${street}, ${city}, ${state} ${zip}`
+    const { permResStatus } = req.body
+    const cellPhone = req.body.cellPhone;
+    const workPhone = req.body.workPhone
+    const { carMake, carModel, carColor } = req.body
     //const email;//prefilled can not edit retrieve from user register info
     const ssn = req.body.ssn;
-    const dob = req.body.birthday;
+    const dob = req.body.dob;
     const gender = req.body.gender;
-    const workauth = req.body.workAuth; //gc,citizen,work auth type
-    const workauth_url = req.body.workAuthFile_url;
-    const dlnum = req.body.driversLicenseNumber;
-    const dldate = req.body.driversLicenseExpDate;
-    const dlurl = req.body.driversLicenseCopy_url;
-    try{   
-        const user = await User.findOne({ username })
-        .lean()
-        .exec();
+    const workauth = req.body.nonPermWorkAuth; //gc,citizen,work auth type
+    // const workauth_url = req.body.workAuthFile_url;
+    const dlnum = req.body.dlNum;
+    const dldate = req.body.dlExpDate;
+    const { refFirstName, refLastName, refMiddleName, refPhone, refEmail, refRelationship } = req.body
+    const emergencyContacts = req.body.emergencyContacts
+    // console.log('emergencyContacts:', emergencyContacts)
+    // for (const emergencyContact of emergencyContacts) {
+    //     console.log('emergencyContact:', emergencyContact.firstName)
+    // }
+
+    const s3 = new S3Client({
+        region: process.env.AWS_REGION,
+        credentials: {
+            accessKeyId: AccessKeyId,
+            secretAccessKey: SecretAccessKey,
+            sessionToken: SessionToken,
+        }
+    })
+
+    try {
+        const filePromises = files.map(file => {
+            const newFileName = `${Date.now().toString()}-${file.originalname}`
+            console.log('file:', file)
+            const command = new PutObjectCommand({
+                Bucket: process.env.S3_BUCKET,
+                Key: newFileName,
+                Body: file.buffer,
+                ContentType: file.mimetype,
+            })
+
+            return s3.send(command).then(() => {
+                const fileURL = `https://${process.env.S3_BUCKET}.s3.amazonaws.com/${newFileName}`
+                switch (file.fieldname) {
+                    case 'profilePicture':
+                        profilePictureURL = fileURL
+                        break
+                    case 'optReceipt':
+                        optReceiptURL = fileURL
+                        break
+                    case 'dlCopy':
+                        dlCopyURL = fileURL
+                        break
+                }
+            })
+        })
+
+        const uploadedFiles = await Promise.all(filePromises)
+
+        const user = await User.findOne({ username }).lean().exec();
         if (!user) {
-            return res.status(401).json({ message: 'User not Found!' });
+            return res.status(404).json('User not Found!');
+        }
+
+        const reference = await Contact.create({
+            firstName: refFirstName,
+            lastName: refLastName,
+            middleName: refMiddleName,
+            cellPhone: refPhone,
+            email: refEmail,
+            relationship: refRelationship,
+            relationshipToId: "6711edc999bed2d3ff6f0f45",
+        })
+        if (!reference) {
+            return res.status(500).json('Error creating reference!')
         }
 
         const result = await User.updateOne(
             { _id: user._id },
-            { $set: { "firstName": firstname,
-                "lastName":lastname,
-                "middleName":middlename,
-                "preferredName":preferredname,
-                "profilePicture_url":profile_url,
-                "address":address,
-                "cellPhone":phone,
-                "carMake":carmake,
-                "carModel":carmodel,
-                "carColor":carcolor,
-                "ssn":ssn,
-                "birthday":dob,
-                "gender":gender,
-                "workAuth":workauth,
-                "workAuthFile_url":workauth_url,
-                "driversLicenseNumber":dlnum,
-                "driversLicenseExpDate":dldate,
-                "driversLicenseCopy_url":dlurl,
+            { $set: {
+                "firstName": firstname,
+                "lastName": lastname,
+                "middleName": middlename,
+                "preferredName": preferredname,
+                "profilePictureURL": profilePictureURL,
+                "address": address,
+                "cellPhone": cellPhone,
+                "workPhone": workPhone,
+                "carMake": carMake,
+                "carModel": carModel,
+                "carColor": carColor,
+                "ssn": ssn,
+                "birthday": dob,
+                "gender": gender,
+                "workAuth": workauth,
+                // "workAuthFile_url": workauth_url,
+                "driversLicenseNumber": dlnum,
+                "driversLicenseExpDate": dldate,
+                "driversLicenseCopy_url": dlCopyURL,
+                "permResStatus": permResStatus,
+                "referer": reference._id,
+                "optUrl": optReceiptURL
             }
         }
         );
@@ -486,7 +552,7 @@ const getPersonalinfo = async(req,res) =>{
             lastName: user.lastName,
             middleName: user.middleName,
             preferredName: user.preferredName,
-            profilePicture_url: user.profilePicture_url,
+            profilePictureURL: user.profilePictureURL,
             email: user.email,
             ssn: user.ssn,
             birthday: user.birthday,

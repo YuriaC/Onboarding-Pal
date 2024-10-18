@@ -3,6 +3,7 @@ const userRouter = express.Router();
 
 const userController = require('../controllers/UserController');;
 const { isHR } = require('../middlewares/UserMiddleware');
+const { AWSCredentialsMiddleware } = require('../middlewares/AWSMiddleware')
 
 
 
@@ -17,7 +18,7 @@ userRouter.post('/register', userController.register)
     .post('/onboardstatus', userController.setOnboardingStatus)
     .get('/email', userController.getEmail)
     .get('/house', userController.getHouse)
-    .post('/applicationinput', userController.setApplicationInput)
+    .post('/applicationinput', AWSCredentialsMiddleware, userController.setApplicationInput)
     .post('/contactinput', userController.setContactInput)
     .get('/personalinfo', userController.getPersonalinfo)
     // .get('/housedetails', userController.getHousedetails)
