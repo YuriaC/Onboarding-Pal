@@ -36,7 +36,6 @@ const sanitizeInput = (input) => {
 }
 
 const register = async (req,res) =>{
-    //tested working
     await registerSchema.validate(req.body);
     const username = sanitizeInput(req.body.username);
     const email = sanitizeInput(req.body.email);
@@ -46,7 +45,11 @@ const register = async (req,res) =>{
         if (duplicate) {
           return res.status(409).json({ message: 'Username already exists' });
         }
-      
+
+        const randomHouse = await House.aggregate([
+            { $sample: { size: 1 } } // Fetch a random document
+          ]);
+        
         /* If we're creating the user elsewhere */
         const existingUser = await User.findOne({ email }).lean().exec();
         if (existingUser) {
@@ -58,6 +61,7 @@ const register = async (req,res) =>{
                     username,
                     password: hashedPassword,
                     role: 'employee',
+                    house: randomHouse[0]._id,
                     //house: find house id randomly assign one
                     onboardingStatus: 'pending',
                     registrationHistory: {
@@ -68,38 +72,23 @@ const register = async (req,res) =>{
                     },
                 }
             );
-            return res.status(200).json('Register Successfully');
+        }else{
+            return res.status(404).json({ message: 'Email not Found!' });
         }
         /* End section */
         
         /* If we're creating the user right here */
         const hashedPassword = await argon2.hash(password);
-
-        // randomly fetch one house from db
-        const randomHouse = await House.aggregate([
-            { $sample: { size: 1 } } // Fetch a random document
-          ]);
-        
-        // create user login
-        const role = "employee";
-        const newEmployee = await User.create({
-            username,
-            email,
-            password: hashedPassword,
-            role,
-            house: randomHouse[0]._id,
-            onboardingStatus:'pending',
-          });
         //add new employee to the house
-        const house_add = await House.updateOne(
+        await House.updateOne(
             {_id:randomHouse[0]._id},{
-            $push:{"employees":newEmployee._id}//push into the employee array
+            $push:{"employees":existingUser._id}//push into the employee array
         });
         // generate JWT token
-        const token = generateToken(newEmployee._id.toString(), username, role);
+        const token = generateToken(existingUser._id.toString(), username, role);
         // assign cookies
         res.cookie('auth_token', token);
-        return res.status(201).json("register success!");
+        return res.status(200).json('Register Successfully');
         /* End section */
     }catch(error){
         return res.status(500).json({ message: error.message});
