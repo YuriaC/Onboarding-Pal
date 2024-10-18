@@ -682,6 +682,50 @@ const updateWorkauthStatus = async(req,res) => {
         return res.status(500).json({ message: error.message });
     }
 }
+const getEmpolyeesProfileForHR = async()=>{
+    const {searchTerm} = req.query;
+    const regexSearchTerm = new RegExp(searchTerm, 'i');
+
+    try{
+        const filterUser = await User.find({
+            $or: [
+                {username: regexSearchTerm},
+                {firstName: regexSearchTerm},
+                {lastName: regexSearchTerm},
+                {middleName: regexSearchTerm},
+                {preferredName: regexSearchTerm},
+            ]
+        }).lean().exec();
+
+        return res.status(200).json(filterUser);
+
+
+    }catch(error){
+        console.error(error);
+        return res.status(500).json({ message: error.message });
+    }
+}
+
+const getPersonalinfoById = async(req,res) =>{
+    const {employeeId} = req.query;
+
+    try{
+        const employee = await User.findById(employeeId)
+        .lean()
+        .exec();
+        if (!employee) {
+            return res.status(401).json({ message: 'User not Found!' });
+        }
+
+        return res.status(200).json(employee);
+
+    }catch(error){
+        console.error(error);
+        return res.status(500).json({ message: error.message });
+    }
+
+
+} 
 
 module.exports = {
     register,
@@ -696,5 +740,7 @@ module.exports = {
     updateWorkauthdoc,
     updateWorkauthStatus,
     checkRegister,
-    sendRegistrationLink
+    sendRegistrationLink,
+    getEmpolyeesProfileForHR,
+    getPersonalinfoById
 }

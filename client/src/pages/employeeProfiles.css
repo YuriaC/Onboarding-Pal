@@ -1,0 +1,38 @@
+.employee-profiles {
+    padding: 20px;
+}
+
+.search-bar {
+    margin-bottom: 20px;
+    padding: 10px;
+    width: 100%;
+    max-width: 400px;
+}
+
+.employee-list {
+    margin-top: 20px;
+}
+
+.employee-item {
+    background-color: #f9f9f9;
+    padding: 15px;
+    margin-bottom: 10px;
+    border-radius: 5px;
+}
+
+.employee-item h4 {
+    margin: 0;
+}
+
+.employee-item a {
+    text-decoration: none;
+    color: #007bff;
+}
+
+.employee-item a:hover {
+    text-decoration: underline;
+}
+
+.employee-summary {
+    margin-bottom: 20px;
+}

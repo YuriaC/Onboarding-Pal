@@ -10,6 +10,7 @@ import Navbar from './components/Navbar';
 import HRGuard from './components/HRGuard';
 import HRNavbar from './components/HRNavbar';
 import EmployeeProfiles from './pages/EmployeeProfiles';
+import EmployeeDetail from './pages/EmployeeDetail';
 import Hiring from './pages/Hiring';
 
 function App() {
@@ -35,6 +36,7 @@ function App() {
           <Route path='/hr' element={<HRGuard />}>
             <Route element={<HRNavbar />}>
               <Route path='employeeprofiles' element={<EmployeeProfiles />} />
+              <Route path='employeeprofiles/:employeeId' element={<EmployeeDetail />}/>
               <Route path='hiring' element={<Hiring />}/>
             </Route>
           </Route>
