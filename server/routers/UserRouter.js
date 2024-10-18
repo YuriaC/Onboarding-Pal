@@ -17,15 +17,16 @@ userRouter.post('/register', userController.register)
     .get('/onboardstatus', userController.getOnboardingStatus)
     .post('/onboardstatus', userController.setOnboardingStatus)
     .get('/email', userController.getEmail)
+    .get('/house', userController.getHouse)
     .post('/applicationinput', AWSCredentialsMiddleware, userController.setApplicationInput)
     .post('/contactinput', userController.setContactInput)
-    .get('/navinfo', userController.getNavinfo)
     .get('/personalinfo', userController.getPersonalinfo)
     // .get('/housedetails', userController.getHousedetails)
     // .post('/facilityreport', userController.addFacilityreport)
     // .get('/facilityreport', userController.getFacilityreport)
     // .post('/reportcomment', userController.addReportcomment)
     // .get('/reportcomment', userController.getReportcomment)
-    .post('/updateworkauthdoc', userController.updateWorkauthdoc);
+    .post('/updateworkauthdoc', userController.updateWorkauthdoc)
+    .post('/updateworkauthStatus', userController.updateWorkauthStatus);
 
 module.exports = userRouter;
