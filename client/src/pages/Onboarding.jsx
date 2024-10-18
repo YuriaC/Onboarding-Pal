@@ -25,27 +25,35 @@ const Onboarding = () => {
         cellPhone: '',
         workPhone: '',
         isPermRes: '',
+        permResStatus: '',
         nonPermWorkAuth: 'H1-B',
         hasDriversLicense: '',
         isReferred: '',
+        emergencyContacts: [
+            {
+                firstName: '',
+                lastName: '',
+                middleName: '',
+                phone: '',
+                emEmail: '',
+                relationship: '',
+            }
+        ]
     })
 
-    const [emergencyContacts, setEmergencyContacts] = useState([
-        {
-            firstName: '',
-            lastName: '',
-            middleName: '',
-            phone: '',
-            email: '',
-            relationship: '',
-        }
-    ])
+    // const [emergencyContacts, setEmergencyContacts] = useState([
+    //     {
+    //         firstName: '',
+    //         lastName: '',
+    //         middleName: '',
+    //         phone: '',
+    //         emEmail: '',
+    //         relationship: '',
+    //     }
+    // ])
 
     const handleChange = (e) => {
         const { type, name, value } = e.target
-        console.log('type:', type)
-        console.log('name:', name)
-        console.log('value:', value)
         setFormData({
             ...formData,
             [name]: type === 'file' ? e.target.files[0] : value,
@@ -56,20 +64,33 @@ const Onboarding = () => {
         const { name, value } = e.target
         console.log('name:', name)
         console.log('value:', value)
-        const newContacts = [...emergencyContacts]
+        const newContacts = [...formData.emergencyContacts]
         newContacts[index][name] = value
         console.log('newContacts:', newContacts)
-        setEmergencyContacts(newContacts)
+        setFormData({...formData, emergencyContacts: newContacts})
+    }
+
+    const buildFormData = (formData, data, parentKey) => {
+        if (data && typeof data === 'object' && !(data instanceof File)) {
+          Object.keys(data).forEach(key => {
+            buildFormData(formData, data[key], parentKey ? `${parentKey}[${key}]` : key);
+          });
+        } else {
+          formData.append(parentKey, data);
+        }
+      };
+      
+    const createFormData = (data) => {
+        const formData = new FormData();
+        buildFormData(formData, data);
+        formData.append('username', 'EmployeeTest')
+        return formData;
     }
 
     const handleSubmit = async (e) => {
         e.preventDefault()
         console.log('formData:', formData)
-        const data = new FormData()
-        for (const key in formData) {
-            data.append(key, formData[key])
-        }
-        data.append('username', 'EmployeeTest')
+        const data = createFormData(formData)
 
         try {
             const response = await axios.post(`${USER_ENDPOINT}/applicationinput`, data, {
@@ -81,32 +102,38 @@ const Onboarding = () => {
             console.log('response.data:', response.data)
         }
         catch (error) {
-            toast.error(`Error submitting application! Error: ${error.message}`)
+            console.log(error)
+            toast.error(`Error submitting application! Error: ${error.response.data}`)
         }
     }
 
     const addEmergencyContact = (e) => {
         e.preventDefault()
-        setEmergencyContacts([
-            ...emergencyContacts,
-            {
+        const newContacts = [...formData.emergencyContacts]
+        newContacts.push({
                 firstName: '',
                 lastName: '',
                 middleName: '',
                 phone: '',
-                email: '',
+                emEmail: '',
                 relationship: '',
-            }
-        ])
+        })
+        setFormData({
+            ...formData,
+            emergencyContacts: newContacts,
+        })
     }
 
     const removeEmergencyContact = (e, index) => {
         e.preventDefault()
-        if (emergencyContacts.length === 1) {
+        if (formData.emergencyContacts.length === 1) {
             return
         }
-        const newContacts = emergencyContacts.filter((_, i) => i !== index)
-        setEmergencyContacts(newContacts)
+        const newContacts = formData.emergencyContacts.filter((_, i) => i !== index)
+        setFormData({
+            ...formData,
+            emergencyContacts: newContacts
+        })
     }
 
     return (
@@ -155,7 +182,7 @@ const Onboarding = () => {
                 </fieldset>
                 <br />
                 <label>Email: </label>
-                <input type='text' name='email' disabled />
+                <input type='text' disabled />
                 <label>SSN: </label>
                 <input type='password' name='ssn' onChange={handleChange} required />
                 <label>Date of Birth: </label>
@@ -269,7 +296,7 @@ const Onboarding = () => {
                 <br />
                 <fieldset>
                     <legend>Emergency Contacts</legend>
-                    {emergencyContacts.map((contact, index) => (
+                    {formData.emergencyContacts.map((contact, index) => (
                         <div key={contact.email}>
                             <label>First Name</label>
                             <input type='text' name='firstName' value={contact.firstName} onChange={(e) => handleEmContactChange(e, index)} required />
@@ -280,10 +307,10 @@ const Onboarding = () => {
                             <label>Phone</label>
                             <input type='tel' name='phone' value={contact.phone} onChange={(e) => handleEmContactChange(e, index)} required />
                             <label>Email</label>
-                            <input type='email' name='email' value={contact.email} onChange={(e) => handleEmContactChange(e, index)} required />
+                            <input type='email' name='emEmail' value={contact.emEmail} onChange={(e) => handleEmContactChange(e, index)} required />
                             <label>Relationship</label>
                             <input type='text' name='relationship' value={contact.relationship} onChange={(e) => handleEmContactChange(e, index)} required />
-                            {emergencyContacts.length !== 1 &&
+                            {formData.emergencyContacts.length !== 1 &&
                                 <button onClick={(e) => removeEmergencyContact(e, index)}>Remove Contact</button>
                             }
                             <br />

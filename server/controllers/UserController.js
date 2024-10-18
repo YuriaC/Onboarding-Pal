@@ -295,23 +295,25 @@ const getEmail= async(req,res) =>{
 
 };
 
-const setApplicationInput = async(req,res) =>{
+const setApplicationInput = async(req, res) =>{
     // tested working
     const username = req.body.username;
     const firstname = req.body.firstName;
     const lastname = req.body.lastName;
     const middlename = req.body.middleName;
     const preferredname = req.body.preferredName;
-    const profile_url = req.body.profilePicture_url;
+    let profilePictureURL = ''
     const { files } = req
     console.log('files:', files)
     const { AccessKeyId, SecretAccessKey, SessionToken } = req.credentials
-    // console.log('credentials:', credentials)
-    const address = req.body.address;
+    const { building, street, city, state, zip } = req.body
+    const address = `${building}, ${street}, ${city}, ${state} ${zip}`
+    const { permResStatus } = req.body
     const phone = req.body.cellPhone;
-    const carmake = req.body.carMake;
-    const carmodel = req.body.carModel;
-    const carcolor = req.body.carColor;
+    // const carmake = req.body.carMake;
+    // const carmodel = req.body.carModel;
+    // const carcolor = req.body.carColor;
+    const { carMake, carModel, carColor } = req.body
     //const email;//prefilled can not edit retrieve from user register info
     const ssn = req.body.ssn;
     const dob = req.body.birthday;
@@ -321,6 +323,11 @@ const setApplicationInput = async(req,res) =>{
     const dlnum = req.body.driversLicenseNumber;
     const dldate = req.body.driversLicenseExpDate;
     const dlurl = req.body.driversLicenseCopy_url;
+    const emergencyContacts = req.body.emergencyContacts
+    // console.log('emergencyContacts:', emergencyContacts)
+    // for (const emergencyContact of emergencyContacts) {
+    //     console.log('emergencyContact:', emergencyContact.firstName)
+    // }
 
     const s3 = new S3Client({
         region: process.env.AWS_REGION,
@@ -334,6 +341,7 @@ const setApplicationInput = async(req,res) =>{
     try {
         const filePromises = files.map(file => {
             const newFileName = `${Date.now().toString()}-${file.originalname}`
+            console.log('file:', file)
             const command = new PutObjectCommand({
                 Bucket: process.env.S3_BUCKET,
                 Key: newFileName,
@@ -341,41 +349,43 @@ const setApplicationInput = async(req,res) =>{
                 ContentType: file.mimetype,
             })
 
-            return s3.send(command).then(data => {
-                const fileURL = `https://${process.env.S3_BUCKET}.s3.amazonaws.com/${Date.now().toString()}-${file.originalname}`
-                console.log('fileURL:', fileURL)
+            return s3.send(command).then(() => {
+                const fileURL = `https://${process.env.S3_BUCKET}.s3.amazonaws.com/${newFileName}`
+                if (file.fieldname === 'profilePicture') {
+                    profilePictureURL = fileURL
+                }
             })
         })
 
         const uploadedFiles = await Promise.all(filePromises)
 
-        const user = await User.findOne({ username })
-        .lean()
-        .exec();
+        const user = await User.findOne({ username }).lean().exec();
         if (!user) {
             return res.status(404).json('User not Found!');
         }
 
         const result = await User.updateOne(
             { _id: user._id },
-            { $set: { "firstName": firstname,
-                "lastName":lastname,
-                "middleName":middlename,
-                "preferredName":preferredname,
-                "profilePicture_url":profile_url,
-                "address":address,
-                "cellPhone":phone,
-                "carMake":carmake,
-                "carModel":carmodel,
-                "carColor":carcolor,
-                "ssn":ssn,
-                "birthday":dob,
-                "gender":gender,
-                "workAuth":workauth,
-                "workAuthFile_url":workauth_url,
-                "driversLicenseNumber":dlnum,
-                "driversLicenseExpDate":dldate,
-                "driversLicenseCopy_url":dlurl,
+            { $set: {
+                "firstName": firstname,
+                "lastName": lastname,
+                "middleName": middlename,
+                "preferredName": preferredname,
+                "profilePictureURL": profilePictureURL,
+                "address": address,
+                "cellPhone": phone,
+                "carMake": carMake,
+                "carModel": carModel,
+                "carColor": carColor,
+                "ssn": ssn,
+                "birthday": dob,
+                "gender": gender,
+                "workAuth": workauth,
+                "workAuthFile_url": workauth_url,
+                "driversLicenseNumber": dlnum,
+                "driversLicenseExpDate": dldate,
+                "driversLicenseCopy_url": dlurl,
+                "permResStatus": permResStatus
             }
         }
         );
@@ -473,7 +483,7 @@ const getPersonalinfo = async(req,res) =>{
             lastName: user.lastName,
             middleName: user.middleName,
             preferredName: user.preferredName,
-            profilePicture_url: user.profilePicture_url,
+            profilePictureURL: user.profilePictureURL,
             email: user.email,
             ssn: user.ssn,
             birthday: user.birthday,

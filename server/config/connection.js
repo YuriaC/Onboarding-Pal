@@ -41,20 +41,20 @@ mongoose.connect(MONGO_URI)
                     password: hashedPassword,
                     role: "employee",
                     house: house._id,
-                    onboardingStatus:'pending',
+                    onboardingStatus: 'Pending',
                   },
                   {
                     username: 'HRTest',
                     email: "test2@gmail.com",
                     password: hashedPassword,
                     role: "hr",
-                    onboardingStatus:'pending',
+                    onboardingStatus: 'Pending',
                   }
             ])
         
         }
         if (process.env.NODE_ENV !== 'production'){
-        // seed().then(() => console.log('Successfully seeded with 5 house and 2 users: EmployeeTest and HRTest with password: ABCD1234@')).catch(error => console.log('Error seeding:', error.message))
+            // seed().then(() => console.log('Successfully seeded with 5 house and 2 users: EmployeeTest and HRTest with password: ABCD1234@')).catch(error => console.log('Error seeding:', error.message))
         }
 
     })
