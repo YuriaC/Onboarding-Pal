@@ -306,7 +306,6 @@ const setApplicationInput = async(req, res) =>{
     let optReceiptURL = ''
     let dlCopyURL = ''
     const { files } = req
-    console.log('files:', files)
     const { AccessKeyId, SecretAccessKey, SessionToken } = req.credentials
     const { building, street, city, state, zip } = req.body
     const address = `${building}, ${street}, ${city}, ${state} ${zip}`
@@ -341,7 +340,6 @@ const setApplicationInput = async(req, res) =>{
     try {
         const filePromises = files.map(file => {
             const newFileName = `${Date.now().toString()}-${file.originalname}`
-            console.log('file:', file)
             const command = new PutObjectCommand({
                 Bucket: process.env.S3_BUCKET,
                 Key: newFileName,

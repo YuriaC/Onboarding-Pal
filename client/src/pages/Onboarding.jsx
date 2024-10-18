@@ -44,17 +44,6 @@ const Onboarding = () => {
         ]
     })
 
-    // const [emergencyContacts, setEmergencyContacts] = useState([
-    //     {
-    //         firstName: '',
-    //         lastName: '',
-    //         middleName: '',
-    //         phone: '',
-    //         emEmail: '',
-    //         relationship: '',
-    //     }
-    // ])
-
     const [emCounter, setEmCounter] = useState(1)
 
     const handleChange = (e) => {
