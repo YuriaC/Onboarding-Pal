@@ -4,7 +4,8 @@ const Guard = () => {
     const token = localStorage.getItem('token');
 
     React.useEffect(() => {
-        //check if user is login
+
+        //check if user is HR
     }, [])
 
     return (

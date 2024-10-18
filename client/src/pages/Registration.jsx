@@ -27,8 +27,8 @@ const Registration = () => {
     const validatorForm = () => {
         let errors = {};
 
-        if (!validator.isLength(form.username, { min: 3, max: 15 })) {
-            errors.username = 'Username must be between 3 and 15 characters';
+        if (!validator.isLength(form.username, { min: 3, max: 16 })) {
+            errors.username = 'Username must be between 3 and 16 characters';
         }
 
         if (!validator.isEmail(form.email)) {
