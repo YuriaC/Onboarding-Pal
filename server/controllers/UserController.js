@@ -9,6 +9,7 @@ const DOMPurify = require('isomorphic-dompurify');
 const generateToken = require("../utils/generateToken");
 const { sendMail } = require("../utils/sendMails");
 const jwt = require('jsonwebtoken');
+const { S3Client, PutObjectCommand } = require('@aws-sdk/client-s3')
 
 const registerSchema = Yup.object().shape({
     username: Yup.string()
@@ -302,6 +303,10 @@ const setApplicationInput = async(req,res) =>{
     const middlename = req.body.middleName;
     const preferredname = req.body.preferredName;
     const profile_url = req.body.profilePicture_url;
+    const { files } = req
+    console.log('files:', files)
+    const { AccessKeyId, SecretAccessKey, SessionToken } = req.credentials
+    // console.log('credentials:', credentials)
     const address = req.body.address;
     const phone = req.body.cellPhone;
     const carmake = req.body.carMake;
@@ -316,12 +321,39 @@ const setApplicationInput = async(req,res) =>{
     const dlnum = req.body.driversLicenseNumber;
     const dldate = req.body.driversLicenseExpDate;
     const dlurl = req.body.driversLicenseCopy_url;
-    try{   
+
+    const s3 = new S3Client({
+        region: process.env.AWS_REGION,
+        credentials: {
+            accessKeyId: AccessKeyId,
+            secretAccessKey: SecretAccessKey,
+            sessionToken: SessionToken,
+        }
+    })
+
+    try {
+        const filePromises = files.map(file => {
+            const newFileName = `${Date.now().toString()}-${file.originalname}`
+            const command = new PutObjectCommand({
+                Bucket: process.env.S3_BUCKET,
+                Key: newFileName,
+                Body: file.buffer,
+                ContentType: file.mimetype,
+            })
+
+            return s3.send(command).then(data => {
+                const fileURL = `https://${process.env.S3_BUCKET}.s3.amazonaws.com/${Date.now().toString()}-${file.originalname}`
+                console.log('fileURL:', fileURL)
+            })
+        })
+
+        const uploadedFiles = await Promise.all(filePromises)
+
         const user = await User.findOne({ username })
         .lean()
         .exec();
         if (!user) {
-            return res.status(401).json({ message: 'User not Found!' });
+            return res.status(404).json('User not Found!');
         }
 
         const result = await User.updateOne(

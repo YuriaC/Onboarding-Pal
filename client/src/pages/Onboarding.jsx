@@ -1,4 +1,7 @@
 import { useState } from 'react'
+import { ToastContainer, toast } from 'react-toastify'
+import { token, USER_ENDPOINT } from '../constants'
+import axios from 'axios'
 
 const Onboarding = () => {
 
@@ -51,14 +54,35 @@ const Onboarding = () => {
 
     const handleEmContactChange = (e, index) => {
         const { name, value } = e.target
+        console.log('name:', name)
+        console.log('value:', value)
         const newContacts = [...emergencyContacts]
         newContacts[index][name] = value
+        console.log('newContacts:', newContacts)
         setEmergencyContacts(newContacts)
     }
 
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault()
         console.log('formData:', formData)
+        const data = new FormData()
+        for (const key in formData) {
+            data.append(key, formData[key])
+        }
+        data.append('username', 'EmployeeTest')
+
+        try {
+            const response = await axios.post(`${USER_ENDPOINT}/applicationinput`, data, {
+                headers: {
+                    'Content-Type': 'multipart/form-data',
+                    'Authorization': `Bearer ${token}`,
+                }
+            })
+            console.log('response.data:', response.data)
+        }
+        catch (error) {
+            toast.error(`Error submitting application! Error: ${error.message}`)
+        }
     }
 
     const addEmergencyContact = (e) => {
@@ -250,9 +274,9 @@ const Onboarding = () => {
                             <label>First Name</label>
                             <input type='text' name='firstName' value={contact.firstName} onChange={(e) => handleEmContactChange(e, index)} required />
                             <label>Last Name</label>
-                            <input type='text' name='lastName' value={contact.lastNameName} onChange={(e) => handleEmContactChange(e, index)} required />
+                            <input type='text' name='lastName' value={contact.lastName} onChange={(e) => handleEmContactChange(e, index)} required />
                             <label>Middle Name</label>
-                            <input type='text' name='middleName' value={contact.middleNameName} onChange={(e) => handleEmContactChange(e, index)} />
+                            <input type='text' name='middleName' value={contact.middleName} onChange={(e) => handleEmContactChange(e, index)} />
                             <label>Phone</label>
                             <input type='tel' name='phone' value={contact.phone} onChange={(e) => handleEmContactChange(e, index)} required />
                             <label>Email</label>
@@ -269,6 +293,7 @@ const Onboarding = () => {
                 </fieldset>
                 <input type='submit' value='Submit' />
             </form>
+            <ToastContainer />
         </div>
     )
 }

@@ -6,7 +6,7 @@ const argon2 = require("argon2");
 
 const MONGO_URI = process.env.MONGO_URI
 
-console.log(MONGO_URI)
+// console.log(MONGO_URI)
 
 mongoose.connect(MONGO_URI)
     .then(() => {
@@ -53,9 +53,8 @@ mongoose.connect(MONGO_URI)
             ])
         
         }
-        if(process.env.NODE_ENV !== 'production'){
-        seed().then(() => console.log('Successfully seeded with 5 house and 2 users: EmployeeTest and HRTest with password: ABCD1234@')).catch(error => console.log('Error seeding:', error.message))
-
+        if (process.env.NODE_ENV !== 'production'){
+        // seed().then(() => console.log('Successfully seeded with 5 house and 2 users: EmployeeTest and HRTest with password: ABCD1234@')).catch(error => console.log('Error seeding:', error.message))
         }
 
     })

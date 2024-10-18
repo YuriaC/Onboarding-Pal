@@ -1,14 +1,23 @@
 
-const AWS = require('aws-sdk')
 const multer = require('multer')
+const { STSClient, AssumeRoleCommand } = require('@aws-sdk/client-sts')
 
-const sts = new AWS.STS({ region: process.env.AWS_REGION })
+
+const stsClient = new STSClient({
+    region: process.env.AWS_REGION,
+    credentials: {
+        accessKeyId: process.env.AWS_ACCESS_KEY,
+        secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY
+    }
+})
 
 const getTemporaryCredentials = async () => {
-    const data = await sts.assumeRole({
+
+    const command = new AssumeRoleCommand({
         RoleArn: process.env.AWS_ROLE_ARN,
         RoleSessionName: 'beaconfire-hr-session',
-    }).promise()
+    })
+    const data = await stsClient.send(command)
 
     return data.Credentials
 }
@@ -16,6 +25,7 @@ const getTemporaryCredentials = async () => {
 const AWSCredentialsMiddleware = async (req, res, next) => {
     try {
         req.credentials = await getTemporaryCredentials()
+        console.log('Got AWS credentials')
         next()
     }
     catch (error) {

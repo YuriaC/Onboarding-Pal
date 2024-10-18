@@ -17,7 +17,8 @@ const HousingMgmt = () => {
         axios.get(HOUSE_ENDPOINT, {
             headers: {
                 'Authorization': `Bearer ${token}`
-            }
+            },
+            // withCredentials: true,
         })
             .then(response => {
                 console.log('response.data:', response.data)

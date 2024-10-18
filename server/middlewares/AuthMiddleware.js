@@ -8,7 +8,8 @@ const authenticateJWT = (req, res, next) => {
 
   try {
     // get token from cookie
-    const token = req.cookies['auth_token'];
+    // const token = req.cookies['auth_token'];
+    const token = req.headers.authorization.split(' ')[1];
     if (!token || validator.isEmpty(token)) {
       return res.status(401).json('No token provided');
     }

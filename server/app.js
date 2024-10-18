@@ -7,6 +7,7 @@ const path = require("path");
 const morgan = require('morgan')
 const cors = require('cors')
 const bodyParser = require('body-parser')
+const multer = require('multer')
 
 // Initialize Express appjwt
 const app = express();
@@ -20,6 +21,10 @@ app.use(express.urlencoded({ extended: true })); // For parsing application/x-ww
 app.use(bodyParser.json())
 
 app.use(morgan(':method :url :status :response-time ms'));
+
+// Multer
+const upload = multer()
+app.use(upload.any())
 
 
 // Routers (prefix API routes with /api)
