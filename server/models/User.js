@@ -7,8 +7,8 @@ const refType = Schema.Types.ObjectId;
 const statuses = ['Pending', 'Rejected', 'Approved']
 
 const UserSchema = new Schema({
-    username: { type: String, default: '' },
-    password: { type: String, default: '' },
+    username: { type: String, default: null },
+    password: { type: String, default: null },
     onboardingStatus: {type: String, enum: statuses, default: "Pending" },
     firstName: { type: String, default: "" },
     lastName: { type: String, default: "" },
@@ -30,8 +30,7 @@ const UserSchema = new Schema({
     visaTitle: { type: String, default:"" },
     visaStartDate: { type: Date, default: null },
     visaEndDate: { type: Date, default: null },
-    citizenship: { type: String, default: "" },
-    permResStatus: { type: String, default: '' },
+    permResStatus: { type: String, default: null },
     driversLicenseNumber: { type: String, default: "" },
     driversLicenseExpDate: { type: Date, default: null },
     driversLicenseCopy_url: { type: String, default: "" },
@@ -41,7 +40,7 @@ const UserSchema = new Schema({
     i20Status: { type: String, enum: statuses, default: "Pending" },
     optUrl: { type: String , default: "" },
     eadUrl: { type: String , default: "" },
-    i983Url:{ type: String , default: "" },
+    i983Url: { type: String , default: "" },
     i20Url:{ type: String , default: "" },
     house: { type: refType, ref: 'House', default: null },
     referer: { type: refType, ref: 'Contact', default: null },
@@ -50,7 +49,7 @@ const UserSchema = new Schema({
         token: { type: String, default: "" },
         email: { type: String, default: "" },
         status: { type: String, enum: ['Pending', 'Registered'], default: "Pending" },
-        expiresAt: { type: Date, default: Date.now() },
+        expiresAt: { type: Date, default: null },
       },
     role: { type: String, enum: ['employee', 'hr'], default: "employee" },
 });

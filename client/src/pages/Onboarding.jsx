@@ -37,6 +37,7 @@ const Onboarding = () => {
                 phone: '',
                 emEmail: '',
                 relationship: '',
+                counter: 0,
             }
         ]
     })
@@ -51,6 +52,8 @@ const Onboarding = () => {
     //         relationship: '',
     //     }
     // ])
+
+    const [emCounter, setEmCounter] = useState(1)
 
     const handleChange = (e) => {
         const { type, name, value } = e.target
@@ -100,6 +103,7 @@ const Onboarding = () => {
                 }
             })
             console.log('response.data:', response.data)
+            toast.success('Successfully submitted application!')
         }
         catch (error) {
             console.log(error)
@@ -117,7 +121,9 @@ const Onboarding = () => {
                 phone: '',
                 emEmail: '',
                 relationship: '',
+                counter: emCounter,
         })
+        setEmCounter(prev => prev + 1)
         setFormData({
             ...formData,
             emergencyContacts: newContacts,
@@ -297,7 +303,7 @@ const Onboarding = () => {
                 <fieldset>
                     <legend>Emergency Contacts</legend>
                     {formData.emergencyContacts.map((contact, index) => (
-                        <div key={contact.email}>
+                        <div key={contact.counter}>
                             <label>First Name</label>
                             <input type='text' name='firstName' value={contact.firstName} onChange={(e) => handleEmContactChange(e, index)} required />
                             <label>Last Name</label>

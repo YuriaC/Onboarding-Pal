@@ -309,20 +309,19 @@ const setApplicationInput = async(req, res) =>{
     const { building, street, city, state, zip } = req.body
     const address = `${building}, ${street}, ${city}, ${state} ${zip}`
     const { permResStatus } = req.body
-    const phone = req.body.cellPhone;
-    // const carmake = req.body.carMake;
-    // const carmodel = req.body.carModel;
-    // const carcolor = req.body.carColor;
+    const cellPhone = req.body.cellPhone;
+    const workPhone = req.body.workPhone
     const { carMake, carModel, carColor } = req.body
     //const email;//prefilled can not edit retrieve from user register info
     const ssn = req.body.ssn;
-    const dob = req.body.birthday;
+    const dob = req.body.dob;
     const gender = req.body.gender;
-    const workauth = req.body.workAuth; //gc,citizen,work auth type
+    const workauth = req.body.nonPermWorkAuth; //gc,citizen,work auth type
     const workauth_url = req.body.workAuthFile_url;
-    const dlnum = req.body.driversLicenseNumber;
-    const dldate = req.body.driversLicenseExpDate;
+    const dlnum = req.body.dlNum;
+    const dldate = req.body.dlExpDate;
     const dlurl = req.body.driversLicenseCopy_url;
+    const { refFirstName, refLastName, refMiddleName, refPhone, refEmail, refRelationship } = req.body
     const emergencyContacts = req.body.emergencyContacts
     // console.log('emergencyContacts:', emergencyContacts)
     // for (const emergencyContact of emergencyContacts) {
@@ -364,6 +363,19 @@ const setApplicationInput = async(req, res) =>{
             return res.status(404).json('User not Found!');
         }
 
+        const reference = await Contact.create({
+            firstName: refFirstName,
+            lastName: refLastName,
+            middleName: refMiddleName,
+            cellPhone: refPhone,
+            email: refEmail,
+            relationship: refRelationship,
+            relationshipToId: "6711edc999bed2d3ff6f0f45",
+        })
+        if (!reference) {
+            return res.status(500).json('Error creating reference!')
+        }
+
         const result = await User.updateOne(
             { _id: user._id },
             { $set: {
@@ -373,7 +385,8 @@ const setApplicationInput = async(req, res) =>{
                 "preferredName": preferredname,
                 "profilePictureURL": profilePictureURL,
                 "address": address,
-                "cellPhone": phone,
+                "cellPhone": cellPhone,
+                "workPhone": workPhone,
                 "carMake": carMake,
                 "carModel": carModel,
                 "carColor": carColor,
@@ -385,7 +398,8 @@ const setApplicationInput = async(req, res) =>{
                 "driversLicenseNumber": dlnum,
                 "driversLicenseExpDate": dldate,
                 "driversLicenseCopy_url": dlurl,
-                "permResStatus": permResStatus
+                "permResStatus": permResStatus,
+                "referer": reference._id,
             }
         }
         );
