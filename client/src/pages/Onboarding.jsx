@@ -150,6 +150,7 @@ const Onboarding = () => {
     return (
         <div>
             <h2>Status: {appStatus}</h2>
+            {appStatus === 'Pending' && <h3>Please wait for HR to review your application.</h3>}
             <form onSubmit={handleSubmit}>
                 <label>First Name: </label>
                 <input type='text' name='firstName' onChange={handleChange} disabled={appStatus === 'Pending'} required />
