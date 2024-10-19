@@ -2,27 +2,29 @@ import { useState, useEffect } from 'react';
 import { NavLink } from 'react-router-dom';
 import validator from 'validator';
 import { useNavigate } from 'react-router-dom';
+import axios from 'axios';
 import './auth.css';
+import { USER_ENDPOINT } from '../constants'
 
-const Login = () => {
+const Test = () => {
     const [isVisible, setIsVisible] = useState(false);
     const navigate = useNavigate();
 
     const [form, setForm] = useState({
-        userInput: '',
+        credential: '',
         password: ''
     });
 
     const [formErrors, setFormErrors] = useState({
-        userInput: '',
+        credential: '',
         password: ''
     });
 
     const validatorForm = () => {
         let errors = {};
 
-        if(!validator.isEmail(form.userInput) && !validator.isLength(form.userInput, { min: 3, max: 15 })){
-            errors.userInput = 'Username must be between 3 and 15 characters';
+        if(!validator.isEmail(form.credential) && !validator.isLength(form.credential, { min: 3, max: 15 })){
+            errors.credential = 'Username must be between 3 and 15 characters';
         }
 
         if (!validator.isStrongPassword(form.password, {
@@ -35,41 +37,71 @@ const Login = () => {
             errors.password = 'Password must be at least 8 characters long, and include at least 1 lowercase letter,\n 1 uppercase letter, 1 number, and 1 symbol.';
         }
 
-
         setFormErrors(errors);
 
         return Object.keys(errors).length === 0;
     }
 
+    // // connect to backend
+    const loginEndPoint = USER_ENDPOINT + '/login'
     const userLogin = (e) => {
         e.preventDefault();
 
         if (validatorForm()) {
-            //axios fetch
-            localStorage.setItem('token', 'token');//fake authorication
-            navigate('/');
+            console.table(form);
+            axios.post(loginEndPoint, {form})
+                .then(response => {
+                    // console.log(response, response.data);  // debug
+                    localStorage.setItem('token', JSON.stringify(response.data.data));
+                })
+                .catch(err => {
+                    console.error(err);
+                });
+            navigate('/');  // change routing
         }
     }
 
+
+    // // for testing backend connection
+    // const[backendData, setBackendData] = useState([{}]);
+
+    // const testURL = 'http://localhost:5500/api/test';
+    // // const testURL = "/api/test"  // using relative path, the root endpoint address in package.json.proxy 
+    
+    // // 2nd useEffect for fetching data from backend
+    // useEffect(() => {
+    //     axios.get(testURL)
+    //         .then(response => {
+    //             console.log(response.data);
+    //             setBackendData(response.data);
+    //         })
+    //         .catch((err) => {
+    //             console.error(err);
+    //         });
+    // }, []);
+
+
+    // first useEffect for delayed display effect
     useEffect(() => {
         setTimeout(() => setIsVisible(true), 300);
     }, []);
+    
 
     return (
         <div className={`register-form ${isVisible ? 'visible' : ''}`}>
             <form>
                 <div className="form-group">
-                    <label htmlFor='userInput'>Username or Email: <span className="required">*</span></label>
-                    <input type="text" required name="userInput" placeholder="your username or Email"
+                    <label htmlFor='credential'>Username or Email: <span className="required">*</span></label>
+                    <input type="text" required name="credential" id="credential" placeholder="your username or Email"
                         value={form.email}
-                        onChange={(e) => { setForm({ ...form, userInput: e.target.value }) }}
+                        onChange={(e) => { setForm({ ...form, credential: e.target.value }) }}
                     />
-                    {formErrors.userInput && <p className="error">{formErrors.userInput}</p>}
+                    {formErrors.credential && <p className="error">{formErrors.credential}</p>}
                 </div>
 
                 <div className="form-group">
                     <label htmlFor='password'>Password: <span className="required">*</span></label>
-                    <input type="password" required name="password" placeholder="Password"
+                    <input type="password" required name="password" id="password" placeholder="Password"
                         value={form.password}
                         onChange={(e) => { setForm({ ...form, password: e.target.value }) }}
                     />
@@ -83,11 +115,11 @@ const Login = () => {
 
                 <div className='registerButtonAndLink'>
                     <button type="submit" onClick={userLogin}>Login</button>
-                    <div>Don’t have an account? <NavLink to="/auth/registration" className='signButton'>Sign up</NavLink></div>
+                    <div>Don't have an account? <NavLink to="/auth/registration" className='signButton'>Sign up</NavLink></div>
                 </div>
             </form>
         </div>
     );
 }
 
-export default Login;
+export default Test;
