@@ -11,8 +11,8 @@ import {
     AccordionSummary,
     AccordionDetails,
     Typography,
-    Box
-} from '@mui/material'
+    Stack,
+} from '@mui/joy'
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore'
 
 const HousingMgmt = () => {
@@ -58,31 +58,44 @@ const HousingMgmt = () => {
         <div>
             <h1>Housing Management</h1>
             <button onClick={() => navigate('/addhouse')}>Add House</button>
-            <Box sx={{ width: '100%', mt: 3}}>
+            <Stack sx={{ justifyContent: 'center', padding: '3rem' }}>
             {houses.map((house, index) => {
                 return (
                     <div key={house.address}>
-                        {/* <p><PhoneIcon />{house.landlordPhone} <MailIcon />{house.landlordEmail}</p>
-                        <p>Number of residents: {house.employees.length}</p> */}
                         <button onClick={(e) => handleDelete(e, house._id, house.address)}><DeleteIcon /></button>
                         <Accordion key={house.address}>
                             <AccordionSummary
                                 expandIcon={<ExpandMoreIcon />}
                                 aria-controls={`panel${index + 1}-content`}
                                 id={`panel${index + 1}-header`}
+                                sx={{ color: 'text.primary' }}
                             >
-                                <Typography variant='h6'>{house.address}</Typography>
-                                <Typography sx={{ color: 'text.secondary', ml: 2 }}>{house.landlordName}</Typography>
-                                <Typography sx={{ color: 'text.secondary' }}><PhoneIcon />{house.landlordPhone} <MailIcon />{house.landlordEmail}</Typography>
-                                <Typography sx={{ color: 'text.secondary', ml: 2 }}>Number of residents: {house.employees.length}</Typography>
+                                <Typography variant='h2'>{house.address}</Typography>
+                                <Typography variant='h4' sx={{ ml: 2 }} display='block'>{house.landlordName}</Typography>
+                                <Typography><PhoneIcon />{house.landlordPhone} <MailIcon />{house.landlordEmail}</Typography>
+                                <Typography sx={{ ml: 2 }}>Residents: {house.employees.length}</Typography>
                             </AccordionSummary>
-                            <AccordionDetails>
-                                <Typography>Hi</Typography>
+                            <AccordionDetails sx={{ color: 'text.secondary' }}>
+                                <Typography>Beds: {house.numBeds}</Typography>
+                                <Typography>Mattresses: {house.numMattresses}</Typography>
+                                <Typography>Tables: {house.numTables}</Typography>
+                                <Typography>Chairs: {house.numChairs}</Typography>
+                                {house.reports.length > 0
+                                    ? '' 
+                                    : <h4>No reports for this residence!</h4>
+                                }
+                                {house.employees.length > 0 ? house.employees.map((employee) => {
+                                    return (
+                                        <div key={employee._id}>
+                                            <h3>{employee.firstName}</h3>
+                                        </div>
+                                    )
+                                }) : <h4>No employees live here!</h4>}
                             </AccordionDetails>
                         </Accordion>
                     </div>
             )})}
-            </Box>
+            </Stack>
             <ToastContainer />
         </div>
     )

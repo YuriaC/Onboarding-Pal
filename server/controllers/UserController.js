@@ -50,7 +50,7 @@ const register = async (req,res) =>{
 
         const randomHouse = await House.aggregate([
             { $sample: { size: 1 } } // Fetch a random document
-          ]);
+        ]);
         
         /* If we're creating the user elsewhere */
         const existingUser = await User.findOne({ email }).lean().exec();
@@ -74,6 +74,9 @@ const register = async (req,res) =>{
                     },
                 }
             );
+            // Add user ID to their assigned house as well
+            randomHouse.employees.push(updatedUser._id)
+            await randomHouse.save()
         }else{
             return res.status(404).json({ message: 'Email not Found!' });
         }

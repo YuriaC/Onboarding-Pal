@@ -19,7 +19,12 @@ const getHouses = async (req, res) => {
     //   const totalProducts = await Product.countDocuments(filter);
     //   const totalPages = Math.ceil(totalProducts / limit);
 
-    const houses = await House.find();
+    const houses = await House.find().populate({
+      path: 'reports',
+      populate: {
+        path: 'comments',
+      }
+    }).populate('employees');
     //   const products = await Product.find(filter)
     // .skip(skip)
     // .limit(limit);
