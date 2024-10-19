@@ -43,6 +43,8 @@ function App() {
           <Route path='/managehousing' element={<HousingMgmt />} />
           <Route path='/addhouse' element={<AddHouse />} />
           <Route path='/onboarding' element={<Onboarding />} />
+          <Route path="/personalTest" element={<Personal />} />
+
           <Route path="*" element={<Redirect />} />
         </Routes>
       </BrowserRouter>

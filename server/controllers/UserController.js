@@ -9,7 +9,8 @@ const DOMPurify = require('isomorphic-dompurify');
 const generateToken = require("../utils/generateToken");
 const { sendMail } = require("../utils/sendMails");
 const jwt = require('jsonwebtoken');
-const { S3Client, PutObjectCommand } = require('@aws-sdk/client-s3')
+const { S3Client, PutObjectCommand, GetObjectCommand } = require('@aws-sdk/client-s3')
+const { getSignedUrl } = require('@aws-sdk/s3-request-presigner')
 
 const registerSchema = Yup.object().shape({
     username: Yup.string()
@@ -324,7 +325,6 @@ const setApplicationInput = async(req,res) =>{
     let optReceiptURL = ''
     let dlCopyURL = ''
     const { files } = req
-    console.log('files:', files)
     const { AccessKeyId, SecretAccessKey, SessionToken } = req.credentials
     const { building, street, city, state, zip } = req.body
     const address = `${building}, ${street}, ${city}, ${state} ${zip}`
@@ -359,7 +359,6 @@ const setApplicationInput = async(req,res) =>{
     try {
         const filePromises = files.map(file => {
             const newFileName = `${Date.now().toString()}-${file.originalname}`
-            console.log('file:', file)
             const command = new PutObjectCommand({
                 Bucket: process.env.S3_BUCKET,
                 Key: newFileName,
@@ -536,6 +535,52 @@ const setContactInput = async(req,res) =>{
 
 };
 
+const getDocs = async (req, res) => {
+    try {
+        const { username } = req.body
+        const { AccessKeyId, SecretAccessKey, SessionToken } = req.credentials
+
+        const s3 = new S3Client({
+            region: process.env.AWS_REGION,
+            credentials: {
+                accessKeyId: AccessKeyId,
+                secretAccessKey: SecretAccessKey,
+                sessionToken: SessionToken,
+            }
+        })
+
+        const user = await User.findOne({ username: username }).lean().exec()
+        if (!user) {
+            return res.status(404).json('User not found!')
+        }
+        const { profilePictureURL, optUrl, driversLicenseCopy_url } = user
+        const urls = {
+            profilePictureURL,
+            optUrl,
+            driversLicenseCopy_url,
+        }
+        const ret = {}
+        for (const key of ['profilePictureURL', 'optUrl', 'driversLicenseCopy_url']) {
+            const url = urls[key]
+            const parts = url.split('/')
+            const fileName = parts[parts.length - 1]
+
+            const params = {
+                Bucket: process.env.S3_BUCKET,
+                Key: fileName,
+                ResponseContentDisposition: `attachment; filename="${fileName}"`,
+            }
+            const command = new GetObjectCommand(params)
+            const signedUrl = await getSignedUrl(s3, command, { expiresIn: 300 })
+            ret[key] = signedUrl
+        }
+        res.status(200).json(ret)
+    }
+    catch (error) {
+        res.status(500).json(error.message)
+    }
+}
+
 
 const getPersonalinfo = async(req,res) =>{
     //tested working
@@ -696,5 +741,6 @@ module.exports = {
     updateWorkauthdoc,
     updateWorkauthStatus,
     checkRegister,
-    sendRegistrationLink
+    sendRegistrationLink,
+    getDocs,
 }
