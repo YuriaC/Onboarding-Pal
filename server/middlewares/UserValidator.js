@@ -1,7 +1,5 @@
 // user registration validator
-import validator from 'validator';
-import {USERNAME_MIN_LEN, USERNAME_MAX_LEN, EMAIL_MIN_LEN, PWD_MIN_LEN} from "../model/User.js";
-
+const validator = require("validator");
 
 // global variables
 const USERNAME_MIN_LEN = 3;
@@ -109,4 +107,8 @@ const employeeLoginValidation = (req, res, next) => {
     next();
 };
 
-export { employeeRegistrationValidation, employeeLoginValidation };
+module.exports = { 
+    passWordValidationMsg, 
+    employeeRegistrationValidation,
+    employeeLoginValidation 
+};

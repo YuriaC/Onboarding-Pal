@@ -1,5 +1,5 @@
 import './App.css'
-import { Onboarding, Housing, Login, Registration, HousingMgmt, Personal } from './pages'
+import { Onboarding, Housing, Login, Test, Registration, HousingMgmt, Personal } from './pages'
 import {BrowserRouter, Routes, Route} from 'react-router-dom'
 import Auth from './components/Auth';
 import Guard from './components/Guard';
@@ -19,7 +19,7 @@ function App() {
       <BrowserRouter>
         <Routes>
           <Route path='/auth' element={<Auth />}>
-            <Route path='login' element={<Login />} />
+            <Route path='login' element={<Login />} />            
             <Route path="registration" element={<Registration />} />
           </Route>
 
@@ -44,6 +44,8 @@ function App() {
           <Route path='/addhouse' element={<AddHouse />} />
           <Route path='/onboarding' element={<Onboarding />} />
           <Route path="*" element={<Redirect />} />
+          {/* for testing fe-be connection */}
+          <Route path='test' element={<Test />} />  
         </Routes>
       </BrowserRouter>
   )

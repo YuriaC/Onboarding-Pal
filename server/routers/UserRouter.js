@@ -8,12 +8,14 @@ const { AWSCredentialsMiddleware } = require('../middlewares/AWSMiddleware')
 
 
 // NOTE : ADD MIDDLEWARES 
+const userValidator = require("../middlewares/UserValidator");
 
 
-userRouter.post('/register', userController.register)
+userRouter
+    .post('/register', userController.register)
     .get('/register/:token', userController.checkRegister)
     .post('/sendlink', userController.sendRegistrationLink)
-    .post('/login', userController.login)
+    .post('/login', userController.login)    
     .get('/onboardstatus', userController.getOnboardingStatus)
     .post('/onboardstatus', userController.setOnboardingStatus)
     .get('/email', userController.getEmail)
