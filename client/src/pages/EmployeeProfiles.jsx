@@ -1,43 +1,27 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
+import {Link} from 'react-router-dom';
+import { useDispatch, useSelector } from 'react-redux';
+import { setSearchTerm } from '../store/user/searchTerm';
 import './EmployeeProfiles.css';
 
-const employees = [
-    { 
-        firstName: 'John', 
-        lastName: 'Doe', 
-        ssn: '123-45-6789', 
-        workAuthorizationTitle: 'H1B', 
-        phoneNumber: '123-456-7890', 
-        email: 'john.doe@example.com', 
-        id: 1 
-    },
-    { 
-        firstName: 'Jane', 
-        lastName: 'Smith', 
-        ssn: '987-65-4321', 
-        workAuthorizationTitle: 'OPT', 
-        phoneNumber: '098-765-4321', 
-        email: 'jane.smith@example.com', 
-        id: 2 
-    },
-    // More employee data...
-];
 
 const EmployeeProfiles = () => {
-    const [searchTerm, setSearchTerm] = useState('');
     const [displayEmployee, setDsiayEmployee] = useState([]);
 
-    const searchEmployee = async(value)=>{
-        setSearchTerm(value);
+    const searchTermState = useSelector((state)=>state.search);
+    const dispatch = useDispatch();
 
-        const filteredEmployees = await axios.get(`http://localhost:3000/api/users`/**/, {
+    const searchEmployee = async(value)=>{
+        dispatch(setSearchTerm(value));
+
+        const filteredEmployees = await axios.get(`http://localhost:3000/api/users/employeesprofile`, {
             withCredentials: true,
             params: {
                 searchTerm : value
             }
         })
-        setDsiayEmployee(filteredEmployees)
+        setDsiayEmployee(filteredEmployees.data)
     }
 
     useEffect(()=>{
@@ -56,7 +40,7 @@ const EmployeeProfiles = () => {
             <input
                 type="text"
                 placeholder="Search by name..."
-                value={searchTerm}
+                value={searchTermState}
                 onChange={(e)=>{searchEmployee(e.target.value)}}
                 className="search-bar"
             />
@@ -64,20 +48,19 @@ const EmployeeProfiles = () => {
             <div className="employee-list">
                 {displayEmployee.length > 0 ? (
                     displayEmployee.map((employee) => (
-                        <div className="employee-item" key={employee.id}>
+                        <div className="employee-item" key={employee._id}>
                             <h4>
-                                <a
-                                    href={`/employee/${employee.id}`}
-                                    target="_blank"
+                                <Link
+                                    to={`/hr/employeeprofiles/${employee._id}`}
                                     rel="noopener noreferrer"
                                 >
-                                    {`${employee.firstName} ${employee.lastName}`}
-                                </a>
+                                    {`${employee.firstName} ${employee.lastName} ${employee.username}`.trim() || 'Undefined Name'}
+                                </Link>
                             </h4>
-                            <p>SSN: {employee.ssn}</p>
-                            <p>Work Authorization: {employee.workAuthorizationTitle}</p>
-                            <p>Phone: {employee.phoneNumber}</p>
-                            <p>Email: {employee.email}</p>
+                            <p>SSN: {employee.ssn || 'Undefined SSN'}</p>
+                            <p>Work Authorization: {employee.workAuth || 'Undefined Work Authorization'}</p>
+                            <p>Phone: {employee.workPhone || 'Undefined Phone'}</p>
+                            <p>Email: {employee.email || 'Undefined Email'}</p>
                         </div>
                     ))
                 ) : (

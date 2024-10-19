@@ -9,21 +9,33 @@ const HRNavbar = () => {
             <nav className="navbar">
                 <ul className="navbar-links">
                     <li>
-                        <NavLink to="/hr/employeeprofiles"
+                        <NavLink to="/"
                             className={({ isActive }) => (isActive ? 'active' : '')}
                         >
-                            Employee Profiles
+                            Onboarding
                         </NavLink>
                     </li>
                     <li>
-                        <NavLink to="/hr/hiring"
+                        <NavLink to="/housing"
                             className={({ isActive }) => (isActive ? 'active' : '')}
                         >
-                            Hiring
+                            Housing
                         </NavLink>
                     </li>
-
-
+                    <li>
+                        <NavLink to="/personal"
+                            className={({ isActive }) => (isActive ? 'active' : '')}
+                        >
+                            Personal
+                        </NavLink>
+                    </li>
+                    <li>
+                        <NavLink to="/visastatusemployees"
+                            className={({ isActive }) => (isActive ? 'active' : '')}
+                        >
+                            Visa Status Employees
+                        </NavLink>
+                    </li>
                 </ul>
             </nav>
             <Outlet />

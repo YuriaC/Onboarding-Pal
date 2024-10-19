@@ -47,12 +47,15 @@ const register = async (req,res) =>{
           return res.status(409).json({ message: 'Username already exists' });
         }
 
+
         const randomHouse = await House.aggregate([
             { $sample: { size: 1 } } // Fetch a random document
           ]);
         
         /* If we're creating the user elsewhere */
         const existingUser = await User.findOne({ email }).lean().exec();
+
+
         if (existingUser) {
             const hashedPassword = await argon2.hash(password);
             // update user schema if user resend the link
@@ -123,7 +126,7 @@ const sendRegistrationLink = async (req,res) =>{
                     registrationHistory: {
                         $set: {
                             email: sanitizedEmail,
-                            status: 'pending',
+                            status: 'Pending',
                             expiresAt: Date.now() + 3 * 60 * 60 * 1000,
                             token: token
                             
@@ -139,10 +142,10 @@ const sendRegistrationLink = async (req,res) =>{
                 email: sanitizedEmail,
                 password: '',
                 role: 'employee',
-                onboardingStatus: 'pending',
+                onboardingStatus: 'Pending',
                 registrationHistory: {
                   email: sanitizedEmail,
-                  status: 'pending',
+                  status: 'Pending',
                   expiresAt: Date.now() + 3 * 60 * 60 * 1000,
                   token: token
                 },
@@ -211,9 +214,10 @@ const login = async(req,res)=>{
     const password = sanitizeInput(req.body.password);
     try{
         const user = await User.findOne({ username })
-        .select('password')
+        .select('password username role')
         .lean()
         .exec();
+
 
         if (!user) {
         return res.status(401).json({ message: 'Invalid credentials' });
@@ -228,7 +232,11 @@ const login = async(req,res)=>{
         // generate JWT token
         const token = generateToken(user._id, username, user.role);
         res.cookie('auth_token', token);
-        return res.status(200).json('login success');
+        return res.status(200).json({
+            userId: user._id,
+            username: username,
+            role: user.role
+        });
     } catch (error) {
         console.error(error);
         return res.status(500).json({ message: error.message });
@@ -682,7 +690,7 @@ const updateWorkauthStatus = async(req,res) => {
         return res.status(500).json({ message: error.message });
     }
 }
-const getEmpolyeesProfileForHR = async()=>{
+const getEmpolyeesProfileForHR = async(req, res)=>{
     const {searchTerm} = req.query;
     const regexSearchTerm = new RegExp(searchTerm, 'i');
 
@@ -695,7 +703,7 @@ const getEmpolyeesProfileForHR = async()=>{
                 {middleName: regexSearchTerm},
                 {preferredName: regexSearchTerm},
             ]
-        }).lean().exec();
+        }).select('-password').lean().exec();
 
         return res.status(200).json(filterUser);
 
@@ -723,9 +731,20 @@ const getPersonalinfoById = async(req,res) =>{
         console.error(error);
         return res.status(500).json({ message: error.message });
     }
-
-
 } 
+
+const checkUserIsEmployeeOrHr = async(req,res) =>{
+    const {auth_token} = req.cookies;
+    if(!auth_token){
+        return res.status(401).json({ message: 'No token provided!' });
+    }
+    try{
+        const {role} = jwt.verify(auth_token, process.env.ACCESS_TOKEN_SECRET);
+        return res.status(200).json({role});
+    }catch(error){
+        return res.status(500).json({ message: error.message });
+    }
+}
 
 module.exports = {
     register,
@@ -742,5 +761,6 @@ module.exports = {
     checkRegister,
     sendRegistrationLink,
     getEmpolyeesProfileForHR,
-    getPersonalinfoById
+    getPersonalinfoById,
+    checkUserIsEmployeeOrHr
 }
