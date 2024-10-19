@@ -20,16 +20,36 @@ const registerSchema = Yup.object().shape({
         .required('Email is required.'),
     password: Yup.string()
         .trim()
-        .required('Message cannot be empty.'),
-  });
-const loginSchema_username = Yup.object().shape({
-    username: Yup.string()
-        .matches(/^[a-zA-Z0-9_]{3,16}$/, 'Username must be 3-16 characters long and alphanumeric.')
-        .required('Username is required.'),
+        .required('Password cannot be empty.'),
+});
+
+// const loginSchema_username = Yup.object().shape({
+//     username: Yup.string()
+//         .matches(/^[a-zA-Z0-9_]{3,16}$/, 'Username must be 3-16 characters long and alphanumeric.')
+//         .required('Username is required.'),
+//     password: Yup.string()
+//         .trim()
+//         .required('Message cannot be empty.'),
+// });
+
+const loginSchema = Yup.object().shape({
+    credential: Yup.string()
+        .test('username-or-email', 'Either username or email is required, but not both.', function (value) {
+            // Check if the value matches a valid email format
+            const isEmail = Yup.string().email().isValidSync(value);
+            // Check if the value matches a valid username format
+            const isUsername = /^[a-zA-Z0-9_]{3,16}$/.test(value);
+            // Pass the test if it's either a valid email or username
+            return isEmail || isUsername;
+        })
+        .required('Username or email address is required.'),
+
     password: Yup.string()
         .trim()
-        .required('Message cannot be empty.'),
+        .required('Password cannot be empty.'),
 });
+
+
 const sanitizeInput = (input) => {
     const dom = new JSDOM('');
     const purify = DOMPurify(dom.window);
@@ -44,12 +64,12 @@ const register = async (req,res) =>{
     try{
         const duplicate = await User.findOne({ username }).lean().exec();
         if (duplicate) {
-          return res.status(409).json({ message: 'Username already exists' });
+            return res.status(409).json({ message: 'Username already exists' });
         }
 
         const randomHouse = await House.aggregate([
             { $sample: { size: 1 } } // Fetch a random document
-          ]);
+        ]);
         
         /* If we're creating the user elsewhere */
         const existingUser = await User.findOne({ email }).lean().exec();
@@ -204,37 +224,87 @@ const checkRegister = async (req, res) => {
   };
 
 
-const login = async(req,res)=>{ 
-    // tested working
-    await loginSchema_username.validate(req.body);
-    const username = sanitizeInput(req.body.username);
-    const password = sanitizeInput(req.body.password);
-    try{
-        const user = await User.findOne({ username })
-        .select('password')
-        .lean()
-        .exec();
+// const login = async(req,res)=>{ 
+//     // tested working
+//     await loginSchema_username.validate(req.body);
+//     const username = sanitizeInput(req.body.username);
+//     const password = sanitizeInput(req.body.password);
+//     try{
+//         const user = await User.findOne({ username })
+//         .select('password')
+//         .lean()
+//         .exec();
+
+//         if (!user) {
+//         return res.status(401).json({ message: 'Invalid credentials' });
+//         }
+
+//         // check if password is correct
+//         const isPasswordCorrect = await argon2.verify(user.password, password);
+//         if (!isPasswordCorrect) {
+//         return res.status(401).json({ message: 'Invalid credentials' });
+//         }
+
+//         // generate JWT token
+//         const token = generateToken(user._id, username, user.role);
+//         res.cookie('auth_token', token);
+//         return res.status(200).json('login success');
+//     } catch (error) {
+//         console.error(error);
+//         return res.status(500).json({ message: error.message });
+//     }
+
+// };
+
+const login = async (req, res) => {
+    // Tested working. User can login with either username or email
+    const loginData = req.body.form;
+    await loginSchema.validate(loginData);
+    const credential = sanitizeInput(loginData.credential);
+    const password = sanitizeInput(loginData.password);
+    // console.log(credential, password);  // debug
+
+    try {
+        let user = await User.findOne({email: credential})
+            .select(['username','password','role'])
+            .lean()
+            .exec();
 
         if (!user) {
-        return res.status(401).json({ message: 'Invalid credentials' });
+            // console.log('no matching email found, searching username');  // debug
+            user = await User.findOne({username: credential})
+                .select(['username','password', 'role'])
+                .lean()
+                .exec();
+
+            if (!user) {
+                // console.log('did not find matching username either...');  // debug
+                return res.status(404).send({message:"User doesn't exist."});
+            } 
         }
 
-        // check if password is correct
-        const isPasswordCorrect = await argon2.verify(user.password, password);
-        if (!isPasswordCorrect) {
-        return res.status(401).json({ message: 'Invalid credentials' });
+        // verify hashed password
+        const validPassword = await argon2.verify(user.password, password);
+        if (!validPassword) {
+            return res.status(401).json({message:"Wrong password!"});
         }
 
-        // generate JWT token
-        const token = generateToken(user._id, username, user.role);
-        res.cookie('auth_token', token);
-        return res.status(200).json('login success');
-    } catch (error) {
-        console.error(error);
-        return res.status(500).json({ message: error.message });
-    }
+        //generate JWT TOKEN
+        const token = generateToken(user._id, user.username, user.role);
+        // console.log(`JWT token, ${token}, generated. \n`);  // debug
+        res.cookie('auth_token', token, {
+            httpOnly: true,
+            maxAge: 3600000,
+            sameSite: 'strict',
+        });
 
+        // console.log(`JWT token, ${token}, generated. \n`);  // debug
+            return res.status(200).json({data: token, message:`Login Successful. Welcome, ${user.username}!`});
+        } catch (e) {
+            return res.status(500).json({message: `ERROR: ${e}.`});  
+        }
 };
+
 
 const getOnboardingStatus = async(req,res) =>{
     // tested working
