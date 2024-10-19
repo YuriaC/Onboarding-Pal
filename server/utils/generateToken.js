@@ -12,10 +12,10 @@ const generateToken = (id, username, role) => {
 
 // Can we delete this chunk of code?
 if (process.argv[2] === 'hr') {
-  generateToken(123, 'abc', 'hr')
+  generateToken(123, 'HRTest', 'hr')
 }
 else {
-  generateToken(123, 'abc', 'employee')
+  generateToken(123, 'EmployeeTest', 'employee')
 }
 
 // export default generateToken;

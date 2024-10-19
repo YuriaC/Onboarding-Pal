@@ -2,7 +2,7 @@ const express = require('express');
 const userRouter = express.Router();
 
 const userController = require('../controllers/UserController');;
-const { isHR } = require('../middlewares/UserMiddleware');
+const { authenticateJWT } = require('../middlewares/AuthMiddleware');
 const { AWSCredentialsMiddleware } = require('../middlewares/AWSMiddleware')
 
 
@@ -21,6 +21,8 @@ userRouter.post('/register', userController.register)
     .post('/applicationinput', AWSCredentialsMiddleware, userController.setApplicationInput)
     .post('/contactinput', userController.setContactInput)
     .get('/personalinfo', userController.getPersonalinfo)
+    .get('/userinfo', authenticateJWT, userController.getUserInfo)
+    .get('/getdocs', authenticateJWT, AWSCredentialsMiddleware, userController.getDocs)
     // .get('/housedetails', userController.getHousedetails)
     // .post('/facilityreport', userController.addFacilityreport)
     // .get('/facilityreport', userController.getFacilityreport)
@@ -29,6 +31,7 @@ userRouter.post('/register', userController.register)
     .post('/updateworkauthdoc', userController.updateWorkauthdoc)
     .post('/updateworkauthStatus', userController.updateWorkauthStatus)
     .get('/employeesprofile', userController.getEmpolyeesProfileForHR) //only HR can access this controller, HR auth required
-    .get('/personalinfobyid', userController.getPersonalinfoById)
+    .get('/personalinfobyid', userController.getPersonalinfoById)//only HR can access this controller, HR auth required
+    .get('/checkuserisemployeeorhr', userController.checkUserIsEmployeeOrHr)
     
 module.exports = userRouter;

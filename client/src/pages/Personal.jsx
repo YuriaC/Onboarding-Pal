@@ -1,5 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import './Personal.css';
+import axios from 'axios';
+import { token, USER_ENDPOINT } from '../constants';
+import { toast } from 'react-toastify';
 
 const Personal = () => {
     const [isEditing, setIsEditing] = useState(false);
@@ -37,7 +40,7 @@ const Personal = () => {
             email: '',
             relationship: ''
         }],
-        documents: [] // This could be a list of file objects or URLs
+        documents: {} // This could be a list of file objects or URLs
     });
 
     const [formDataClone, setFormDataClone] = useState({});
@@ -47,6 +50,28 @@ const Personal = () => {
     useEffect(() => {
         setFormDataClone(JSON.parse(JSON.stringify(formData)))
     }, [isEditing])
+
+
+    useEffect(() => {
+        axios.get(`${USER_ENDPOINT}/getdocs`, {
+            headers: {
+                'Authorization': `Bearer ${token}`
+            }
+        })
+        .then(response => {
+            toast.success('Successfully fetched user files!')
+            console.log('response.data:', response.data)
+            setFormData({
+                ...formData,
+                documents: response.data
+            })
+        })
+        .catch(error => {
+            console.log('error:', error)
+            toast.error(`Error fetching user files! Error ${error.message}`)
+        })
+    }, [])
+
 
     const handleChange = (e) => {
         const { name, value } = e.target;
@@ -124,11 +149,11 @@ const Personal = () => {
         window.open(fileURL, '_blank');
     };
 
-    const downloadDocument = (doc) => {
-        const fileURL = URL.createObjectURL(doc);
+    const downloadDocument = (key, doc) => {
+        // const fileURL = URL.createObjectURL(doc);
         const link = document.createElement('a');
-        link.href = fileURL;
-        link.download = doc.name;
+        link.href = doc;
+        link.download = key;
         document.body.appendChild(link);
         link.click();
         document.body.removeChild(link);
@@ -288,15 +313,18 @@ const Personal = () => {
                     </div>
                 ) : (
                     <div>
-                        {formData.documents.length > 0 ? (
+                        {Object.keys(formData.documents).length > 0 ? (
                             <ul>
-                                {formData.documents.map((doc, index) => (
-                                    <li key={index}>
-                                        {doc.name}
-                                        <button onClick={() => previewDocument(doc)}>Preview</button>
-                                        <button onClick={() => downloadDocument(doc)}>Download</button>
-                                    </li>
-                                ))}
+                                {Object.keys(formData.documents).map((key) => {
+                                    const doc = formData.documents[key]
+                                    return (
+                                        <li key={key}>
+                                            {key}
+                                            <button onClick={() => previewDocument(key, doc)}>Preview</button>
+                                            <button onClick={() => downloadDocument(key, doc)}>Download</button>
+                                        </li>
+                                    )})
+                                }
                             </ul>
                         ) : (
                             <p>No documents uploaded</p>

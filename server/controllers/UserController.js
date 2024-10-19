@@ -9,7 +9,8 @@ const DOMPurify = require('isomorphic-dompurify');
 const generateToken = require("../utils/generateToken");
 const { sendMail } = require("../utils/sendMails");
 const jwt = require('jsonwebtoken');
-const { S3Client, PutObjectCommand } = require('@aws-sdk/client-s3')
+const { S3Client, PutObjectCommand, GetObjectCommand } = require('@aws-sdk/client-s3')
+const { getSignedUrl } = require('@aws-sdk/s3-request-presigner')
 
 const registerSchema = Yup.object().shape({
     username: Yup.string()
@@ -47,12 +48,15 @@ const register = async (req,res) =>{
           return res.status(409).json({ message: 'Username already exists' });
         }
 
+
         const randomHouse = await House.aggregate([
             { $sample: { size: 1 } } // Fetch a random document
-          ]);
+        ]);
         
         /* If we're creating the user elsewhere */
         const existingUser = await User.findOne({ email }).lean().exec();
+
+
         if (existingUser) {
             const hashedPassword = await argon2.hash(password);
             // update user schema if user resend the link
@@ -73,6 +77,9 @@ const register = async (req,res) =>{
                     },
                 }
             );
+            // Add user ID to their assigned house as well
+            randomHouse.employees.push(updatedUser._id)
+            await randomHouse.save()
         }else{
             return res.status(404).json({ message: 'Email not Found!' });
         }
@@ -123,7 +130,7 @@ const sendRegistrationLink = async (req,res) =>{
                     registrationHistory: {
                         $set: {
                             email: sanitizedEmail,
-                            status: 'pending',
+                            status: 'Pending',
                             expiresAt: Date.now() + 3 * 60 * 60 * 1000,
                             token: token
                             
@@ -139,10 +146,10 @@ const sendRegistrationLink = async (req,res) =>{
                 email: sanitizedEmail,
                 password: '',
                 role: 'employee',
-                onboardingStatus: 'pending',
+                onboardingStatus: 'Pending',
                 registrationHistory: {
                   email: sanitizedEmail,
-                  status: 'pending',
+                  status: 'Pending',
                   expiresAt: Date.now() + 3 * 60 * 60 * 1000,
                   token: token
                 },
@@ -211,9 +218,10 @@ const login = async(req,res)=>{
     const password = sanitizeInput(req.body.password);
     try{
         const user = await User.findOne({ username })
-        .select('password')
+        .select('password username role')
         .lean()
         .exec();
+
 
         if (!user) {
         return res.status(401).json({ message: 'Invalid credentials' });
@@ -228,7 +236,11 @@ const login = async(req,res)=>{
         // generate JWT token
         const token = generateToken(user._id, username, user.role);
         res.cookie('auth_token', token);
-        return res.status(200).json('login success');
+        return res.status(200).json({
+            userId: user._id,
+            username: username,
+            role: user.role
+        });
     } catch (error) {
         console.error(error);
         return res.status(500).json({ message: error.message });
@@ -324,7 +336,6 @@ const setApplicationInput = async(req,res) =>{
     let optReceiptURL = ''
     let dlCopyURL = ''
     const { files } = req
-    console.log('files:', files)
     const { AccessKeyId, SecretAccessKey, SessionToken } = req.credentials
     const { building, street, city, state, zip } = req.body
     const address = `${building}, ${street}, ${city}, ${state} ${zip}`
@@ -332,20 +343,16 @@ const setApplicationInput = async(req,res) =>{
     const cellPhone = req.body.cellPhone;
     const workPhone = req.body.workPhone
     const { carMake, carModel, carColor } = req.body
-    //const email;//prefilled can not edit retrieve from user register info
+    const { onboardingStatus } = req.body
     const ssn = req.body.ssn;
     const dob = req.body.dob;
     const gender = req.body.gender;
     const workauth = req.body.nonPermWorkAuth; //gc,citizen,work auth type
-    // const workauth_url = req.body.workAuthFile_url;
+    const { isReferred } = req.body
     const dlnum = req.body.dlNum;
     const dldate = req.body.dlExpDate;
     const { refFirstName, refLastName, refMiddleName, refPhone, refEmail, refRelationship } = req.body
     const emergencyContacts = req.body.emergencyContacts
-    // console.log('emergencyContacts:', emergencyContacts)
-    // for (const emergencyContact of emergencyContacts) {
-    //     console.log('emergencyContact:', emergencyContact.firstName)
-    // }
 
     const s3 = new S3Client({
         region: process.env.AWS_REGION,
@@ -359,7 +366,6 @@ const setApplicationInput = async(req,res) =>{
     try {
         const filePromises = files.map(file => {
             const newFileName = `${Date.now().toString()}-${file.originalname}`
-            console.log('file:', file)
             const command = new PutObjectCommand({
                 Bucket: process.env.S3_BUCKET,
                 Key: newFileName,
@@ -390,17 +396,44 @@ const setApplicationInput = async(req,res) =>{
             return res.status(404).json('User not Found!');
         }
 
-        const reference = await Contact.create({
-            firstName: refFirstName,
-            lastName: refLastName,
-            middleName: refMiddleName,
-            cellPhone: refPhone,
-            email: refEmail,
-            relationship: refRelationship,
-            relationshipToId: "6711edc999bed2d3ff6f0f45",
-        })
-        if (!reference) {
-            return res.status(500).json('Error creating reference!')
+        let reference
+        if (isReferred === 'Yes') {
+            reference = await Contact.create({
+                firstName: refFirstName,
+                lastName: refLastName,
+                middleName: refMiddleName,
+                cellPhone: refPhone,
+                email: refEmail,
+                relationship: refRelationship,
+                // relationshipToId: "6711edc999bed2d3ff6f0f45",
+            })
+            if (!reference) {
+                return res.status(500).json('Error creating reference!')
+            }
+        }
+
+        const emergencyContactIds = []
+        for (const emergencyContact of emergencyContacts) {
+            const {
+                firstName,
+                lastName,
+                middleName,
+                phone,
+                emEmail,
+                relationship,
+            } = emergencyContact
+            const contact = await Contact.create({
+                firstName,
+                lastName,
+                middleName,
+                cellPhone: phone,
+                email: emEmail,
+                relationship,
+            })
+            if (!contact) {
+                res.status(500).json(`Error creating emergency contact! Error: ${error.message}`)
+            }
+            emergencyContactIds.push(contact._id)
         }
 
         const result = await User.updateOne(
@@ -411,6 +444,7 @@ const setApplicationInput = async(req,res) =>{
                 "middleName": middlename,
                 "preferredName": preferredname,
                 "profilePictureURL": profilePictureURL,
+                "onboardingStatus": onboardingStatus,
                 "address": address,
                 "cellPhone": cellPhone,
                 "workPhone": workPhone,
@@ -421,13 +455,13 @@ const setApplicationInput = async(req,res) =>{
                 "birthday": dob,
                 "gender": gender,
                 "workAuth": workauth,
-                // "workAuthFile_url": workauth_url,
                 "driversLicenseNumber": dlnum,
                 "driversLicenseExpDate": dldate,
                 "driversLicenseCopy_url": dlCopyURL,
                 "permResStatus": permResStatus,
-                "referer": reference._id,
-                "optUrl": optReceiptURL
+                "referer": isReferred === 'Yes' ? reference._id : null,
+                "optUrl": optReceiptURL,
+                "emergencyContacts": emergencyContactIds,
             }
         }
         );
@@ -536,6 +570,52 @@ const setContactInput = async(req,res) =>{
 
 };
 
+const getDocs = async (req, res) => {
+    try {
+        const { username } = req.body
+        const { AccessKeyId, SecretAccessKey, SessionToken } = req.credentials
+
+        const s3 = new S3Client({
+            region: process.env.AWS_REGION,
+            credentials: {
+                accessKeyId: AccessKeyId,
+                secretAccessKey: SecretAccessKey,
+                sessionToken: SessionToken,
+            }
+        })
+
+        const user = await User.findOne({ username: username }).lean().exec()
+        if (!user) {
+            return res.status(404).json('User not found!')
+        }
+        const { profilePictureURL, optUrl, driversLicenseCopy_url } = user
+        const urls = {
+            profilePictureURL,
+            optUrl,
+            driversLicenseCopy_url,
+        }
+        const ret = {}
+        for (const key of ['profilePictureURL', 'optUrl', 'driversLicenseCopy_url']) {
+            const url = urls[key]
+            const parts = url.split('/')
+            const fileName = parts[parts.length - 1]
+
+            const params = {
+                Bucket: process.env.S3_BUCKET,
+                Key: fileName,
+                ResponseContentDisposition: `attachment; filename="${fileName}"`,
+            }
+            const command = new GetObjectCommand(params)
+            const signedUrl = await getSignedUrl(s3, command, { expiresIn: 300 })
+            ret[key] = signedUrl
+        }
+        res.status(200).json(ret)
+    }
+    catch (error) {
+        res.status(500).json(error.message)
+    }
+}
+
 
 const getPersonalinfo = async(req,res) =>{
     //tested working
@@ -547,31 +627,46 @@ const getPersonalinfo = async(req,res) =>{
         if (!user) {
             return res.status(401).json({ message: 'User not Found!' });
         }
-        return res.status(200).json({
-            firstName: user.firstName,
-            lastName: user.lastName,
-            middleName: user.middleName,
-            preferredName: user.preferredName,
-            profilePictureURL: user.profilePictureURL,
-            email: user.email,
-            ssn: user.ssn,
-            birthday: user.birthday,
-            gender: user.gender,
-            address: user.address,
-            cellPhone: user.cellPhone,
-            workPhone: user.workPhone,
-            visaTitle: user.visaTitle,
-            visaStartDate: user.visaStartDate,
-            visaEndDate: user.visaEndDate,
-            emergency_contact_ids: user.emergencyContacts,// an array of ids, should have at least one er contact
-            workAuthFile_url: user.workAuthFile_url,
-            driversLicenseCopy_url: user.driversLicenseCopy_url,
-            optUrl: user.optUrl,
-            eadUrl: user.eadUrl,
-            i983Url: user.i983Url,
-            i20Url: user.i20Url,
-        });
+        // return res.status(200).json({
+        //     firstName: user.firstName,
+        //     lastName: user.lastName,
+        //     middleName: user.middleName,
+        //     preferredName: user.preferredName,
+        //     profilePictureURL: user.profilePictureURL,
+        //     email: user.email,
+        //     ssn: user.ssn,
+        //     birthday: user.birthday,
+        //     gender: user.gender,
+        //     address: user.address,
+        //     cellPhone: user.cellPhone,
+        //     workPhone: user.workPhone,
+        //     visaTitle: user.visaTitle,
+        //     visaStartDate: user.visaStartDate,
+        //     visaEndDate: user.visaEndDate,
+        //     emergency_contact_ids: user.emergencyContacts,// an array of ids, should have at least one er contact
+        //     workAuthFile_url: user.workAuthFile_url,
+        //     driversLicenseCopy_url: user.driversLicenseCopy_url,
+        //     optUrl: user.optUrl,
+        //     eadUrl: user.eadUrl,
+        //     i983Url: user.i983Url,
+        //     i20Url: user.i20Url,
+        // });
+        return res.status(200).json(user)
     }catch (error) {
+        console.error(error);
+        return res.status(500).json({ message: error.message });
+    }
+};
+
+const getUserInfo = async (req, res) =>{
+    const { username } = req.body
+    try{
+        const user = await User.findOne({ username }).lean().exec();
+        if (!user) {
+            return res.status(401).json({ message: 'User not Found!' });
+        }
+        return res.status(200).json(user)
+    } catch (error) {
         console.error(error);
         return res.status(500).json({ message: error.message });
     }
@@ -682,7 +777,7 @@ const updateWorkauthStatus = async(req,res) => {
         return res.status(500).json({ message: error.message });
     }
 }
-const getEmpolyeesProfileForHR = async()=>{
+const getEmpolyeesProfileForHR = async(req, res)=>{
     const {searchTerm} = req.query;
     const regexSearchTerm = new RegExp(searchTerm, 'i');
 
@@ -695,7 +790,7 @@ const getEmpolyeesProfileForHR = async()=>{
                 {middleName: regexSearchTerm},
                 {preferredName: regexSearchTerm},
             ]
-        }).lean().exec();
+        }).select('-password').lean().exec();
 
         return res.status(200).json(filterUser);
 
@@ -723,9 +818,20 @@ const getPersonalinfoById = async(req,res) =>{
         console.error(error);
         return res.status(500).json({ message: error.message });
     }
-
-
 } 
+
+const checkUserIsEmployeeOrHr = async(req,res) =>{
+    const {auth_token} = req.cookies;
+    if(!auth_token){
+        return res.status(401).json({ message: 'No token provided!' });
+    }
+    try{
+        const {role} = jwt.verify(auth_token, process.env.ACCESS_TOKEN_SECRET);
+        return res.status(200).json({role});
+    }catch(error){
+        return res.status(500).json({ message: error.message });
+    }
+}
 
 module.exports = {
     register,
@@ -741,6 +847,9 @@ module.exports = {
     updateWorkauthStatus,
     checkRegister,
     sendRegistrationLink,
+    getDocs,
+    getUserInfo,
     getEmpolyeesProfileForHR,
-    getPersonalinfoById
+    getPersonalinfoById,
+    checkUserIsEmployeeOrHr
 }

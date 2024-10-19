@@ -7,15 +7,22 @@ const path = require("path");
 const morgan = require('morgan')
 const cors = require('cors')
 const bodyParser = require('body-parser')
-const multer = require('multer')
+const multer = require('multer');
+const cookieParser = require('cookie-parser');
 
 // Initialize Express appjwt
 const app = express();
 
 // Use environment variables
-app.use(cors())
+app.use(cors({
+    origin: true,
+    credentials: true
+}))
 app.use(express.json()); // For parsing application/json
 app.use(express.urlencoded({ extended: true })); // For parsing application/x-www-form-urlencoded
+
+//get cookies
+app.use(cookieParser());
 
 // Parse PUT bodies
 app.use(bodyParser.json())

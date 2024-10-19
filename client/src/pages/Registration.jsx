@@ -59,16 +59,21 @@ const Registration = () => {
 
         if (validatorForm()) {
             registerUser();
-            navigate('/auth/login')
         }
     }
     const registerUser = async () => {
         try {
-            await axios.post('http://localhost:3000/api/users/register', form);
+            axios.post('http://localhost:3000/api/users/register', {
+                username: form.username,
+                email: form.email,
+                password: form.password,
+            }).then((data)=>{
+                navigate('/auth/login');
+            })
         } catch (error) {
             console.log(error.response.data.message);
             const message = error.response ? error.response.data.message : 'An error occurred';
-            navigate('/auth/login');
+            //navigate('/auth/login');
         }
     }
     const checkToken = async (token) => {
