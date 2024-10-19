@@ -340,15 +340,11 @@ const setApplicationInput = async(req,res) =>{
     const dob = req.body.dob;
     const gender = req.body.gender;
     const workauth = req.body.nonPermWorkAuth; //gc,citizen,work auth type
-    // const workauth_url = req.body.workAuthFile_url;
+    const { isReferred } = req.body
     const dlnum = req.body.dlNum;
     const dldate = req.body.dlExpDate;
     const { refFirstName, refLastName, refMiddleName, refPhone, refEmail, refRelationship } = req.body
     const emergencyContacts = req.body.emergencyContacts
-    // console.log('emergencyContacts:', emergencyContacts)
-    // for (const emergencyContact of emergencyContacts) {
-    //     console.log('emergencyContact:', emergencyContact.firstName)
-    // }
 
     const s3 = new S3Client({
         region: process.env.AWS_REGION,
@@ -392,17 +388,45 @@ const setApplicationInput = async(req,res) =>{
             return res.status(404).json('User not Found!');
         }
 
-        const reference = await Contact.create({
-            firstName: refFirstName,
-            lastName: refLastName,
-            middleName: refMiddleName,
-            cellPhone: refPhone,
-            email: refEmail,
-            relationship: refRelationship,
-            relationshipToId: "6711edc999bed2d3ff6f0f45",
-        })
-        if (!reference) {
-            return res.status(500).json('Error creating reference!')
+        let reference
+        if (isReferred === 'Yes') {
+            reference = await Contact.create({
+                firstName: refFirstName,
+                lastName: refLastName,
+                middleName: refMiddleName,
+                cellPhone: refPhone,
+                email: refEmail,
+                relationship: refRelationship,
+                // relationshipToId: "6711edc999bed2d3ff6f0f45",
+            })
+            if (!reference) {
+                return res.status(500).json('Error creating reference!')
+            }
+        }
+
+        const emergencyContactIds = []
+        for (const emergencyContact of emergencyContacts) {
+            console.log('emergencyContact:', emergencyContact)
+            const {
+                firstName,
+                lastName,
+                middleName,
+                phone,
+                emEmail,
+                relationship,
+            } = emergencyContact
+            const contact = await Contact.create({
+                firstName,
+                lastName,
+                middleName,
+                cellPhone: phone,
+                email: emEmail,
+                relationship,
+            })
+            if (!contact) {
+                res.status(500).json(`Error creating emergency contact! Error: ${error.message}`)
+            }
+            emergencyContactIds.push(contact._id)
         }
 
         const result = await User.updateOne(
@@ -423,13 +447,13 @@ const setApplicationInput = async(req,res) =>{
                 "birthday": dob,
                 "gender": gender,
                 "workAuth": workauth,
-                // "workAuthFile_url": workauth_url,
                 "driversLicenseNumber": dlnum,
                 "driversLicenseExpDate": dldate,
                 "driversLicenseCopy_url": dlCopyURL,
                 "permResStatus": permResStatus,
-                "referer": reference._id,
-                "optUrl": optReceiptURL
+                "referer": isReferred === 'Yes' ? reference._id : null,
+                "optUrl": optReceiptURL,
+                "emergencyContacts": emergencyContactIds,
             }
         }
         );

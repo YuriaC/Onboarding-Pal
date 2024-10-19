@@ -13,7 +13,6 @@ const HouseSchema = new Schema({
     numMattresses: { type: Number, required: true },
     numTables: { type: Number, required: true },
     numChairs: { type: Number, required: true },
-    numEmployees: { type: Number, require: true, default: 0 },
     reports: [{ type: refType, ref: 'Report' }],
     employees: [{ type: refType, ref: 'User' }],
 });
