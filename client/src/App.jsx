@@ -45,6 +45,8 @@ function App() {
           <Route path='/managehousing' element={<HousingMgmt />} />
           <Route path='/addhouse' element={<AddHouse />} />
           <Route path='/onboarding' element={<Onboarding />} />
+          <Route path="/personalTest" element={<Personal />} />
+
           <Route path="*" element={<Redirect />} />
           {/* for testing fe-be connection */}
           <Route path='test' element={<Test />} />  
