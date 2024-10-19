@@ -619,31 +619,46 @@ const getPersonalinfo = async(req,res) =>{
         if (!user) {
             return res.status(401).json({ message: 'User not Found!' });
         }
-        return res.status(200).json({
-            firstName: user.firstName,
-            lastName: user.lastName,
-            middleName: user.middleName,
-            preferredName: user.preferredName,
-            profilePictureURL: user.profilePictureURL,
-            email: user.email,
-            ssn: user.ssn,
-            birthday: user.birthday,
-            gender: user.gender,
-            address: user.address,
-            cellPhone: user.cellPhone,
-            workPhone: user.workPhone,
-            visaTitle: user.visaTitle,
-            visaStartDate: user.visaStartDate,
-            visaEndDate: user.visaEndDate,
-            emergency_contact_ids: user.emergencyContacts,// an array of ids, should have at least one er contact
-            workAuthFile_url: user.workAuthFile_url,
-            driversLicenseCopy_url: user.driversLicenseCopy_url,
-            optUrl: user.optUrl,
-            eadUrl: user.eadUrl,
-            i983Url: user.i983Url,
-            i20Url: user.i20Url,
-        });
+        // return res.status(200).json({
+        //     firstName: user.firstName,
+        //     lastName: user.lastName,
+        //     middleName: user.middleName,
+        //     preferredName: user.preferredName,
+        //     profilePictureURL: user.profilePictureURL,
+        //     email: user.email,
+        //     ssn: user.ssn,
+        //     birthday: user.birthday,
+        //     gender: user.gender,
+        //     address: user.address,
+        //     cellPhone: user.cellPhone,
+        //     workPhone: user.workPhone,
+        //     visaTitle: user.visaTitle,
+        //     visaStartDate: user.visaStartDate,
+        //     visaEndDate: user.visaEndDate,
+        //     emergency_contact_ids: user.emergencyContacts,// an array of ids, should have at least one er contact
+        //     workAuthFile_url: user.workAuthFile_url,
+        //     driversLicenseCopy_url: user.driversLicenseCopy_url,
+        //     optUrl: user.optUrl,
+        //     eadUrl: user.eadUrl,
+        //     i983Url: user.i983Url,
+        //     i20Url: user.i20Url,
+        // });
+        return res.status(200).json(user)
     }catch (error) {
+        console.error(error);
+        return res.status(500).json({ message: error.message });
+    }
+};
+
+const getUserInfo = async (req, res) =>{
+    const { username } = req.body
+    try{
+        const user = await User.findOne({ username }).lean().exec();
+        if (!user) {
+            return res.status(401).json({ message: 'User not Found!' });
+        }
+        return res.status(200).json(user)
+    } catch (error) {
         console.error(error);
         return res.status(500).json({ message: error.message });
     }
@@ -770,4 +785,5 @@ module.exports = {
     checkRegister,
     sendRegistrationLink,
     getDocs,
+    getUserInfo,
 }

@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { ToastContainer, toast } from 'react-toastify'
 import { token, USER_ENDPOINT, username } from '../constants'
 import axios from 'axios'
@@ -45,6 +45,22 @@ const Onboarding = () => {
     })
 
     const [emCounter, setEmCounter] = useState(1)
+    const [userEmail, setUserEmail] = useState('')
+
+    useEffect(() => {
+        axios.get(`${USER_ENDPOINT}/userinfo`, {
+            headers: {
+                'Authorization': `Bearer ${token}`
+            }
+        })
+        .then(response => {
+            console.log('response:data', response.data)
+            setUserEmail(response.data.email)
+        })
+        .catch(error => {
+            toast.error(`Error fetching user info! Error: ${error.message}`)
+        })
+    }, [])
 
     const handleChange = (e) => {
         const { type, name, value } = e.target
@@ -179,7 +195,7 @@ const Onboarding = () => {
                 </fieldset>
                 <br />
                 <label>Email: </label>
-                <input type='text' disabled />
+                <input type='text' value={userEmail} disabled />
                 <label>SSN: </label>
                 <input type='password' name='ssn' onChange={handleChange} required />
                 <label>Date of Birth: </label>

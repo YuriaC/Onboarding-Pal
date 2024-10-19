@@ -33,7 +33,7 @@ mongoose.connect(MONGO_URI)
             const hashedPassword = await argon2.hash("ABCD1234@"); // THIS IS THE PASSWARD
 
             await House.insertMany(houses)
-            const house = await House.findOne({}).lean().exec();
+            const house = await House.findOne({}).exec();
             await User.insertMany([
                 {
                     username: 'EmployeeTest',
@@ -51,6 +51,9 @@ mongoose.connect(MONGO_URI)
                     onboardingStatus: 'Pending',
                   }
             ])
+            const user = await User.findOne({}).lean().exec()
+            house.employees.push(user._id)
+            await house.save()
         
         }
         if (process.env.NODE_ENV !== 'production'){
