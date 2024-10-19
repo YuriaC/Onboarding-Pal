@@ -335,7 +335,7 @@ const setApplicationInput = async(req,res) =>{
     const cellPhone = req.body.cellPhone;
     const workPhone = req.body.workPhone
     const { carMake, carModel, carColor } = req.body
-    //const email;//prefilled can not edit retrieve from user register info
+    const { onboardingStatus } = req.body
     const ssn = req.body.ssn;
     const dob = req.body.dob;
     const gender = req.body.gender;
@@ -406,7 +406,6 @@ const setApplicationInput = async(req,res) =>{
 
         const emergencyContactIds = []
         for (const emergencyContact of emergencyContacts) {
-            console.log('emergencyContact:', emergencyContact)
             const {
                 firstName,
                 lastName,
@@ -437,6 +436,7 @@ const setApplicationInput = async(req,res) =>{
                 "middleName": middlename,
                 "preferredName": preferredname,
                 "profilePictureURL": profilePictureURL,
+                "onboardingStatus": onboardingStatus,
                 "address": address,
                 "cellPhone": cellPhone,
                 "workPhone": workPhone,

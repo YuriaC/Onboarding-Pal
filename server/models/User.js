@@ -4,12 +4,12 @@ const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
 const refType = Schema.Types.ObjectId;
 
-const statuses = ['Pending', 'Rejected', 'Approved']
+const statuses = ['Not Started', 'Pending', 'Rejected', 'Approved']
 
 const UserSchema = new Schema({
     username: { type: String, default: null },
     password: { type: String, default: null },
-    onboardingStatus: {type: String, enum: statuses, default: "Pending" },
+    onboardingStatus: {type: String, enum: statuses, default: "Not Started" },
     firstName: { type: String, default: "" },
     lastName: { type: String, default: "" },
     middleName: { type: String, default: "" },

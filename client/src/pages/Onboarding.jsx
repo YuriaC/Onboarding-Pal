@@ -46,6 +46,7 @@ const Onboarding = () => {
 
     const [emCounter, setEmCounter] = useState(1)
     const [userEmail, setUserEmail] = useState('')
+    const [appStatus, setAppStatus] = useState('')
 
     useEffect(() => {
         axios.get(`${USER_ENDPOINT}/userinfo`, {
@@ -54,8 +55,9 @@ const Onboarding = () => {
             }
         })
         .then(response => {
-            console.log('response:data', response.data)
             setUserEmail(response.data.email)
+            setAppStatus(response.data.onboardingStatus)
+            console.log('appStatus:', response.data.onboardingStatus)
         })
         .catch(error => {
             toast.error(`Error fetching user info! Error: ${error.message}`)
@@ -72,11 +74,8 @@ const Onboarding = () => {
 
     const handleEmContactChange = (e, index) => {
         const { name, value } = e.target
-        console.log('name:', name)
-        console.log('value:', value)
         const newContacts = [...formData.emergencyContacts]
         newContacts[index][name] = value
-        console.log('newContacts:', newContacts)
         setFormData({...formData, emergencyContacts: newContacts})
     }
 
@@ -94,6 +93,7 @@ const Onboarding = () => {
         const formData = new FormData();
         buildFormData(formData, data);
         formData.append('username', username)
+        formData.append('onboardingStatus', 'Pending')
         return formData;
     }
 
@@ -103,17 +103,15 @@ const Onboarding = () => {
         const data = createFormData(formData)
 
         try {
-            const response = await axios.post(`${USER_ENDPOINT}/applicationinput`, data, {
+            await axios.post(`${USER_ENDPOINT}/applicationinput`, data, {
                 headers: {
                     'Content-Type': 'multipart/form-data',
                     'Authorization': `Bearer ${token}`,
                 }
             })
-            console.log('response.data:', response.data)
             toast.success('Successfully submitted application!')
         }
         catch (error) {
-            console.log(error)
             toast.error(`Error submitting application! Error: ${error.response.data}`)
         }
     }
@@ -151,6 +149,7 @@ const Onboarding = () => {
 
     return (
         <div>
+            <h2>Status: {appStatus}</h2>
             <form onSubmit={handleSubmit}>
                 <label>First Name: </label>
                 <input type='text' name='firstName' onChange={handleChange} required />
