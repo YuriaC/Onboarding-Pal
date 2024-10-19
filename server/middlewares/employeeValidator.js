@@ -4,7 +4,7 @@ import {USERNAME_MIN_LEN, USERNAME_MAX_LEN, EMAIL_MIN_LEN, PWD_MIN_LEN} from "..
 
 
 // global variables
-const USERNAME_MIN_LEN = 5;
+const USERNAME_MIN_LEN = 3;
 const USERNAME_MAX_LEN = 12;
 const EMAIL_MIN_LEN = 5;
 const PWD_MIN_LEN = 8;
