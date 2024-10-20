@@ -823,19 +823,6 @@ const getPersonalinfoById = async(req,res) =>{
     }
 } 
 
-const checkUserIsEmployeeOrHr = async(req,res) =>{
-    const {auth_token} = req.cookies;
-    if(!auth_token){
-        return res.status(401).json({ message: 'No token provided!' });
-    }
-    try{
-        const {role} = jwt.verify(auth_token, process.env.ACCESS_TOKEN_SECRET);
-        return res.status(200).json({role});
-    }catch(error){
-        return res.status(500).json({ message: error.message });
-    }
-}
-
 module.exports = {
     register,
     login,
@@ -854,5 +841,4 @@ module.exports = {
     getUserInfo,
     getEmpolyeesProfileForHR,
     getPersonalinfoById,
-    checkUserIsEmployeeOrHr
 }
