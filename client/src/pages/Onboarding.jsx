@@ -44,7 +44,8 @@ const Onboarding = () => {
                 relationship: '',
                 counter: 0,
             }
-        ]
+        ],
+        hrFeedback: '',
     })
 
     const [emCounter, setEmCounter] = useState(1)
@@ -96,6 +97,8 @@ const Onboarding = () => {
             driversLicenseExpDate,
             referer,
             emergencyContacts,
+            hrFeedback,
+            onboardingStatus,
         } = data
         console.log('data:', data)
         const newEmContacts = []
@@ -136,6 +139,7 @@ const Onboarding = () => {
             city: address.split(', ')[2],
             state: address.split(', ')[3].split(' ')[0],
             zip: address.split(', ')[3].split(' ')[1],
+            hrFeedback: onboardingStatus === 'Rejected' ? hrFeedback : '',
         })
     }
 
@@ -237,6 +241,12 @@ const Onboarding = () => {
         <div>
             <h2>Status: {appStatus}</h2>
             {appStatus === 'Pending' && <h3>Please wait for HR to review your application.</h3>}
+            {formData.hrFeedback &&
+                <div>
+                    <h3>Feedback from HR:</h3>
+                    <h4>{formData.hrFeedback}</h4>
+                </div>
+            }
             <form onSubmit={handleSubmit}>
                 <label>First Name: </label>
                 <input type='text' name='firstName' value={formData.firstName} onChange={handleChange} disabled={appStatus === 'Pending'} required />

@@ -52,6 +52,7 @@ const UserSchema = new Schema({
         expiresAt: { type: Date, default: null },
       },
     role: { type: String, enum: ['employee', 'hr'], default: "employee" },
+    hrFeedback: { type: String, default: '' },
 });
 
 const User = mongoose.model('User', UserSchema);
