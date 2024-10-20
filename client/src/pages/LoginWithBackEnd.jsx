@@ -20,65 +20,57 @@ const Test = () => {
         password: ''
     });
 
-    const validatorForm = () => {
-        let errors = {};
+    // const validatorForm = () => {
+    //     let errors = {};
 
-        if(!validator.isEmail(form.credential) && !validator.isLength(form.credential, { min: 3, max: 15 })){
-            errors.credential = 'Username must be between 3 and 15 characters';
-        }
+    //     if(!validator.isEmail(form.credential) && !validator.isLength(form.credential, { min: 3, max: 15 })){
+    //         errors.credential = 'Username must be between 3 and 15 characters';
+    //     }
 
-        if (!validator.isStrongPassword(form.password, {
-            minLength: 8,
-            minLowercase: 1,
-            minUppercase: 1,
-            minNumbers: 1,
-            minSymbols: 1
-        })) {
-            errors.password = 'Password must be at least 8 characters long, and include at least 1 lowercase letter,\n 1 uppercase letter, 1 number, and 1 symbol.';
-        }
+    //     if (!validator.isStrongPassword(form.password, {
+    //         minLength: 8,
+    //         minLowercase: 1,
+    //         minUppercase: 1,
+    //         minNumbers: 1,
+    //         minSymbols: 1
+    //     })) {
+    //         errors.password = 'Password must be at least 8 characters long, and include at least 1 lowercase letter,\n 1 uppercase letter, 1 number, and 1 symbol.';
+    //     }
 
-        setFormErrors(errors);
+    //     setFormErrors(errors);
 
-        return Object.keys(errors).length === 0;
-    }
+    //     return Object.keys(errors).length === 0;
+    // }
 
     // // connect to backend
     const loginEndPoint = USER_ENDPOINT + '/login'
     const userLogin = (e) => {
         e.preventDefault();
 
-        if (validatorForm()) {
-            console.table(form);
             axios.post(loginEndPoint, {form})
                 .then(response => {
                     // console.log(response, response.data);  // debug
                     localStorage.setItem('token', JSON.stringify(response.data.data));
                 })
                 .catch(err => {
-                    console.error(err);
+                    if (err.response) {
+                        const errors = {}
+                        const errorMessage = err.response.data.message || 'An error occurred. Please try again.';
+                        console.error(errorMessage);
+                        if (err.response.status === 404) {
+                            errors.credential = errorMessage;
+                        } else {
+                            errors.password = errorMessage;
+                        } 
+                        setFormErrors(errors);
+                    } else {
+                        // Network or other errors
+                        console.error('Network error or server is not reachable.');
+                        alert('Network error or server is not reachable.');
+                    }
                 });
-            navigate('/');  // change routing
-        }
-    }
-
-
-    // // for testing backend connection
-    // const[backendData, setBackendData] = useState([{}]);
-
-    // const testURL = 'http://localhost:5500/api/test';
-    // // const testURL = "/api/test"  // using relative path, the root endpoint address in package.json.proxy 
     
-    // // 2nd useEffect for fetching data from backend
-    // useEffect(() => {
-    //     axios.get(testURL)
-    //         .then(response => {
-    //             console.log(response.data);
-    //             setBackendData(response.data);
-    //         })
-    //         .catch((err) => {
-    //             console.error(err);
-    //         });
-    // }, []);
+    }
 
 
     // first useEffect for delayed display effect
@@ -106,12 +98,11 @@ const Test = () => {
                         onChange={(e) => { setForm({ ...form, password: e.target.value }) }}
                     />
                     {formErrors.password && <p className="error">
-                        {formErrors.password.slice(0, formErrors.password.length / 2)}    <br />
+                        {formErrors.password.slice(0, formErrors.password.length / 2)}    
+                        <br />
                         {formErrors.password.slice(formErrors.password.length / 2)}
-
                     </p>}
                 </div>
-
 
                 <div className='registerButtonAndLink'>
                     <button type="submit" onClick={userLogin}>Login</button>

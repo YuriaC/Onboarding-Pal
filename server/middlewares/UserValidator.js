@@ -1,5 +1,8 @@
 // user registration validator
 const validator = require("validator");
+const Yup = require('yup');
+const DOMPurify = require('isomorphic-dompurify');
+const { JSDOM } = require('jsdom');
 
 // global variables
 const USERNAME_MIN_LEN = 3;
@@ -7,6 +10,12 @@ const USERNAME_MAX_LEN = 12;
 const EMAIL_MIN_LEN = 5;
 const PWD_MIN_LEN = 8;
 
+// helper function for sanitizing input
+const sanitizeInput = (input) => {
+    const dom = new JSDOM('');
+    const purify = DOMPurify(dom.window);
+    return purify.sanitize(input);
+}
 
 // helper function for password validation msg display
 function passWordValidationMsg(password, minLength = PWD_MIN_LEN) {
@@ -19,20 +28,86 @@ function passWordValidationMsg(password, minLength = PWD_MIN_LEN) {
         return 'Password must be at least 8 characters long.';
     }
     if (!hasUpperCase) {
-        return 'Password must contain at least one uppercase letter.';
+        return 'Password must contain at least 1 uppercase letter.';
     }
     if (!hasLowerCase) {
-        return 'Password must contain at least one lowercase letter.';
+        return 'Password must contain at least 1 lowercase letter.';
     }
     if (!hasDigit) {
-        return 'Password must contain at least one digit.';
+        return 'Password must contain at least 1 digit.';
     }
     if (!hasSpecialChar) {
-        return 'Password must contain at least one special character.';
+        return 'Password must contain at least 1 special character.';
     }
     
     return 'Invalid password.';
 }
+
+// logic for login validation
+const loginSchema = Yup.object().shape({
+    credential: Yup.string()
+        .test('username-or-email', 'Either username or email is required, but not both.', function (value) {
+            // Check if the value matches a valid email format
+            const isEmail = Yup.string().email().isValidSync(value);
+            // Check if the value matches a valid username format
+            const isUsername = /^[a-zA-Z0-9_]{3,16}$/.test(value);
+            // Pass the test if it's either a valid email or username
+            return isEmail || isUsername;
+        })
+        .required('Username or email address is required.'),
+
+    password: Yup.string()
+        .trim()
+        .required('Password cannot be empty.')
+        .test('password-strength', `Password must be at least ${PWD_MIN_LEN} long,
+            contain at least one uppercase letter, 
+            one lowercase letter, one digit, and one special character.`, 
+            function(password) {
+                const hasUpperCase = /[A-Z]/.test(password);   // Checks for uppercase letter
+                const hasLowerCase = /[a-z]/.test(password);   // Checks for lowercase letter
+                const hasDigit = /[0-9]/.test(password);       // Checks for digit
+                const hasSpecialChar = /[!_@#$%^&*(),.?":{}|<>]/.test(password);  // Checks for special character
+                
+                if (password.length < PWD_MIN_LEN) {
+                    return this.createError({ message: `Password must be at least ${PWD_MIN_LEN} characters long.` })
+                }
+                if (!hasUpperCase) {
+                    return this.createError({ message: 'Password must contain at least 1 uppercase letter.'})
+                }
+                if (!hasLowerCase) {
+                    return this.createError({ message: 'Password must contain at least 1 lowercase letter.'})
+                }
+                if (!hasDigit) {
+                    return this.createError({ message: 'Password must contain at least 1 digit.' });
+
+                }
+                if (!hasSpecialChar) {
+                    return this.createError({ message: 'Password must contain at least 1 special character.' });
+                }
+                
+                return true;
+            } 
+        )
+});
+
+
+// user Login Validation, can use both email or username to login
+const employeeLoginValidation = async (req, res, next) => {
+    try{
+        const loginData = req.body.form;  // data is encapsulated in form from the font-end
+        // sanitize input data 
+        loginData.credential = sanitizeInput(loginData.credential);
+        loginData.password = sanitizeInput(loginData.password);
+        // validate req data using Yup schema
+        await loginSchema.validate(loginData);  // abortEarly: false option ensures that Yup will collect all validation errors instead of stopping at the first one.
+        
+        next();
+
+    } catch (err) {
+        return res.status(400).json({ message: err.errors });
+    }
+};
+
 
 const employeeRegistrationValidation = (req, res, next) => {
     const {username, email, password, rePassword} = req.body;
@@ -88,24 +163,27 @@ const employeeRegistrationValidation = (req, res, next) => {
     next();
 }
 
-// user Login Validation, can use both email or username to login
-const employeeLoginValidation = (req, res, next) => {
-    const { credential, password } = req.body;
-    if (
-        !credential ||
-        !password || 
-        validator.isEmpty(credential) ||
-        validator.isEmpty(password)
-    ) {
-        return res.status(400).json({ message: 'Missing required fields!' });
-    }
+// // user Login Validation, can use both email or username to login
+// const oldEmployeeLoginValidation = (req, res, next) => {
+//     const { credential, password } = req.body;
+//     if (
+//         !credential ||
+//         !password || 
+//         validator.isEmpty(credential) ||
+//         validator.isEmpty(password)
+//     ) {
+//         return res.status(400).json({ message: 'Missing required fields!' });
+//     }
 
-    if (validator.isAlphanumeric(credential) && validator.isEmail(credential)) {
-        return res.status(400).json({ message: 'Invalid credential. Login with either email address or username.' });
-    }
+//     if (validator.isAlphanumeric(credential) && validator.isEmail(credential)) {
+//         return res.status(400).json({ message: 'Invalid credential. Login with either email address or username.' });
+//     }
 
-    next();
-};
+//     next();
+// };
+
+
+
 
 module.exports = { 
     passWordValidationMsg, 

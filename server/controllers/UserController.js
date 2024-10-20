@@ -2,10 +2,10 @@
 const User = require('../models/User');
 const House = require('../models/House');
 const Contact = require('../models/Contact');
-const Yup = require('yup');
-const { JSDOM } = require('jsdom');
+const Yup = require('yup');  // 
+const { JSDOM } = require('jsdom');  //
 const argon2 = require("argon2");
-const DOMPurify = require('isomorphic-dompurify');
+const DOMPurify = require('isomorphic-dompurify');  //
 const generateToken = require("../utils/generateToken");
 const { sendMail } = require("../utils/sendMails");
 const jwt = require('jsonwebtoken');
@@ -23,15 +23,6 @@ const registerSchema = Yup.object().shape({
         .trim()
         .required('Password cannot be empty.'),
 });
-
-// const loginSchema_username = Yup.object().shape({
-//     username: Yup.string()
-//         .matches(/^[a-zA-Z0-9_]{3,16}$/, 'Username must be 3-16 characters long and alphanumeric.')
-//         .required('Username is required.'),
-//     password: Yup.string()
-//         .trim()
-//         .required('Message cannot be empty.'),
-// });
 
 const loginSchema = Yup.object().shape({
     credential: Yup.string()
@@ -122,6 +113,7 @@ const register = async (req,res) =>{
         return res.status(500).json({ message: error.message});
     }
 };
+
 const sendRegistrationLink = async (req,res) =>{
     // Get user information
     const { email } = req.body;
@@ -229,39 +221,6 @@ const checkRegister = async (req, res) => {
       return res.status(400).json({ message: 'Invalid token.', error: error.message });
     }
   };
-
-
-// const login = async(req,res)=>{ 
-//     // tested working
-//     await loginSchema_username.validate(req.body);
-//     const username = sanitizeInput(req.body.username);
-//     const password = sanitizeInput(req.body.password);
-//     try{
-//         const user = await User.findOne({ username })
-//         .select('password')
-//         .lean()
-//         .exec();
-
-//         if (!user) {
-//         return res.status(401).json({ message: 'Invalid credentials' });
-//         }
-
-//         // check if password is correct
-//         const isPasswordCorrect = await argon2.verify(user.password, password);
-//         if (!isPasswordCorrect) {
-//         return res.status(401).json({ message: 'Invalid credentials' });
-//         }
-
-//         // generate JWT token
-//         const token = generateToken(user._id, username, user.role);
-//         res.cookie('auth_token', token);
-//         return res.status(200).json('login success');
-//     } catch (error) {
-//         console.error(error);
-//         return res.status(500).json({ message: error.message });
-//     }
-
-// };
 
 const login = async (req, res) => {
     // Tested working. User can login with either username or email
