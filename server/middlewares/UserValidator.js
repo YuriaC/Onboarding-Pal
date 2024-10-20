@@ -17,30 +17,32 @@ const sanitizeInput = (input) => {
     return purify.sanitize(input);
 }
 
-// helper function for password validation msg display
-function passWordValidationMsg(password, minLength = PWD_MIN_LEN) {
-    const hasUpperCase = /[A-Z]/.test(password);   // Checks for uppercase letter
-    const hasLowerCase = /[a-z]/.test(password);   // Checks for lowercase letter
-    const hasDigit = /[0-9]/.test(password);       // Checks for digit
-    const hasSpecialChar = /[!_@#$%^&*(),.?":{}|<>]/.test(password);  // Checks for special character
-    
-    if (password.length < minLength) {
-        return 'Password must be at least 8 characters long.';
+// helper function for password validation msg display can be reused in yup schema
+function passWordValidationMsg(minLength = PWD_MIN_LEN) {
+    return function (value){   
+        const hasUpperCase = /[A-Z]/.test(value);   // Checks for uppercase letter
+        const hasLowerCase = /[a-z]/.test(value);   // Checks for lowercase letter
+        const hasDigit = /[0-9]/.test(value);       // Checks for digit
+        const hasSpecialChar = /[!_@#$%^&*(),.?":{}|<>]/.test(value);  // Checks for special character
+        
+        if (value.length < minLength) {
+            return this.createError({ message: `Password must be at least ${minLength} characters long.` })
+        }
+        if (!hasUpperCase) {
+            return this.createError({ message: 'Password must contain at least 1 uppercase letter.'})
+        }
+        if (!hasLowerCase) {
+            return this.createError({ message: 'Password must contain at least 1 lowercase letter.'})
+        }
+        if (!hasDigit) {
+            return this.createError({ message: 'Password must contain at least 1 digit.' });
+        }
+        if (!hasSpecialChar) {
+            return this.createError({ message: 'Password must contain at least 1 special character.' });
+        }
+        
+        return true;
     }
-    if (!hasUpperCase) {
-        return 'Password must contain at least 1 uppercase letter.';
-    }
-    if (!hasLowerCase) {
-        return 'Password must contain at least 1 lowercase letter.';
-    }
-    if (!hasDigit) {
-        return 'Password must contain at least 1 digit.';
-    }
-    if (!hasSpecialChar) {
-        return 'Password must contain at least 1 special character.';
-    }
-    
-    return 'Invalid password.';
 }
 
 // logic for login validation
@@ -62,31 +64,7 @@ const loginSchema = Yup.object().shape({
         .test('password-strength', `Password must be at least ${PWD_MIN_LEN} long,
             contain at least one uppercase letter, 
             one lowercase letter, one digit, and one special character.`, 
-            function(password) {
-                const hasUpperCase = /[A-Z]/.test(password);   // Checks for uppercase letter
-                const hasLowerCase = /[a-z]/.test(password);   // Checks for lowercase letter
-                const hasDigit = /[0-9]/.test(password);       // Checks for digit
-                const hasSpecialChar = /[!_@#$%^&*(),.?":{}|<>]/.test(password);  // Checks for special character
-                
-                if (password.length < PWD_MIN_LEN) {
-                    return this.createError({ message: `Password must be at least ${PWD_MIN_LEN} characters long.` })
-                }
-                if (!hasUpperCase) {
-                    return this.createError({ message: 'Password must contain at least 1 uppercase letter.'})
-                }
-                if (!hasLowerCase) {
-                    return this.createError({ message: 'Password must contain at least 1 lowercase letter.'})
-                }
-                if (!hasDigit) {
-                    return this.createError({ message: 'Password must contain at least 1 digit.' });
-
-                }
-                if (!hasSpecialChar) {
-                    return this.createError({ message: 'Password must contain at least 1 special character.' });
-                }
-                
-                return true;
-            } 
+            passWordValidationMsg(PWD_MIN_LEN)   
         )
 });
 
@@ -99,7 +77,7 @@ const employeeLoginValidation = async (req, res, next) => {
         loginData.credential = sanitizeInput(loginData.credential);
         loginData.password = sanitizeInput(loginData.password);
         // validate req data using Yup schema
-        await loginSchema.validate(loginData);  // abortEarly: false option ensures that Yup will collect all validation errors instead of stopping at the first one.
+        await loginSchema.validate(loginData, {abortEarly: false});  // abortEarly: false option ensures that Yup will collect all validation errors instead of stopping at the first one.
         
         next();
 
