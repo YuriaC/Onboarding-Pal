@@ -16,10 +16,10 @@ const Navbar = () => {
                         </NavLink>
                     </li>
                     <li>
-                        <NavLink to="/housingmgmt"
+                        <NavLink to="/visastatusemployees"
                             className={({ isActive }) => (isActive ? 'active' : '')}
                         >
-                            Housingmgmt
+                            Visa Status
                         </NavLink>
                     </li>
                     <li>
