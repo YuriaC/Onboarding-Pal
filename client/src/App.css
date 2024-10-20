@@ -4,6 +4,7 @@
   text-align: center;
 }
 
+
 input {
   margin: 0.5rem;
 }
@@ -61,7 +62,7 @@ input:required:focus {
 .mainContainer {
   display: flex;
   flex-direction: column;
-  justify-content: center;
+  justify-content: space-between;
   align-items: center;
 }
 

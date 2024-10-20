@@ -16,14 +16,26 @@ const HRNavbar = () => {
                         </NavLink>
                     </li>
                     <li>
+                        <NavLink to="/hr/housingmgmt"
+                            className={({ isActive }) => (isActive ? 'active' : '')}
+                        >
+                            Housing Management
+                        </NavLink>
+                    </li>
+                    <li>
                         <NavLink to="/hr/hiring"
                             className={({ isActive }) => (isActive ? 'active' : '')}
                         >
-                            Hiring
+                            Hiring Management
                         </NavLink>
                     </li>
-
-
+                    <li>
+                        <NavLink to="/hr/visastatushr"
+                            className={({ isActive }) => (isActive ? 'active' : '')}
+                        >
+                            Visa Status
+                        </NavLink>
+                    </li>
                 </ul>
             </nav>
             <Outlet />
