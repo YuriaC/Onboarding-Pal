@@ -47,6 +47,7 @@ const Onboarding = () => {
     const [emCounter, setEmCounter] = useState(1)
     const [userEmail, setUserEmail] = useState('')
     const [appStatus, setAppStatus] = useState('')
+    const [docs, setDocs] = useState([])
 
     useEffect(() => {
         axios.get(`${USER_ENDPOINT}/userinfo`, {
@@ -56,13 +57,27 @@ const Onboarding = () => {
         })
         .then(response => {
             setUserEmail(response.data.email)
-            setAppStatus(response.data.onboardingStatus)
-            console.log('appStatus:', response.data.onboardingStatus)
+            const status = response.data.onboardingStatus
+            setAppStatus(status)
+            console.log('appStatus:', status)
+            if (status === 'Pending') {
+                getDocs()
+            }
         })
         .catch(error => {
             toast.error(`Error fetching user info! Error: ${error.message}`)
         })
     }, [])
+
+    const getDocs = async () => {
+        const response = await axios.get(`${USER_ENDPOINT}/getuserdocs`, {
+            headers: {
+                'Authorization': `Bearer ${token}`
+            }
+        })
+        setDocs(response.data)
+        console.log('response:', response)
+    }
 
     const handleChange = (e) => {
         const { type, name, value } = e.target
@@ -333,6 +348,30 @@ const Onboarding = () => {
                 </fieldset>
                 <input type='submit' value='Submit' disabled={appStatus === 'Pending'} />
             </form>
+            {appStatus === 'Pending' &&
+                <div>
+                    {Object.keys(docs).map((key) => {
+                        const doc = docs[key]
+                        let fileName
+                        switch (key) {
+                            case 'profilePictureURL':
+                                fileName = 'Profile Picture'
+                                break
+                            case 'driversLicenseCopy_url':
+                                fileName = "Driver's License"
+                                break
+                            case 'optUrl':
+                                fileName = 'OPT Receipt'
+                                break
+                        }
+                        return (
+                            <div key={key}>
+                                {fileName}: <button><a href={doc} download>Download</a></button>
+                            </div>
+                        )
+                    })}
+                </div>
+            }
             <ToastContainer />
         </div>
     )

@@ -562,7 +562,7 @@ const setContactInput = async(req,res) =>{
 
 };
 
-const getDocs = async (req, res) => {
+const getUserDocs = async (req, res) => {
     try {
         const { username } = req.body
         const { AccessKeyId, SecretAccessKey, SessionToken } = req.credentials
@@ -589,6 +589,9 @@ const getDocs = async (req, res) => {
         const ret = {}
         for (const key of ['profilePictureURL', 'optUrl', 'driversLicenseCopy_url']) {
             const url = urls[key]
+            if (!url) {
+                continue
+            }
             const parts = url.split('/')
             const fileName = parts[parts.length - 1]
 
@@ -784,6 +787,6 @@ module.exports = {
     updateWorkauthStatus,
     checkRegister,
     sendRegistrationLink,
-    getDocs,
+    getUserDocs,
     getUserInfo,
 }
