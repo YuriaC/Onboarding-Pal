@@ -61,7 +61,7 @@ const Login = () => {
         if (validatorForm()) {
 
             axios.post('http://localhost:3000/api/users/login', {
-                username: form.userInput,
+                userinput: form.userInput,
                 password: form.password
             }, {
                 withCredentials: true
