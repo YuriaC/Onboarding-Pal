@@ -1,5 +1,6 @@
 import React from 'react'
 import { Outlet, Navigate } from 'react-router-dom';
+import jwtDecode from 'jwt-decode'
 
 // import axios from 'axios'
 
@@ -20,7 +21,7 @@ const Guard = () => {
           const decoded = jwtDecode(token);
           return decoded.role; // Assuming the role is stored as 'role' in the token
         } catch (error) {
-          console.error('Invalid token');
+          console.error(`Error checking user role: ${error}`);
           return null;
         }
     }
@@ -43,6 +44,7 @@ const Guard = () => {
         //     });
         const role = checkUserRole(authToken)
         setEmployeeOrHr(role)
+        setLoading(false)
 
     }, [authToken])
 
