@@ -2,11 +2,17 @@ import { useState, useEffect } from 'react';
 import { NavLink } from 'react-router-dom';
 import validator from 'validator';
 import { useNavigate } from 'react-router-dom';
+import { useSelector } from 'react-redux';
+import axios from 'axios';
 import './auth.css';
 
 const Login = () => {
     const [isVisible, setIsVisible] = useState(false);
+    const [error, setError] = useState('');
     const navigate = useNavigate();
+
+
+
 
     const [form, setForm] = useState({
         userInput: '',
@@ -21,7 +27,7 @@ const Login = () => {
     const validatorForm = () => {
         let errors = {};
 
-        if(!validator.isEmail(form.userInput) && !validator.isLength(form.userInput, { min: 3, max: 16 })){
+        if (!validator.isEmail(form.userInput) && !validator.isLength(form.userInput, { min: 3, max: 16 })) {
             errors.userInput = 'Username must be between 3 and 16 characters';
         }
 
@@ -41,15 +47,37 @@ const Login = () => {
         return Object.keys(errors).length === 0;
     }
 
-    const userLogin = (e) => {
+    const getCookie = (name) => {
+        const value = `; ${document.cookie}`;
+        const parts = value.split(`; ${name}=`);
+        if (parts.length === 2) return parts.pop().split(';').shift();
+    }
+
+    const userLogin = async (e) => {
         e.preventDefault();
 
-        if (validatorForm()) {
-            //axios fetch
-            localStorage.setItem('token', 'token');//fake authorication
-            navigate('/');
+        //const authToken = getCookie('auth_token');
 
-            //navigate to hr
+        if (validatorForm()) {
+
+            axios.post('http://localhost:3000/api/users/login', {
+                userinput: form.userInput,
+                password: form.password
+            }, {
+                withCredentials: true
+            }).then((res) => {
+                if (res.data.role === 'hr') {
+                    navigate('/hr/employeeprofiles');
+                } else if (res.data.role === 'employee') {
+                    navigate('/');
+                }
+            }).catch((error)=>{
+                if(error.status===401){
+                    setError('Username or Password incorrect');
+                }else{
+                    setError('An internal error occurred');
+                }
+            })
         }
     }
 
@@ -61,6 +89,7 @@ const Login = () => {
         <div className={`register-form ${isVisible ? 'visible' : ''}`}>
             <form>
                 <div className="form-group">
+                    {error && <h3 style={{ color: 'red' }}>{error}</h3>}
                     <label htmlFor='userInput'>Username or Email: <span className="required">*</span></label>
                     <input type="text" required name="userInput" placeholder="your username or Email"
                         value={form.email}

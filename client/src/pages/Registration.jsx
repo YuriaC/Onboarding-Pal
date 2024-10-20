@@ -9,6 +9,7 @@ import axios from 'axios'
 
 const Registration = () => {
     const [isVisible, setIsVisible] = useState(false);
+    const [error, setError] = useState('');
     const navigate = useNavigate();
 
     const [form, setForm] = useState({
@@ -59,16 +60,27 @@ const Registration = () => {
 
         if (validatorForm()) {
             registerUser();
-            navigate('/auth/login')
         }
     }
     const registerUser = async () => {
         try {
-            await axios.post('http://localhost:3000/api/users/register', form);
+            axios.post('http://localhost:3000/api/users/register', {
+                username: form.username,
+                email: form.email,
+                password: form.password,
+            }).then(()=>{
+                navigate('/auth/login');
+            }).catch((error)=>{
+                if(error.status===409){
+                    setError('User already exists');
+                }else{
+                    setError('An internal error occurred');
+                }
+            })
         } catch (error) {
             console.log(error.response.data.message);
             const message = error.response ? error.response.data.message : 'An error occurred';
-            navigate('/auth/login');
+            //navigate('/auth/login');
         }
     }
     const checkToken = async (token) => {
@@ -103,6 +115,7 @@ const Registration = () => {
         <div className={`register-form ${isVisible ? 'visible' : ''}`}>
             <form>
                 <div className="form-group">
+                    {error && <h3 style={{ color: 'red' }}>{error}</h3>}
                     <label htmlFor='username'>Username: <span className="required">*</span></label>
                     <input type="text" required name="username" placeholder="Your username"
                         value={form.username}
