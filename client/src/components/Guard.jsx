@@ -1,14 +1,14 @@
 import React from 'react'
 import { Outlet, Navigate } from 'react-router-dom';
-import jwtDecode from 'jwt-decode'
-
+import {jwtDecode} from 'jwt-decode';
+import {useLocation} from 'react-router-dom';
 // import axios from 'axios'
 
 
 const Guard = () => {
     const [employeeOrHr, setEmployeeOrHr] = React.useState('');
     const [loading, setLoading] = React.useState(true);
-
+    const location = useLocation();
 
     const getCookie = (name) => {
         const value = `; ${document.cookie}`;
@@ -46,7 +46,7 @@ const Guard = () => {
         setEmployeeOrHr(role)
         setLoading(false)
 
-    }, [authToken])
+    }, [location.pathname])
 
     if (loading) return <div>Loading...</div>;  // Wait until role is checked
 
