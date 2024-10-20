@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { ToastContainer, toast } from 'react-toastify'
 import { token, USER_ENDPOINT, username } from '../constants'
 import axios from 'axios'
+import { Box, Button, Card, CardActions, CardContent, Typography } from '@mui/joy'
 
 const Onboarding = () => {
 
@@ -48,6 +49,7 @@ const Onboarding = () => {
     const [userEmail, setUserEmail] = useState('')
     const [appStatus, setAppStatus] = useState('')
     const [docs, setDocs] = useState([])
+    const [submitted, setSubmitted] = useState(false)
 
     useEffect(() => {
         axios.get(`${USER_ENDPOINT}/userinfo`, {
@@ -125,6 +127,7 @@ const Onboarding = () => {
                 }
             })
             toast.success('Successfully submitted application!')
+            setSubmitted(!submitted)
         }
         catch (error) {
             toast.error(`Error submitting application! Error: ${error.response.data}`)
@@ -349,7 +352,7 @@ const Onboarding = () => {
                 <input type='submit' value='Submit' disabled={appStatus === 'Pending'} />
             </form>
             {appStatus === 'Pending' &&
-                <div>
+                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, mb: '2rem' }}>
                     {Object.keys(docs).map((key) => {
                         const doc = docs[key]
                         let fileName
@@ -365,12 +368,23 @@ const Onboarding = () => {
                                 break
                         }
                         return (
-                            <div key={key}>
-                                {fileName}: <button><a href={doc} download>Download</a></button>
-                            </div>
+                            <>
+                                <Card key={`${key}-download`} sx={{ minWidth: 275 }}>
+                                    <CardContent>
+                                        <Typography variant='h6'>{fileName}</Typography>
+                                    </CardContent>
+                                    <CardActions sx={{ justifyContent: 'center' }}>
+                                        <a href={doc} download>
+                                            <Button size='small' href={doc} download>
+                                                Download
+                                            </Button>
+                                        </a>
+                                    </CardActions>
+                                </Card>
+                            </>
                         )
                     })}
-                </div>
+                </Box>
             }
             <ToastContainer />
         </div>
