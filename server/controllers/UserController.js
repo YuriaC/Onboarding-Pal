@@ -664,7 +664,7 @@ const getPersonalinfo = async(req,res) =>{
 const getUserInfo = async (req, res) =>{
     const { username } = req.body
     try{
-        const user = await User.findOne({ username }).lean().exec();
+        const user = await User.findOne({ username }).populate('referer').populate('emergencyContacts').lean().exec();
         if (!user) {
             return res.status(401).json({ message: 'User not Found!' });
         }

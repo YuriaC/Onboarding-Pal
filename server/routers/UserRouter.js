@@ -32,6 +32,6 @@ userRouter.post('/register', userController.register)
     .post('/updateworkauthStatus', userController.updateWorkauthStatus)
     .get('/employeesprofile', userController.getEmpolyeesProfileForHR) //only HR can access this controller, HR auth required
     .get('/personalinfobyid', userController.getPersonalinfoById)//only HR can access this controller, HR auth required
-    .get('/checkuserisemployeeorhr', userController.checkUserIsEmployeeOrHr)
+    // .get('/checkuserisemployeeorhr', userController.checkUserIsEmployeeOrHr)
     
 module.exports = userRouter;
