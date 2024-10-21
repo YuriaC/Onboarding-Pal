@@ -40,6 +40,9 @@ const Onboarding = () => {
         refPhone: '',
         refEmail: '',
         refRelationship: '',
+        visaStartDate: null,
+        visaEndDate: null,
+        visaTitle: '',
         emergencyContacts: [
             {
                 firstName: '',
@@ -109,6 +112,7 @@ const Onboarding = () => {
             workAuth,
             visaStartDate,
             visaEndDate,
+            visaTitle,
         } = data
         console.log('data:', data)
         const newEmContacts = []
@@ -159,6 +163,7 @@ const Onboarding = () => {
             nonPermWorkAuth: workAuth,
             visaStartDate: visaStartDate ? visaStartDate.split('T')[0] : '',
             visaEndDate: visaEndDate ? visaEndDate.split('T')[0] : '',
+            visaTitle,
         })
     }
 
@@ -369,7 +374,7 @@ const Onboarding = () => {
                                 <>
                                     <br />
                                     <label>Visa title: </label>
-                                    <input type='text' name='visaTitle' onChange={handleChange} disabled={appStatus === 'Pending'} />
+                                    <input type='text' name='visaTitle' value={formData.visaTitle} onChange={handleChange} disabled={appStatus === 'Pending'} />
                                 </>
                             }
                             <br />

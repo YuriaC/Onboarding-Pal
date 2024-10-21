@@ -466,7 +466,7 @@ const setApplicationInput = async(req,res) =>{
     const dlnum = req.body.dlNum;
     const dldate = req.body.dlExpDate;
     const { refFirstName, refLastName, refMiddleName, refPhone, refEmail, refRelationship } = req.body
-    const { visaStartDate, visaEndDate } = req.body
+    const { visaStartDate, visaEndDate, visaTitle } = req.body
     const emergencyContacts = req.body.emergencyContacts
 
     const s3 = new S3Client({
@@ -580,6 +580,7 @@ const setApplicationInput = async(req,res) =>{
                 "emergencyContacts": emergencyContactIds,
                 "visaStartDate": visaStartDate,
                 "visaEndDate": visaEndDate,
+                "visaTitle": visaTitle,
             }
         }
         );
