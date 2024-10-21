@@ -10,7 +10,8 @@ const generateToken = require("../utils/generateToken");
 const { sendMail } = require("../utils/sendMails");
 const jwt = require('jsonwebtoken');
 const { S3Client, PutObjectCommand, GetObjectCommand } = require('@aws-sdk/client-s3')
-const { getSignedUrl } = require('@aws-sdk/s3-request-presigner')
+const { getSignedUrl } = require('@aws-sdk/s3-request-presigner');
+const validator = require('validator')
 
 const registerSchema = Yup.object().shape({
     username: Yup.string()
@@ -262,7 +263,96 @@ const login = async (req, res) => {
             httpOnly: true,
             maxAge: 3600000,
             sameSite: 'strict',
+          /*
+  const login = async(req,res)=>{ 
+    // tested working
+    //await loginSchema_username.validate(req.body);
+    if(!req.body.userinput || !req.body.password){
+        return res.status(401).json({ message: 'Missing required fields!' });
+    }
+
+    const usernameRegex = /^[a-zA-Z0-9_]+$/;
+    
+    const isEmail = validator.isEmail(req.body.userinput);
+
+    const isUsername = !validator.isEmpty(req.body.userinput)
+      && validator.isLength(req.body.userinput, { min: 3, max: 16 })
+      && validator.matches(req.body.userinput, usernameRegex);
+    
+    if (!isEmail && !isUsername) {
+      return res.status(401).json({ message: 'Invalid credentials' });
+    }
+    
+    const userinput = sanitizeInput(req.body.userinput);
+    const password = sanitizeInput(req.body.password);
+    try{
+        const user = await User.findOne({ 
+            $or: [
+                {username: userinput},
+                {email: userinput}
+            ]
+         })
+        .select('password username role')
+        .lean()
+        .exec();
+
+
+        if (!user) {
+        return res.status(401).json({ message: 'Invalid credentials' });
+        }
+
+        // check if password is correct
+        const isPasswordCorrect = await argon2.verify(user.password, password);
+        if (!isPasswordCorrect) {
+        return res.status(401).json({ message: 'Invalid credentials' });
+        }
+
+        // generate JWT token
+        const token = generateToken(user._id, user.username, user.role);
+        res.cookie('auth_token', token);
+        return res.status(200).json({
+            userId: user._id,
+            userinput: userinput,
+            role: user.role
         });
+    } catch (error) {
+        console.error(error);
+        return res.status(500).json({ message: error.message });
+    }*/
+
+};
+/*
+const login = async(req,res)=>{ 
+    // tested working
+    //await loginSchema_username.validate(req.body);
+    validator.isEmail(req.body.userinput);
+    const userinput = sanitizeInput(req.body.userinput);
+    const password = sanitizeInput(req.body.password);
+    try{
+        const user = await User.findOne({ userinput })
+        .select('password username role')
+        .lean()
+        .exec();
+
+
+        if (!user) {
+        return res.status(401).json({ message: 'Invalid credentials' });
+        }
+
+        // check if password is correct
+        const isPasswordCorrect = await argon2.verify(user.password, password);
+        if (!isPasswordCorrect) {
+        return res.status(401).json({ message: 'Invalid credentials' });
+        }
+
+        // generate JWT token
+        const token = generateToken(user._id, user.username, user.role);
+        res.cookie('auth_token', token);
+        return res.status(200).json({
+            userId: user._id,
+            userinput: userinput,
+            role: user.role
+        });*/
 
         // console.log(`JWT token, ${token}, generated. \n`);  // debug
             return res.status(200).json({data: token, message:`Login Successful. Welcome, ${user.username}!`});
@@ -595,7 +685,7 @@ const setContactInput = async(req,res) =>{
 
 };
 
-const getDocs = async (req, res) => {
+const getUserDocs = async (req, res) => {
     try {
         const { username } = req.body
         const { AccessKeyId, SecretAccessKey, SessionToken } = req.credentials
@@ -622,6 +712,9 @@ const getDocs = async (req, res) => {
         const ret = {}
         for (const key of ['profilePictureURL', 'optUrl', 'driversLicenseCopy_url']) {
             const url = urls[key]
+            if (!url) {
+                continue
+            }
             const parts = url.split('/')
             const fileName = parts[parts.length - 1]
 
@@ -687,7 +780,7 @@ const getPersonalinfo = async(req,res) =>{
 const getUserInfo = async (req, res) =>{
     const { username } = req.body
     try{
-        const user = await User.findOne({ username }).lean().exec();
+        const user = await User.findOne({ username }).populate('referer').populate('emergencyContacts').lean().exec();
         if (!user) {
             return res.status(401).json({ message: 'User not Found!' });
         }
@@ -846,19 +939,6 @@ const getPersonalinfoById = async(req,res) =>{
     }
 } 
 
-const checkUserIsEmployeeOrHr = async(req,res) =>{
-    const {auth_token} = req.cookies;
-    if(!auth_token){
-        return res.status(401).json({ message: 'No token provided!' });
-    }
-    try{
-        const {role} = jwt.verify(auth_token, process.env.ACCESS_TOKEN_SECRET);
-        return res.status(200).json({role});
-    }catch(error){
-        return res.status(500).json({ message: error.message });
-    }
-}
-
 module.exports = {
     register,
     login,
@@ -873,9 +953,8 @@ module.exports = {
     updateWorkauthStatus,
     checkRegister,
     sendRegistrationLink,
-    getDocs,
+    getUserDocs,
     getUserInfo,
     getEmpolyeesProfileForHR,
     getPersonalinfoById,
-    checkUserIsEmployeeOrHr
 }

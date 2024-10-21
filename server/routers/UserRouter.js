@@ -24,7 +24,7 @@ userRouter
     .post('/contactinput', userController.setContactInput)
     .get('/personalinfo', userController.getPersonalinfo)
     .get('/userinfo', authenticateJWT, userController.getUserInfo)
-    .get('/getdocs', authenticateJWT, AWSCredentialsMiddleware, userController.getDocs)
+    .get('/getuserdocs', authenticateJWT, AWSCredentialsMiddleware, userController.getUserDocs)
     // .get('/housedetails', userController.getHousedetails)
     // .post('/facilityreport', userController.addFacilityreport)
     // .get('/facilityreport', userController.getFacilityreport)
@@ -34,6 +34,6 @@ userRouter
     .post('/updateworkauthStatus', userController.updateWorkauthStatus)
     .get('/employeesprofile', userController.getEmpolyeesProfileForHR) //only HR can access this controller, HR auth required
     .get('/personalinfobyid', userController.getPersonalinfoById)//only HR can access this controller, HR auth required
-    .get('/checkuserisemployeeorhr', userController.checkUserIsEmployeeOrHr)
+    // .get('/checkuserisemployeeorhr', userController.checkUserIsEmployeeOrHr)
     
 module.exports = userRouter;
