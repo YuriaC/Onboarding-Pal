@@ -9,6 +9,6 @@ export const COMMENT_ENDPOINT = `${API_BASE_URL}/comments`
 // HR
 // export const token = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MTIzLCJ1c2VybmFtZSI6IkhSVGVzdCIsInJvbGUiOiJociIsImlhdCI6MTcyOTMyODAxNywiZXhwIjoxNzI5MzM4ODE3fQ.ExQNnb25DDX2Wd_dVHxzdmDafdb2VgW1PIegqKavFK4'
 // Employee
-export const token = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MTIzLCJ1c2VybmFtZSI6IkVtcGxveWVlVGVzdCIsInJvbGUiOiJlbXBsb3llZSIsImlhdCI6MTcyOTQwODUyMSwiZXhwIjoxNzI5NDE5MzIxfQ.fB_q7Jt9S27JEP8jAWKUcKL7g8VeMLwcyXdImPD20GM'
+export const token = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MTIzLCJ1c2VybmFtZSI6IkVtcGxveWVlVGVzdCIsInJvbGUiOiJlbXBsb3llZSIsImlhdCI6MTcyOTQ2NzA3NSwiZXhwIjoxNzI5NDc3ODc1fQ.h1SwGRzNIXUxx6ApffLeZv_33_tb4cRHnrd-_apxcB4'
 
 export const username = 'EmployeeTest'

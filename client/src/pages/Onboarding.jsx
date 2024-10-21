@@ -73,9 +73,10 @@ const Onboarding = () => {
             }
         })
         .catch(error => {
+            console.log('error:', error)
             toast.error(`Error fetching user info! Error: ${error.message}`)
         })
-    }, [])
+    }, [submitted])
 
     const setDataToForm = (data) => {
         const {

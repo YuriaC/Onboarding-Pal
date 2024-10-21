@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import './Personal.css';
 import axios from 'axios';
 import { token, USER_ENDPOINT } from '../constants';
-import { toast } from 'react-toastify';
+import { toast, ToastContainer } from 'react-toastify';
 
 const Personal = () => {
     const [isEditing, setIsEditing] = useState(false);
@@ -53,7 +53,7 @@ const Personal = () => {
 
 
     useEffect(() => {
-        axios.get(`${USER_ENDPOINT}/getdocs`, {
+        axios.get(`${USER_ENDPOINT}/getuserdocs`, {
             headers: {
                 'Authorization': `Bearer ${token}`
             }
@@ -335,6 +335,7 @@ const Personal = () => {
 
             <button onClick={handleEditToggle}>{isEditing ? 'Cancel' : 'Edit'}</button>
             {isEditing && <button onClick={handleSave}>Save</button>}
+            <ToastContainer />
         </div>
     );
 };
