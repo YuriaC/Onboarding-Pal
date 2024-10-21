@@ -662,7 +662,7 @@ const getPersonalinfo = async(req,res) =>{
 };
 
 const getUserInfo = async (req, res) =>{
-    const { username } = req.body
+    const { username } = req.user
     try{
         const user = await User.findOne({ username }).populate('referer').populate('emergencyContacts').lean().exec();
         if (!user) {
@@ -674,7 +674,15 @@ const getUserInfo = async (req, res) =>{
         return res.status(500).json({ message: error.message });
     }
 };
-
+const logout = async (req, res) => {
+    try {
+        res.clearCookie('auth_token');
+        return res.status(200).json({ message: 'Logout successful' });
+    } catch (error) {
+        console.error(error);
+        return res.status(500).json({ message: error.message });
+    }
+};
 const updateWorkauthdoc = async(req,res) =>{
     //tested working
     const username = req.body.username;
@@ -841,4 +849,5 @@ module.exports = {
     getUserInfo,
     getEmpolyeesProfileForHR,
     getPersonalinfoById,
+    logout
 }

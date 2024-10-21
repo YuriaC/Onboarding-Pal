@@ -9,14 +9,8 @@ input {
   margin: 0.5rem;
 }
 
-input:required {
-  border: 2px solid red;
-}
 
-input:required:focus {
-  outline: none; 
-  box-shadow: 0 0 5px red;
-}
+
 
 .address-input {
   width: 30rem;
@@ -57,48 +51,4 @@ input:required:focus {
 .read-the-docs {
   color: #888;
 } */
-
-/* Navbar.css */
-.mainContainer {
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.navbar {
-  background-color: #333;
-  padding: 1em;
-  /*position: fixed;
-  top: 0;*/
-  width: 100vw;
-}
-
-.navbar-links {
-  list-style-type: none;
-  margin: 0;
-  padding: 0;
-  display: flex;
-  justify-content: center;
-}
-
-.navbar-links li {
-  margin: 0 1.5rem;
-}
-
-.navbar-links a {
-  font-size: 1.2rem;
-  font-weight: bold;
-}
-
-.navbar-links a:hover {
-  color: #ffdd57;
-  text-decoration: underline; 
-}
-
-.active {
-  color: #ffdd57; 
-  text-decoration: underline; 
-}
-
 
