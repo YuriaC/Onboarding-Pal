@@ -2,7 +2,7 @@ const express = require('express');
 const userRouter = express.Router();
 
 const userController = require('../controllers/UserController');;
-const { authenticateJWT } = require('../middlewares/AuthMiddleware');
+const { authenticateJWT, isHR } = require('../middlewares/AuthMiddleware');
 const { AWSCredentialsMiddleware } = require('../middlewares/AWSMiddleware')
 
 
@@ -14,7 +14,7 @@ const userValidator = require("../middlewares/UserValidator");
 userRouter.post('/register', userController.register)
     .post('/logout', userController.logout)
     .get('/register/:token', userController.checkRegister)
-    .post('/sendlink', userController.sendRegistrationLink)
+    .post('/send-registration-link', userController.sendRegistrationLink)
     .post('/login', userController.login)
     // .post('/login', userValidator.employeeLoginValidation, userController.login)  // added middleware    
     .get('/onboardstatus', userController.getOnboardingStatus)
@@ -25,6 +25,7 @@ userRouter.post('/register', userController.register)
     .post('/contactinput', userController.setContactInput)
     .get('/personalinfo', userController.getPersonalinfo)
     .get('/userinfo', authenticateJWT, userController.getUserInfo)
+    .get('/registration-history', authenticateJWT,isHR, userController.getRegistrationHistory)
     .get('/getuserdocs', authenticateJWT, AWSCredentialsMiddleware, userController.getUserDocs)
     // .get('/housedetails', userController.getHousedetails)
     // .post('/facilityreport', userController.addFacilityreport)
