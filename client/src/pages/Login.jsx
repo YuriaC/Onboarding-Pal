@@ -2,16 +2,15 @@ import { useState, useEffect } from 'react';
 import { NavLink } from 'react-router-dom';
 import validator from 'validator';
 import { useNavigate } from 'react-router-dom';
-import { useDispatch, useSelector } from 'react-redux';
-import { loginUserThunk } from '../store/user/userSlice';
+import { useSelector } from 'react-redux';
 import axios from 'axios';
 import './auth.css';
 
 const Login = () => {
     const [isVisible, setIsVisible] = useState(false);
+    const [error, setError] = useState('');
     const navigate = useNavigate();
 
-    const loginUser = useSelector((state) => state.user);
 
 
 
@@ -57,29 +56,28 @@ const Login = () => {
     const userLogin = async (e) => {
         e.preventDefault();
 
-        const authToken = getCookie('auth_token');
+        //const authToken = getCookie('auth_token');
 
         if (validatorForm()) {
-            try {
-                axios.post('http://localhost:3000/api/users/login', {
-                    username: form.userInput,
-                    password: form.password
-                }, {
-                    withCredentials: true
-                }).then((res)=>{
-                    if(res.data.role==='hr'){
-                        navigate('/hr/employeeprofiles');
-                    }else if(res.data.role==='employee'){
-                        navigate('/');
-                    }
-                })
 
-
-            } catch (error) {
-                console.log(error)
-            }
-
-
+            axios.post('http://localhost:3000/api/users/login', {
+                userinput: form.userInput,
+                password: form.password
+            }, {
+                withCredentials: true
+            }).then((res) => {
+                if (res.data.role === 'hr') {
+                    navigate('/hr/employeeprofiles');
+                } else if (res.data.role === 'employee') {
+                    navigate('/');
+                }
+            }).catch((error)=>{
+                if(error.status===401){
+                    setError('Username or Password incorrect');
+                }else{
+                    setError('An internal error occurred');
+                }
+            })
         }
     }
 
@@ -91,7 +89,7 @@ const Login = () => {
         <div className={`register-form ${isVisible ? 'visible' : ''}`}>
             <form>
                 <div className="form-group">
-                    {loginUser.error && <h3 style={{ color: 'red' }}>Username or Password incorrect</h3>}
+                    {error && <h3 style={{ color: 'red' }}>{error}</h3>}
                     <label htmlFor='userInput'>Username or Email: <span className="required">*</span></label>
                     <input type="text" required name="userInput" placeholder="your username or Email"
                         value={form.email}
@@ -113,10 +111,12 @@ const Login = () => {
                     </p>}
                 </div>
 
-
                 <div className='registerButtonAndLink'>
                     <button type="submit" onClick={userLogin}>Login</button>
-                    <div>Don’t have an account? <NavLink to="/auth/registration" className='signButton'>Sign up</NavLink></div>
+                    {/* <div>Don’t have an account? <NavLink to="/auth/registration" className='signButton'>Sign up</NavLink></div> */}
+                    <span className='signUpText'>
+                        Don’t have an account? Please Contact your HR for Registration Instructions  
+                    </span>
                 </div>
             </form>
         </div>

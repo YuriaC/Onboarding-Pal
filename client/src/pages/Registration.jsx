@@ -9,6 +9,7 @@ import axios from 'axios'
 
 const Registration = () => {
     const [isVisible, setIsVisible] = useState(false);
+    const [error, setError] = useState('');
     const navigate = useNavigate();
 
     const [form, setForm] = useState({
@@ -67,8 +68,14 @@ const Registration = () => {
                 username: form.username,
                 email: form.email,
                 password: form.password,
-            }).then((data)=>{
+            }).then(()=>{
                 navigate('/auth/login');
+            }).catch((error)=>{
+                if(error.status===409){
+                    setError('User already exists');
+                }else{
+                    setError('An internal error occurred');
+                }
             })
         } catch (error) {
             console.log(error.response.data.message);
@@ -108,6 +115,7 @@ const Registration = () => {
         <div className={`register-form ${isVisible ? 'visible' : ''}`}>
             <form>
                 <div className="form-group">
+                    {error && <h3 style={{ color: 'red' }}>{error}</h3>}
                     <label htmlFor='username'>Username: <span className="required">*</span></label>
                     <input type="text" required name="username" placeholder="Your username"
                         value={form.username}
