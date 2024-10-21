@@ -111,10 +111,12 @@ const Login = () => {
                     </p>}
                 </div>
 
-
                 <div className='registerButtonAndLink'>
                     <button type="submit" onClick={userLogin}>Login</button>
-                    <div>Don’t have an account? <NavLink to="/auth/registration" className='signButton'>Sign up</NavLink></div>
+                    {/* <div>Don’t have an account? <NavLink to="/auth/registration" className='signButton'>Sign up</NavLink></div> */}
+                    <span className='signUpText'>
+                        Don’t have an account? Please Contact your HR for Registration Instructions  
+                    </span>
                 </div>
             </form>
         </div>

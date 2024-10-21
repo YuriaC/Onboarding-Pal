@@ -2,10 +2,10 @@
 const User = require('../models/User');
 const House = require('../models/House');
 const Contact = require('../models/Contact');
-const Yup = require('yup');
-const { JSDOM } = require('jsdom');
+const Yup = require('yup');  // 
+const { JSDOM } = require('jsdom');  //
 const argon2 = require("argon2");
-const DOMPurify = require('isomorphic-dompurify');
+const DOMPurify = require('isomorphic-dompurify');  //
 const generateToken = require("../utils/generateToken");
 const { sendMail } = require("../utils/sendMails");
 const jwt = require('jsonwebtoken');
@@ -22,16 +22,27 @@ const registerSchema = Yup.object().shape({
         .required('Email is required.'),
     password: Yup.string()
         .trim()
-        .required('Message cannot be empty.'),
-  });
-const loginSchema_username = Yup.object().shape({
-    username: Yup.string()
-        .matches(/^[a-zA-Z0-9_]{3,16}$/, 'Username must be 3-16 characters long and alphanumeric.')
-        .required('Username is required.'),
+        .required('Password cannot be empty.'),
+});
+
+const loginSchema = Yup.object().shape({
+    credential: Yup.string()
+        .test('username-or-email', 'Either username or email is required, but not both.', function (value) {
+            // Check if the value matches a valid email format
+            const isEmail = Yup.string().email().isValidSync(value);
+            // Check if the value matches a valid username format
+            const isUsername = /^[a-zA-Z0-9_]{3,16}$/.test(value);
+            // Pass the test if it's either a valid email or username
+            return isEmail || isUsername;
+        })
+        .required('Username or email address is required.'),
+
     password: Yup.string()
         .trim()
-        .required('Message cannot be empty.'),
+        .required('Password cannot be empty.'),
 });
+
+
 const sanitizeInput = (input) => {
     const dom = new JSDOM('');
     const purify = DOMPurify(dom.window);
@@ -46,7 +57,7 @@ const register = async (req,res) =>{
     try{
         const duplicate = await User.findOne({ username }).lean().exec();
         if (duplicate) {
-          return res.status(409).json({ message: 'Username already exists' });
+            return res.status(409).json({ message: 'Username already exists' });
         }
 
 
@@ -103,6 +114,7 @@ const register = async (req,res) =>{
         return res.status(500).json({ message: error.message});
     }
 };
+
 const sendRegistrationLink = async (req,res) =>{
     // Get user information
     const { email } = req.body;
@@ -211,6 +223,47 @@ const checkRegister = async (req, res) => {
     }
   };
 
+const login = async (req, res) => {
+    // Tested working. User can login with either username or email
+    const loginData = req.body.form;
+    await loginSchema.validate(loginData);
+    const credential = sanitizeInput(loginData.credential);
+    const password = sanitizeInput(loginData.password);
+    // console.log(credential, password);  // debug
+
+    try {
+        let user = await User.findOne({email: credential})
+            .select(['username','password','role'])
+            .lean()
+            .exec();
+
+        if (!user) {
+            // console.log('no matching email found, searching username');  // debug
+            user = await User.findOne({username: credential})
+                .select(['username','password', 'role'])
+                .lean()
+                .exec();
+
+            if (!user) {
+                // console.log('did not find matching username either...');  // debug
+                return res.status(404).send({message:"User doesn't exist."});
+            } 
+        }
+
+        // verify hashed password
+        const validPassword = await argon2.verify(user.password, password);
+        if (!validPassword) {
+            return res.status(401).json({message:"Wrong password!"});
+        }
+
+        //generate JWT TOKEN
+        const token = generateToken(user._id, user.username, user.role);
+        // console.log(`JWT token, ${token}, generated. \n`);  // debug
+        res.cookie('auth_token', token, {
+            httpOnly: true,
+            maxAge: 3600000,
+            sameSite: 'strict',
+          /*
   const login = async(req,res)=>{ 
     // tested working
     //await loginSchema_username.validate(req.body);
@@ -265,7 +318,7 @@ const checkRegister = async (req, res) => {
     } catch (error) {
         console.error(error);
         return res.status(500).json({ message: error.message });
-    }
+    }*/
 
 };
 /*
@@ -299,13 +352,15 @@ const login = async(req,res)=>{
             userId: user._id,
             userinput: userinput,
             role: user.role
-        });
-    } catch (error) {
-        console.error(error);
-        return res.status(500).json({ message: error.message });
-    }
+        });*/
 
-};*/
+        // console.log(`JWT token, ${token}, generated. \n`);  // debug
+            return res.status(200).json({data: token, message:`Login Successful. Welcome, ${user.username}!`});
+        } catch (e) {
+            return res.status(500).json({message: `ERROR: ${e}.`});  
+        }
+};
+
 
 const getOnboardingStatus = async(req,res) =>{
     // tested working
@@ -514,6 +569,7 @@ const setApplicationInput = async(req,res) =>{
                 "birthday": dob,
                 "gender": gender,
                 "workAuth": workauth,
+                // "workAuthFile_url": workauth_url,
                 "driversLicenseNumber": dlnum,
                 "driversLicenseExpDate": dldate,
                 "driversLicenseCopy_url": dlCopyURL,
@@ -713,6 +769,7 @@ const getPersonalinfo = async(req,res) =>{
         //     i983Url: user.i983Url,
         //     i20Url: user.i20Url,
         // });
+
         return res.status(200).json(user)
     }catch (error) {
         console.error(error);
