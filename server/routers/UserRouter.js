@@ -11,8 +11,8 @@ const { AWSCredentialsMiddleware } = require('../middlewares/AWSMiddleware')
 const userValidator = require("../middlewares/UserValidator");
 
 
-userRouter
-    .post('/register', userController.register)
+userRouter.post('/register', userController.register)
+    .post('/logout', userController.logout)
     .get('/register/:token', userController.checkRegister)
     .post('/sendlink', userController.sendRegistrationLink)
     .post('/login', userValidator.employeeLoginValidation, userController.login)  // added middleware    

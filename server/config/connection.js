@@ -30,7 +30,7 @@ mongoose.connect(MONGO_URI)
                 })
             }
 
-            const hashedPassword = await argon2.hash("ABCD1234@"); // THIS IS THE PASSWARD
+            const hashedPassword = await argon2.hash("Abcd1234@"); // THIS IS THE PASSWARD
 
             await House.insertMany(houses)
             const house = await House.findOne({}).exec();
@@ -55,7 +55,7 @@ mongoose.connect(MONGO_URI)
         
         }
         if (process.env.NODE_ENV !== 'production'){
-            // seed().then(() => console.log('Successfully seeded with 5 house and 2 users: EmployeeTest and HRTest with password: ABCD1234@')).catch(error => console.log('Error seeding:', error.message))
+            seed().then(() => console.log('Successfully seeded with 5 house and 2 users: EmployeeTest and HRTest with password: Abcd1234@')).catch(error => console.log('Error seeding:', error.message))
         }
 
     })

@@ -9,14 +9,8 @@ input {
   margin: 0.5rem;
 }
 
-input:required {
-  border: 2px solid red;
-}
 
-input:required:focus {
-  outline: none; 
-  box-shadow: 0 0 5px red;
-}
+
 
 .address-input {
   width: 30rem;
