@@ -708,9 +708,12 @@ const getUserInfo = async (req, res) =>{
     try{
         const user = await User.findOne({ username }).populate('referer').populate({
             path: 'house',
-            populate: {
-                path: 'employees',
-            }
+            populate: [
+                { path: 'employees' },
+                { path: 'reports', populate: {
+                    path: 'comments'
+                }
+            }]
         }).populate('emergencyContacts').lean().exec();
         if (!user) {
             return res.status(401).json({ message: 'User not Found!' });
