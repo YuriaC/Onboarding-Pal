@@ -28,7 +28,7 @@ const authenticateJWT = (req, res, next) => {
 
 const isHR = (req, res, next) => {
   
-  if (req.body.role !== 'hr') {
+  if (req.user.role !== 'hr') {
     return res.status(403).json('Must be HR to access this!')
   }
 

@@ -21,12 +21,7 @@ const Login = () => {
             dispatch(loginUserThunk({ form, navigate }));
     };
 
-    useEffect(() => {
-    const cookie = document.cookie;
-    if (cookie) {
-            navigate('/');
-        }
-    }, []);
+ 
 
     return (
         <Container maxWidth="sm" sx={{ marginTop: 8 }}>

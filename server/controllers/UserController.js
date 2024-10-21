@@ -25,23 +25,6 @@ const registerSchema = Yup.object().shape({
         .required('Password cannot be empty.'),
 });
 
-const loginSchema = Yup.object().shape({
-    credential: Yup.string()
-        .test('username-or-email', 'Either username or email is required, but not both.', function (value) {
-            // Check if the value matches a valid email format
-            const isEmail = Yup.string().email().isValidSync(value);
-            // Check if the value matches a valid username format
-            const isUsername = /^[a-zA-Z0-9_]{3,16}$/.test(value);
-            // Pass the test if it's either a valid email or username
-            return isEmail || isUsername;
-        })
-        .required('Username or email address is required.'),
-
-    password: Yup.string()
-        .trim()
-        .required('Password cannot be empty.'),
-});
-
 
 const sanitizeInput = (input) => {
     const dom = new JSDOM('');
@@ -128,7 +111,7 @@ const sendRegistrationLink = async (req,res) =>{
         { expiresIn: '3h' }
       );
       const frontendURL = process.env.FRONTEND_URL ? process.env.FRONTEND_URL : 'http://localhost:5173';
-      const registrationLink = `${frontendURL}/auth/registration?token=${token}`;
+      const registrationLink = `${frontendURL}/register/registration?token=${token}`;
       try {
         // Check if user already exists
         const existingUser = await User.findOne({ email: sanitizedEmail }).lean().exec();
@@ -702,6 +685,17 @@ const getPersonalinfo = async(req,res) =>{
         return res.status(500).json({ message: error.message });
     }
 };
+const getRegistrationHistory = async(req,res) =>{
+    //tested working
+    try{
+        const Users = await User.find({ role: "employee"}).lean().exec();
+        return res.status(200).json(Users)
+    }catch (error) {
+        console.error(error);
+        return res.status(500).json({ message: error.message });    
+
+    }
+}
 
 const getUserInfo = async (req, res) =>{
     const { username } = req.user
@@ -896,5 +890,6 @@ module.exports = {
     getUserInfo,
     getEmpolyeesProfileForHR,
     getPersonalinfoById,
-    logout
+    logout,
+    getRegistrationHistory
 }

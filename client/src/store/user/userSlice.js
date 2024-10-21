@@ -17,7 +17,7 @@ export const loginUserThunk = createAsyncThunk(
             // Navigate based on role
             const userRole = response.data.data.role;
             if (userRole === 'hr') {
-                navigate('/hr/employeeprofiles'); // Redirect HR to the appropriate page
+                navigate('/hr/employee-profiles'); // Redirect HR to the appropriate page
             } else if (userRole === 'employee') {
                 const response = await axios.get(`${USER_ENDPOINT}/userinfo`, { withCredentials: true })
                 console.log('response:', response)
@@ -34,6 +34,33 @@ export const loginUserThunk = createAsyncThunk(
             return response.data; // Return user data on successful login
         } catch (error) {
             return thunkAPI.rejectWithValue(error.response?.data?.message || 'Something went wrong');
+        }
+    }
+);
+// Thunk to send registration link
+export const sendRegistrationLinkThunk = createAsyncThunk(
+    'user/sendRegistrationLink',
+    async (email, thunkAPI) => {
+        try {
+            const response = await axios.post('http://localhost:3000/api/send-registration-link', { email }); // change api
+            return response.data;
+        } catch (error) {
+            return thunkAPI.rejectWithValue(error.response?.data?.message || 'Failed to send registration link');
+        }
+    }
+);
+
+// Thunk to fetch registration history
+export const fetchRegistrationHistoryThunk = createAsyncThunk(
+    'user/fetchRegistrationHistory',
+    async (_, thunkAPI) => {
+        try {
+            const response = await axios.get('http://localhost:3000/api/users/registration-history', {
+                withCredentials: true
+            });             
+            return response.data;
+        } catch (error) {
+            return thunkAPI.rejectWithValue(error.response?.data?.message || 'Failed to fetch registration history');
         }
     }
 );
@@ -77,6 +104,7 @@ const userSlice = createSlice({
         loading: false,
         isAuthenticated: false,
         error: null,
+        registrationHistory: [],
     },
     reducers: {},
     extraReducers: (builder) => {
@@ -126,6 +154,33 @@ const userSlice = createSlice({
             })
             .addCase(logoutUserThunk.rejected, (state, action) => {
                 state.error = action.payload || 'Logout failed';
+                state.loading = false;
+            })
+            .addCase(sendRegistrationLinkThunk.pending, (state) => {
+                state.loading = true;
+                state.error = null;
+            })
+            .addCase(sendRegistrationLinkThunk.fulfilled, (state) => {
+                state.loading = false;
+                // Optionally update the registration history with the new entry
+
+            })
+            .addCase(sendRegistrationLinkThunk.rejected, (state, action) => {
+                state.error = action.payload;
+                state.loading = false;
+            })
+
+            // Fetching Registration History
+            .addCase(fetchRegistrationHistoryThunk.pending, (state) => {
+                state.loading = true;
+                state.error = null;
+            })
+            .addCase(fetchRegistrationHistoryThunk.fulfilled, (state, action) => {
+                state.registrationHistory = action.payload;
+                state.loading = false;
+            })
+            .addCase(fetchRegistrationHistoryThunk.rejected, (state, action) => {
+                state.error = action.payload;
                 state.loading = false;
             });
     },

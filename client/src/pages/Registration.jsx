@@ -103,7 +103,7 @@ const Registration = () => {
         // Protected against empty tokens
         const token = url.searchParams.get('token');
         if (!token) {
-            navigate('/auth/login');
+            navigate('/login');
         }
         if (token) {
             checkToken(token);
