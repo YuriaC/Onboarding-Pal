@@ -65,9 +65,10 @@ const Onboarding = () => {
 
     useEffect(() => {
         axios.get(`${USER_ENDPOINT}/userinfo`, {
-            headers: {
-                'Authorization': `Bearer ${token}`
-            }
+            // headers: {
+            //     'Authorization': `Bearer ${token}`
+            // },
+            withCredentials: true,
         })
         .then(response => {
             setUserEmail(response.data.email)
@@ -169,9 +170,10 @@ const Onboarding = () => {
 
     const getDocs = async () => {
         const response = await axios.get(`${USER_ENDPOINT}/getuserdocs`, {
-            headers: {
-                'Authorization': `Bearer ${token}`
-            }
+            // headers: {
+            //     'Authorization': `Bearer ${token}`
+            // },
+            withCredentials: true,
         })
         setDocs(response.data)
         console.log('response:', response)
@@ -219,8 +221,9 @@ const Onboarding = () => {
             await axios.post(`${USER_ENDPOINT}/applicationinput`, data, {
                 headers: {
                     'Content-Type': 'multipart/form-data',
-                    'Authorization': `Bearer ${token}`,
-                }
+                    // 'Authorization': `Bearer ${token}`,
+                },
+                withCredentials: true,
             })
             toast.success('Successfully submitted application!')
             setSubmitted(!submitted)

@@ -225,11 +225,15 @@ const checkRegister = async (req, res) => {
 
 const login = async (req, res) => {
     // Tested working. User can login with either username or email
-    const loginData = req.body.form;
-    await loginSchema.validate(loginData);
-    const credential = sanitizeInput(loginData.credential);
-    const password = sanitizeInput(loginData.password);
+    // const loginData = req.body.form;
+    const loginData = req.body
+    // await loginSchema.validate(loginData);
+    // const credential = sanitizeInput(loginData.credential);
+    // const password = sanitizeInput(loginData.password);
     // console.log(credential, password);  // debug
+    const { credential, password } = req.body
+
+    console.log('loginData:', loginData)
 
     try {
         let user = await User.findOne({email: credential})

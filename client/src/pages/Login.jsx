@@ -4,7 +4,9 @@ import validator from 'validator';
 import { useNavigate } from 'react-router-dom';
 import { useSelector } from 'react-redux';
 import axios from 'axios';
+import { jwtDecode } from 'jwt-decode';
 import './auth.css';
+import { USER_ENDPOINT } from '../constants';
 
 const Login = () => {
     const [isVisible, setIsVisible] = useState(false);
@@ -57,6 +59,7 @@ const Login = () => {
         e.preventDefault();
 
         //const authToken = getCookie('auth_token');
+        console.log('form:', form)
 
         if (validatorForm()) {
 
@@ -66,16 +69,32 @@ const Login = () => {
             }, {
                 withCredentials: true
             }).then((res) => {
-                if (res.data.role === 'hr') {
+                const decoded = jwtDecode(res.data.data)
+                const { role } = decoded
+
+                if (role === 'hr') {
                     navigate('/hr/employeeprofiles');
-                } else if (res.data.role === 'employee') {
-                    navigate('/');
+                } else if (role === 'employee') {
+                    axios.get(`${USER_ENDPOINT}/userinfo`, { withCredentials: true })
+                        .then(response => {
+                            const { onboardingStatus } = response.data
+                            if (onboardingStatus === 'Approved') {
+                                navigate('/')
+                            }
+                            else {
+                                navigate('/onboarding')
+                            }
+                        })
+                        .catch(error => {
+                            console.log('error:', error)
+                        })
                 }
             }).catch((error)=>{
+                console.log(error)
                 if(error.status===401){
                     setError('Username or Password incorrect');
                 }else{
-                    setError('An internal error occurred');
+                    setError(`An internal error occurred: ${error.message}`);
                 }
             })
         }

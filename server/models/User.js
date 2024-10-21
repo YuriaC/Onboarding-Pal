@@ -26,7 +26,7 @@ const UserSchema = new Schema({
     birthday: { type: Date, default: null },
     gender: { type: String, default:"" },
     workAuth: { type: String, default:"" },
-    workAuthFile_url: { type: String, default:"" },
+    // workAuthFile_url: { type: String, default: "" },
     visaTitle: { type: String, default:"" },
     visaStartDate: { type: Date, default: null },
     visaEndDate: { type: Date, default: null },

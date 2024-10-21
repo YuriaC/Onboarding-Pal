@@ -5,6 +5,7 @@ const { faker } = require('@faker-js/faker')
 const argon2 = require("argon2");
 
 const MONGO_URI = process.env.MONGO_URI
+const password = "Abcdef1!"
 
 // console.log(MONGO_URI)
 
@@ -30,7 +31,7 @@ mongoose.connect(MONGO_URI)
                 })
             }
 
-            const hashedPassword = await argon2.hash("ABCD1234@"); // THIS IS THE PASSWARD
+            const hashedPassword = await argon2.hash(password); // THIS IS THE PASSWARD
 
             await House.insertMany(houses)
             const house = await House.findOne({}).exec();
@@ -54,8 +55,8 @@ mongoose.connect(MONGO_URI)
             await house.save()
         
         }
-        if (process.env.NODE_ENV !== 'production'){
-            // seed().then(() => console.log('Successfully seeded with 5 house and 2 users: EmployeeTest and HRTest with password: ABCD1234@')).catch(error => console.log('Error seeding:', error.message))
+        if (process.env.NODE_ENV !== 'production') {
+            // seed().then(() => console.log(`Successfully seeded with 5 house and 2 users: EmployeeTest and HRTest with password: ${password}`)).catch(error => console.log('Error seeding:', error.message))
         }
 
     })

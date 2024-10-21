@@ -72,16 +72,19 @@ const loginSchema = Yup.object().shape({
 // user Login Validation, can use both email or username to login
 const employeeLoginValidation = async (req, res, next) => {
     try{
-        const loginData = req.body.form;  // data is encapsulated in form from the font-end
+        // const loginData = req.body.form;  // data is encapsulated in form from the font-end
+        const loginData = req.body
         // sanitize input data 
-        loginData.credential = sanitizeInput(loginData.credential);
+        // loginData.credential = sanitizeInput(loginData.credential);
+        loginData.credential = sanitizeInput(loginData.userinput);
         loginData.password = sanitizeInput(loginData.password);
         // validate req data using Yup schema
-        await loginSchema.validate(loginData, {abortEarly: false});  // abortEarly: false option ensures that Yup will collect all validation errors instead of stopping at the first one.
+        await loginSchema.validate(loginData, { abortEarly: false });  // abortEarly: false option ensures that Yup will collect all validation errors instead of stopping at the first one.
         
         next();
 
     } catch (err) {
+        console.log('err:', err)
         return res.status(400).json({ message: err.errors });
     }
 };
