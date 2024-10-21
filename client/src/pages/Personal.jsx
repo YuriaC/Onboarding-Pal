@@ -1,8 +1,10 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import './Personal.css';
 import axios from 'axios';
-import { token, USER_ENDPOINT } from '../constants';
-import { toast, ToastContainer } from 'react-toastify';
+import { USER_ENDPOINT } from '../constants';
+import { toast, ToastContainer } from 'material-react-toastify';
+import 'material-react-toastify/dist/ReactToastify.css'
+import { Box, Card, CardActions, CardContent, Typography, Button } from '@mui/material'
 
 const Personal = () => {
     const [isEditing, setIsEditing] = useState(false);
@@ -54,9 +56,10 @@ const Personal = () => {
 
     useEffect(() => {
         axios.get(`${USER_ENDPOINT}/getuserdocs`, {
-            headers: {
-                'Authorization': `Bearer ${token}`
-            }
+            // headers: {
+            //     'Authorization': `Bearer ${token}`
+            // },
+            withCredentials: true,
         })
         .then(response => {
             toast.success('Successfully fetched user files!')
@@ -301,31 +304,60 @@ const Personal = () => {
                         <input type="file" multiple onChange={handleDocumentUpload} accept=".pdf,.jpg,.jpeg,.png" />
                         {formData.documents.length > 0 && (
                             <ul>
-                                {formData.documents.map((doc, index) => (
+                                {Object.keys(formData.documents).map((key, index) => {
+                                    
+                                    // Might need to look over this
+                                    const doc = formData.documents[key]
+                                    console.log('doc:', doc)
+
+                                    return (
                                     <li key={doc.name}>
                                         {doc.name}
                                         <button onClick={() => previewDocument(doc)}>Preview</button>
                                         <button onClick={() => downloadDocument(doc)}>Download</button>
                                     </li>
-                                ))}
+                                )})}
                             </ul>
                         )}
                     </div>
                 ) : (
                     <div>
                         {Object.keys(formData.documents).length > 0 ? (
-                            <ul>
+                            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, mb: '2rem' }}>
                                 {Object.keys(formData.documents).map((key) => {
-                                    const doc = formData.documents[key]
+                                    const docs = formData.documents
+                                    const doc = docs[key]
+                                    let fileName
+                                    switch (key) {
+                                        case 'profilePictureURL':
+                                            fileName = 'Profile Picture'
+                                            break
+                                        case 'driversLicenseCopy_url':
+                                            fileName = "Driver's License"
+                                            break
+                                        case 'optUrl':
+                                            fileName = 'OPT Receipt'
+                                            break
+                                    }
                                     return (
-                                        <li key={key}>
-                                            {key}
-                                            <button onClick={() => previewDocument(key, doc)}>Preview</button>
-                                            <button onClick={() => downloadDocument(key, doc)}>Download</button>
-                                        </li>
-                                    )})
-                                }
-                            </ul>
+                                        <>
+                                            <Card key={`${key}-download`} sx={{ minWidth: 275 }}>
+                                                <CardContent>
+                                                    <Typography variant='h6'>{fileName}</Typography>
+                                                </CardContent>
+                                                <CardActions sx={{ justifyContent: 'center' }}>
+                                                    <Button href={doc.download} download>
+                                                        Download
+                                                    </Button>
+                                                    <Button onClick={() => window.open(doc.preview, '_blank')}>
+                                                        Preview
+                                                    </Button>
+                                                </CardActions>
+                                            </Card>
+                                        </>
+                                    )
+                                })}
+                            </Box>
                         ) : (
                             <p>No documents uploaded</p>
                         )}

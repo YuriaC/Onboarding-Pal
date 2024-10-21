@@ -1,5 +1,6 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import axios from 'axios';
+import { USER_ENDPOINT } from '../../constants';
 
 // Thunks for async actions
 // Thunks for async actions
@@ -18,7 +19,16 @@ export const loginUserThunk = createAsyncThunk(
             if (userRole === 'hr') {
                 navigate('/hr/employeeprofiles'); // Redirect HR to the appropriate page
             } else if (userRole === 'employee') {
-                navigate('/employee/profile'); // Redirect employee to the personal page
+                const response = await axios.get(`${USER_ENDPOINT}/userinfo`, { withCredentials: true })
+                console.log('response:', response)
+                const { onboardingStatus } = response.data
+                if (onboardingStatus === 'Approved') {
+                    navigate('/')
+                }
+                else {
+                    navigate('/employee/onboarding')
+                }
+                // navigate('/employee/profile'); // Redirect employee to the personal page
             }
             
             return response.data; // Return user data on successful login

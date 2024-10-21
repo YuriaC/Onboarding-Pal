@@ -4,7 +4,6 @@
   "version": "0.0.0",
   "type": "module",
   "proxy": "http://localhost:5500",
-
   "scripts": {
     "dev": "vite",
     "build": "vite build",
@@ -21,6 +20,7 @@
     "aws-sdk": "^2.1691.0",
     "axios": "^1.7.7",
     "jwt-decode": "^4.0.0",
+    "material-react-toastify": "^10.0.5",
     "prop-types": "^15.8.1",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",

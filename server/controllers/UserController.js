@@ -603,7 +603,7 @@ const setContactInput = async(req,res) =>{
 
 const getUserDocs = async (req, res) => {
     try {
-        const { username } = req.body
+        const { username } = req.user
         const { AccessKeyId, SecretAccessKey, SessionToken } = req.credentials
 
         const s3 = new S3Client({

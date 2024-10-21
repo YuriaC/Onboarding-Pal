@@ -1,8 +1,9 @@
 import { useState, useEffect } from 'react'
-import { ToastContainer, toast } from 'react-toastify'
+import { ToastContainer, toast } from 'material-react-toastify'
 import { token, USER_ENDPOINT, username } from '../constants'
 import axios from 'axios'
 import { Box, Button, Card, CardActions, CardContent, Typography, CardHeader } from '@mui/material'
+import 'material-react-toastify/dist/ReactToastify.css'
 
 const Onboarding = () => {
 
@@ -487,11 +488,9 @@ const Onboarding = () => {
                                         <Typography variant='h6'>{fileName}</Typography>
                                     </CardContent>
                                     <CardActions sx={{ justifyContent: 'center' }}>
-                                        <a href={doc.download} download>
-                                            <Button size='small' href={doc.download} download>
-                                                Download
-                                            </Button>
-                                        </a>
+                                        <Button href={doc.download} download>
+                                            Download
+                                        </Button>
                                         <Button onClick={() => window.open(doc.preview, '_blank')}>
                                             Preview
                                         </Button>
