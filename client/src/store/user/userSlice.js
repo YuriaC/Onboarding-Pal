@@ -14,7 +14,7 @@ export const loginUserThunk = createAsyncThunk(
                 withCredentials: true
             });
             // Navigate based on role
-            const userRole = response.data.role;
+            const userRole = response.data.data.role;
             if (userRole === 'hr') {
                 navigate('/hr/employeeprofiles'); // Redirect HR to the appropriate page
             } else if (userRole === 'employee') {

@@ -225,21 +225,24 @@ const checkRegister = async (req, res) => {
 
 const login = async (req, res) => {
     // Tested working. User can login with either username or email
-    const loginData = req.body.form;
-    await loginSchema.validate(loginData);
-    const credential = sanitizeInput(loginData.credential);
-    const password = sanitizeInput(loginData.password);
+    // const loginData = req.body.form;
+    // const loginData = req.body
+    // await loginSchema.validate(loginData);
+    // const credential = sanitizeInput(loginData.credential);
+    // const password = sanitizeInput(loginData.password);
     // console.log(credential, password);  // debug
+    const { username, password } = req.body
+
 
     try {
-        let user = await User.findOne({email: credential})
+        let user = await User.findOne({email: username})
             .select(['username','password','role'])
             .lean()
             .exec();
 
         if (!user) {
             // console.log('no matching email found, searching username');  // debug
-            user = await User.findOne({username: credential})
+            user = await User.findOne({username: username})
                 .select(['username','password', 'role'])
                 .lean()
                 .exec();
@@ -260,102 +263,11 @@ const login = async (req, res) => {
         const token = generateToken(user._id, user.username, user.role);
         // console.log(`JWT token, ${token}, generated. \n`);  // debug
         res.cookie('auth_token', token, {
-            httpOnly: true,
             maxAge: 3600000,
             sameSite: 'strict',
-          /*
-  const login = async(req,res)=>{ 
-    // tested working
-    //await loginSchema_username.validate(req.body);
-    if(!req.body.userinput || !req.body.password){
-        return res.status(401).json({ message: 'Missing required fields!' });
-    }
+                    }); 
 
-    const usernameRegex = /^[a-zA-Z0-9_]+$/;
-    
-    const isEmail = validator.isEmail(req.body.userinput);
-
-    const isUsername = !validator.isEmpty(req.body.userinput)
-      && validator.isLength(req.body.userinput, { min: 3, max: 16 })
-      && validator.matches(req.body.userinput, usernameRegex);
-    
-    if (!isEmail && !isUsername) {
-      return res.status(401).json({ message: 'Invalid credentials' });
-    }
-    
-    const userinput = sanitizeInput(req.body.userinput);
-    const password = sanitizeInput(req.body.password);
-    try{
-        const user = await User.findOne({ 
-            $or: [
-                {username: userinput},
-                {email: userinput}
-            ]
-         })
-        .select('password username role')
-        .lean()
-        .exec();
-
-
-        if (!user) {
-        return res.status(401).json({ message: 'Invalid credentials' });
-        }
-
-        // check if password is correct
-        const isPasswordCorrect = await argon2.verify(user.password, password);
-        if (!isPasswordCorrect) {
-        return res.status(401).json({ message: 'Invalid credentials' });
-        }
-
-        // generate JWT token
-        const token = generateToken(user._id, user.username, user.role);
-        res.cookie('auth_token', token);
-        return res.status(200).json({
-            userId: user._id,
-            userinput: userinput,
-            role: user.role
-        });
-    } catch (error) {
-        console.error(error);
-        return res.status(500).json({ message: error.message });
-    }*/
-
-});
-/*
-const login = async(req,res)=>{ 
-    // tested working
-    //await loginSchema_username.validate(req.body);
-    validator.isEmail(req.body.userinput);
-    const userinput = sanitizeInput(req.body.userinput);
-    const password = sanitizeInput(req.body.password);
-    try{
-        const user = await User.findOne({ userinput })
-        .select('password username role')
-        .lean()
-        .exec();
-
-
-        if (!user) {
-        return res.status(401).json({ message: 'Invalid credentials' });
-        }
-
-        // check if password is correct
-        const isPasswordCorrect = await argon2.verify(user.password, password);
-        if (!isPasswordCorrect) {
-        return res.status(401).json({ message: 'Invalid credentials' });
-        }
-
-        // generate JWT token
-        const token = generateToken(user._id, user.username, user.role);
-        res.cookie('auth_token', token);
-        return res.status(200).json({
-            userId: user._id,
-            userinput: userinput,
-            role: user.role
-        });*/
-
-        // console.log(`JWT token, ${token}, generated. \n`);  // debug
-            return res.status(200).json({data: token, message:`Login Successful. Welcome, ${user.username}!`});
+        return res.status(200).json({data: user, message:`Login Successful. Welcome, ${user.username}!`});
         } catch (e) {
             return res.status(500).json({message: `ERROR: ${e}.`});  
         }
