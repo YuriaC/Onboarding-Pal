@@ -5,7 +5,7 @@ const { faker } = require('@faker-js/faker')
 const argon2 = require("argon2");
 
 const MONGO_URI = process.env.MONGO_URI
-const password = "Abcdef1!"
+const password = "Abcd1234@"
 
 // console.log(MONGO_URI)
 
@@ -56,7 +56,7 @@ mongoose.connect(MONGO_URI)
         
         }
         if (process.env.NODE_ENV !== 'production') {
-            // seed().then(() => console.log(`Successfully seeded with 5 house and 2 users: EmployeeTest and HRTest with password: ${password}`)).catch(error => console.log('Error seeding:', error.message))
+            seed().then(() => console.log(`Successfully seeded with 5 house and 2 users: EmployeeTest and HRTest with password: ${password}`)).catch(error => console.log('Error seeding:', error.message))
         }
 
     })

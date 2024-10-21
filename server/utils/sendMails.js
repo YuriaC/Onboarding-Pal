@@ -10,6 +10,7 @@ const sendMail = async (
     return { error: "Cannot send empty email data" };
   }
   try {
+    
     // let html = ejs.render(fs.readFileSync(template, "utf-8"), data);
     let msg = {
       from,

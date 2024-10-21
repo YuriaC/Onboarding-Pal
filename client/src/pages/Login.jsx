@@ -1,145 +1,87 @@
 import { useState, useEffect } from 'react';
-import { NavLink } from 'react-router-dom';
-import validator from 'validator';
 import { useNavigate } from 'react-router-dom';
-import { useSelector } from 'react-redux';
-import axios from 'axios';
-import { jwtDecode } from 'jwt-decode';
-import './auth.css';
-import { USER_ENDPOINT } from '../constants';
+import { useDispatch, useSelector } from 'react-redux';
+import { loginUserThunk } from '../store/user/userSlice';
+import { TextField, Button, Typography, Box, Container } from '@mui/material';
 
 const Login = () => {
-    const [isVisible, setIsVisible] = useState(false);
-    const [error, setError] = useState('');
-    const navigate = useNavigate();
-
-
-
-
     const [form, setForm] = useState({
         userInput: '',
         password: ''
     });
 
-    const [formErrors, setFormErrors] = useState({
-        userInput: '',
-        password: ''
-    });
+    const dispatch = useDispatch();
+    const navigate = useNavigate();
+    const user = useSelector((state) => state.user);
 
-    const validatorForm = () => {
-        let errors = {};
-
-        if (!validator.isEmail(form.userInput) && !validator.isLength(form.userInput, { min: 3, max: 16 })) {
-            errors.userInput = 'Username must be between 3 and 16 characters';
-        }
-
-        if (!validator.isStrongPassword(form.password, {
-            minLength: 8,
-            minLowercase: 1,
-            minUppercase: 1,
-            minNumbers: 1,
-            minSymbols: 1
-        })) {
-            errors.password = 'Password must be at least 8 characters long, and include at least 1 lowercase letter,\n 1 uppercase letter, 1 number, and 1 symbol.';
-        }
-
-
-        setFormErrors(errors);
-
-        return Object.keys(errors).length === 0;
-    }
-
-    const getCookie = (name) => {
-        const value = `; ${document.cookie}`;
-        const parts = value.split(`; ${name}=`);
-        if (parts.length === 2) return parts.pop().split(';').shift();
-    }
-
-    const userLogin = async (e) => {
+    
+    // Function to handle the login process
+    const userLogin = (e) => {
         e.preventDefault();
-
-        //const authToken = getCookie('auth_token');
-        console.log('form:', form)
-
-        if (validatorForm()) {
-
-            axios.post('http://localhost:3000/api/users/login', {
-                userinput: form.userInput,
-                password: form.password
-            }, {
-                withCredentials: true
-            }).then((res) => {
-                const decoded = jwtDecode(res.data.data)
-                const { role } = decoded
-
-                if (role === 'hr') {
-                    navigate('/hr/employeeprofiles');
-                } else if (role === 'employee') {
-                    axios.get(`${USER_ENDPOINT}/userinfo`, { withCredentials: true })
-                        .then(response => {
-                            const { onboardingStatus } = response.data
-                            if (onboardingStatus === 'Approved') {
-                                navigate('/')
-                            }
-                            else {
-                                navigate('/onboarding')
-                            }
-                        })
-                        .catch(error => {
-                            console.log('error:', error)
-                        })
-                }
-            }).catch((error)=>{
-                console.log(error)
-                if(error.status===401){
-                    setError('Username or Password incorrect');
-                }else{
-                    setError(`An internal error occurred: ${error.message}`);
-                }
-            })
-        }
-    }
+            dispatch(loginUserThunk({ form, navigate }));
+    };
 
     useEffect(() => {
-        setTimeout(() => setIsVisible(true), 300);
+    const cookie = document.cookie;
+    if (cookie) {
+            navigate('/');
+        }
     }, []);
 
     return (
-        <div className={`register-form ${isVisible ? 'visible' : ''}`}>
-            <form>
-                <div className="form-group">
-                    {error && <h3 style={{ color: 'red' }}>{error}</h3>}
-                    <label htmlFor='userInput'>Username or Email: <span className="required">*</span></label>
-                    <input type="text" required name="userInput" placeholder="your username or Email"
-                        value={form.email}
-                        onChange={(e) => { setForm({ ...form, userInput: e.target.value }) }}
-                    />
-                    {formErrors.userInput && <p className="error">{formErrors.userInput}</p>}
-                </div>
+        <Container maxWidth="sm" sx={{ marginTop: 8 }}>
+            <Box 
+                component="form" 
+                onSubmit={userLogin} 
+                sx={{ display: 'flex', flexDirection: 'column', gap: 2, padding: 2, boxShadow: 3, borderRadius: 2 }}
+            >
+                <Typography variant="h4" align="center" gutterBottom>
+                    Login
+                </Typography>
 
-                <div className="form-group">
-                    <label htmlFor='password'>Password: <span className="required">*</span></label>
-                    <input type="password" required name="password" placeholder="Password"
-                        value={form.password}
-                        onChange={(e) => { setForm({ ...form, password: e.target.value }) }}
-                    />
-                    {formErrors.password && <p className="error">
-                        {formErrors.password.slice(0, formErrors.password.length / 2)}    <br />
-                        {formErrors.password.slice(formErrors.password.length / 2)}
+                {user.error && (
+                    <Typography color="error" align="center">
+                        {user.error}
+                    </Typography>
+                )}
 
-                    </p>}
-                </div>
+                <TextField
+                    required
+                    label="Username or Email"
+                    name="userInput"
+                    fullWidth
+                    value={form.userInput}
+                    onChange={(e) => setForm({ ...form, userInput: e.target.value })}
+                    
+                />
 
-                <div className='registerButtonAndLink'>
-                    <button type="submit" onClick={userLogin}>Login</button>
-                    {/* <div>Don’t have an account? <NavLink to="/auth/registration" className='signButton'>Sign up</NavLink></div> */}
-                    <span className='signUpText'>
-                        Don’t have an account? Please Contact your HR for Registration Instructions  
-                    </span>
-                </div>
-            </form>
-        </div>
+                <TextField
+                    required
+                    label="Password"
+                    name="password"
+                    type="password"
+                    fullWidth
+                    value={form.password}
+                    onChange={(e) => setForm({ ...form, password: e.target.value })}
+                />
+
+            
+
+                <Button 
+                    type="submit" 
+                    variant="contained" 
+                    color="primary" 
+                    fullWidth 
+                    sx={{ mt: 2, mb: 1 }}
+                >
+                    Login
+                </Button>
+
+             
+            </Box>
+        </Container>
     );
-}
+};
 
 export default Login;
+
