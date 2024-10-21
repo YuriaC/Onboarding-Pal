@@ -320,7 +320,7 @@ const login = async (req, res) => {
         return res.status(500).json({ message: error.message });
     }*/
 
-};
+});
 /*
 const login = async(req,res)=>{ 
     // tested working
