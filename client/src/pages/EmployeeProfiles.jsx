@@ -51,7 +51,7 @@ const EmployeeProfiles = () => {
                         <div className="employee-item" key={employee._id}>
                             <h4>
                                 <Link
-                                    to={`/hr/employeeprofiles/${employee._id}`}
+                                    to={`/hr/employee-profiles/${employee._id}`}
                                     rel="noopener noreferrer"
                                 >
                                     {`${employee.firstName} ${employee.lastName} ${employee.username}`.trim() || 'Undefined Name'}

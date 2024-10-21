@@ -10,6 +10,7 @@ import EmployeeDetail from './pages/EmployeeDetail';
 import Hiring from './pages/Hiring';
 import VisaStatusHR from './pages/VisaStatusHR';
 import VisaStatusEmployees from './pages/VisaStatusEmployees';
+import HousingMgmt from './pages/HousingMgmt';
 // Guards
 import NotFound from './pages/NotFound';
 import LoginGuard from './components/guards/LoginGuard';
@@ -41,6 +42,7 @@ const RoutesComponent = () => {
             <Route path="/hr/*" element={<RoleGuard role="hr" />}>
               <Route path="home" element={<EmployeeProfiles />} />
               <Route path="employee-profiles/:employeeId" element={<EmployeeDetail />} />
+              <Route path="housing-management" element={<HousingMgmt />}/>
               <Route path="hiring" element={<Hiring />} />
               <Route path="visa-status" element={<VisaStatusHR />} />
             </Route>
