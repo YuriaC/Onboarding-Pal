@@ -1,14 +1,27 @@
 
 const Report = require('../models/Report.js')
+const House = require('../models/House.js')
 
 const addReport = async (request, response) => {
     try {
-        const { title, description } = request.body
+        const { title, description, houseId } = request.body
+        const { username } = request.user
 
         const report = await Report.create({
             title,
-            description
+            description,
+            createdBy: username,
         })
+        if (!report) {
+            return res.status(404).json('Error creating report!')
+        }
+
+        const house = await House.findById(houseId)
+        if (!house) {
+            return res.status(404).json('House not found!')
+        }
+        house.reports.push(report._id)
+        await house.save()
 
         response.status(200).json(report)
     }

@@ -1,9 +1,8 @@
 import { useState, useEffect } from 'react'
 import axios from 'axios'
-import { USER_ENDPOINT } from '../constants'
+import { HOUSE_ENDPOINT, REPORT_ENDPOINT, USER_ENDPOINT } from '../constants'
 import { toast, ToastContainer } from 'material-react-toastify'
 import 'material-react-toastify/dist/ReactToastify.css'
-import Cookies from 'js-cookie'
 
 const Housing = () => {
 
@@ -18,8 +17,11 @@ const Housing = () => {
         numMattresses: 0,
         numTables: 0,
         reports: [],
+        houseId: '',
     })
+    const [employeeId, setEmployeeId] = useState('')
     const [isCreatingReport, setIsCreatingReport] = useState(false)
+    const [submitted, setSubmitted] = useState(false)
     const [reportFormData, setReportFormData] = useState({
         title: '',
         description: '',
@@ -28,8 +30,8 @@ const Housing = () => {
     useEffect(() => {
         axios.get(`${USER_ENDPOINT}/userinfo`, { withCredentials: true })
             .then(response => {
-                const token = Cookies.get('auth_token')
-                const { _id, house } = response.data
+                const { house } = response.data
+                setEmployeeId(response.data._id)
                 const {
                     address,
                     employees,
@@ -42,16 +44,18 @@ const Housing = () => {
                     numTables,
                     reports,
                 } = house
+                const houseId = house._id
+                console.log('house:', house)
                 const otherEmployees = employees.filter(employee => {
                     console.log('employee:', employee)
                     return (
-                        employee._id !== _id
+                        employee._id !== response.data._id
                     )
                 })
                 console.log('otherEmployees:', otherEmployees)
                 setHouseData({
                     address,
-                    employees: employees.filter(employee => employee._id !== _id),
+                    employees: otherEmployees,
                     landlordEmail,
                     landlordName,
                     landlordPhone,
@@ -60,6 +64,7 @@ const Housing = () => {
                     numMattresses,
                     numTables,
                     reports,
+                    houseId,
                 })
             })
     }, [])
@@ -67,17 +72,20 @@ const Housing = () => {
     const submitReport = (e) => {
         e.preventDefault()
         console.log('reportFormData:', reportFormData)
-        // axios.post(HOUSE_ENDPOINT, reportFormData, {
-        //     headers: {
-        //         'Authorization': `Bearer ${localStorage.getItem('token')}`
-        //     }
-        // })
-        // .then(response => {
-
-        // })
-        // .catch(error => {
-        //     toast.error(error)
-        // })
+        axios.post(REPORT_ENDPOINT, { ...reportFormData, houseId: houseData.houseId }, {
+            // headers: {
+            //     'Authorization': `Bearer ${localStorage.getItem('token')}`
+            // },
+            withCredentials: true,
+        })
+        .then(response => {
+            setSubmitted(!submitted)
+            toast.success('Successfully submitted report!')
+        })
+        .catch(error => {
+            console.log('error:', error)
+            toast.error(`Error submitting report! Error: ${error.response.data}`)
+        })
     }
 
     const handleChange = (e) => {
@@ -113,6 +121,7 @@ const Housing = () => {
             }
             <br />
             <button>View Your Reports</button>
+            <ToastContainer />
         </div>
     )
 }
