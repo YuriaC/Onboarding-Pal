@@ -8,7 +8,10 @@ const NotFound = () => {
     const { isAuthenticated, role } = useSelector((state) => state.user);
 
     useEffect(() => {
-        dispatch(getUserThunk());
+        const cookie = document.cookie;
+        if (cookie) {
+            dispatch(getUserThunk());
+        }
     }, [dispatch]);
     return (
         <div>
