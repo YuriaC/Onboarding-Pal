@@ -466,6 +466,7 @@ const setApplicationInput = async(req,res) =>{
     const dlnum = req.body.dlNum;
     const dldate = req.body.dlExpDate;
     const { refFirstName, refLastName, refMiddleName, refPhone, refEmail, refRelationship } = req.body
+    const { visaStartDate, visaEndDate } = req.body
     const emergencyContacts = req.body.emergencyContacts
 
     const s3 = new S3Client({
@@ -577,6 +578,8 @@ const setApplicationInput = async(req,res) =>{
                 "referer": isReferred === 'Yes' ? reference._id : null,
                 "optUrl": optReceiptURL,
                 "emergencyContacts": emergencyContactIds,
+                "visaStartDate": visaStartDate,
+                "visaEndDate": visaEndDate,
             }
         }
         );
@@ -723,9 +726,19 @@ const getUserDocs = async (req, res) => {
                 Key: fileName,
                 ResponseContentDisposition: `attachment; filename="${fileName}"`,
             }
+            const previewParams = {
+                Bucket: process.env.S3_BUCKET,
+                Key: fileName,
+                // ResponseContentDisposition: `attachment; filename="${fileName}"`,
+            }
             const command = new GetObjectCommand(params)
-            const signedUrl = await getSignedUrl(s3, command, { expiresIn: 300 })
-            ret[key] = signedUrl
+            const previewCommand = new GetObjectCommand(previewParams)
+            const signedURL = await getSignedUrl(s3, command, { expiresIn: 300 })
+            const previewSignedURL = await getSignedUrl(s3, previewCommand, { expiresIn: 300 })
+            ret[key] = {
+                download: signedURL,
+                preview: previewSignedURL
+            }
         }
         res.status(200).json(ret)
     }
