@@ -1,30 +1,37 @@
 import { useState, useEffect } from 'react';
-import { NavLink } from 'react-router-dom';
+import { NavLink, useNavigate } from 'react-router-dom';
+import { useDispatch, useSelector } from 'react-redux';
+import { registerUser, checkToken } from '../store/user/userSlice'; // import checkToken from the slice
 import validator from 'validator';
-import { useNavigate } from 'react-router-dom';
-import './auth.css';
-import axios from 'axios'
-
-
+import { Box, Button, TextField, CircularProgress, Typography } from '@mui/material'; // Material UI components
 
 const Registration = () => {
     const [isVisible, setIsVisible] = useState(false);
-    const [error, setError] = useState('');
-    const navigate = useNavigate();
-
     const [form, setForm] = useState({
         username: '',
         email: '',
         password: '',
         repeatPassword: '',
     });
-
     const [formErrors, setFormErrors] = useState({
         username: '',
         email: '',
         password: '',
         repeatPassword: '',
     });
+
+    const dispatch = useDispatch();
+    const navigate = useNavigate();
+
+    const { loading, error, email } = useSelector((state) => state.user); // get state from redux
+
+    // Set email if it's available from the Redux store
+    useEffect(() => {
+        if (email) {
+            setForm((prev) => ({ ...prev, email }));
+        }
+    }, [email]);
+
     const validatorForm = () => {
         let errors = {};
 
@@ -51,7 +58,6 @@ const Registration = () => {
         }
 
         setFormErrors(errors);
-
         return Object.keys(errors).length === 0;
     }
 
@@ -59,107 +65,116 @@ const Registration = () => {
         e.preventDefault();
 
         if (validatorForm()) {
-            registerUser();
-        }
-    }
-    const registerUser = async () => {
-        try {
-            axios.post('http://localhost:3000/api/users/register', {
+            dispatch(registerUser({
                 username: form.username,
                 email: form.email,
-                password: form.password,
-            }).then(()=>{
-                navigate('/auth/login');
-            }).catch((error)=>{
-                if(error.status===409){
-                    setError('User already exists');
-                }else{
-                    setError('An internal error occurred');
-                }
+                password: form.password
+            }))
+            .unwrap() // Unwrap the result to handle navigation after the async call
+            .then(() => {
+                navigate('/login');
             })
-        } catch (error) {
-            console.log(error.response.data.message);
-            const message = error.response ? error.response.data.message : 'An error occurred';
-            //navigate('/auth/login');
+            .catch((err) => console.log(err)); // Handle registration error
         }
     }
-    const checkToken = async (token) => {
-        try {
-            const response = await axios.get(`http://localhost:3000/api/users/register/${token}`);
-            const {email} = response.data;
-            setForm( (prev) => ({...prev, email: email}) );
-            console.log(email);
-        } catch (error) {
-
-            console.log(error.response.data.message);
-            const message = error.response ? error.response.data.message : 'An error occurred';
-            navigate('/auth/login');
-        }
-    }
-
 
     useEffect(() => {
         const url = new URL(window.location.href);
-        // Protected against empty tokens
         const token = url.searchParams.get('token');
         if (!token) {
             navigate('/login');
         }
         if (token) {
-            checkToken(token);
+            dispatch(checkToken({token})) // Dispatch checkToken via Redux
+            .unwrap()
+            .catch((err) => {
+                console.log(err);
+                navigate('/login');
+            });
         }
         setTimeout(() => setIsVisible(true), 300);
-    }, []);
+    }, [dispatch, navigate]);
 
     return (
-        <div className={`register-form ${isVisible ? 'visible' : ''}`}>
+        <Box className={`register-form ${isVisible ? 'visible' : ''}`} sx={{ width: 300, mx: 'auto', mt: 4 }}>
             <form>
-                <div className="form-group">
-                    {error && <h3 style={{ color: 'red' }}>{error}</h3>}
-                    <label htmlFor='username'>Username: <span className="required">*</span></label>
-                    <input type="text" required name="username" placeholder="Your username"
+                <Box sx={{ mb: 2 }}>
+                    {error && <Typography color="error">{error}</Typography>}
+                    <TextField
+                        fullWidth
+                        required
+                        label="Username"
                         value={form.username}
-                        onChange={(e) => { setForm({ ...form, username: e.target.value }) }}
+                        onChange={(e) => setForm({ ...form, username: e.target.value })}
+                        error={!!formErrors.username}
+                        helperText={formErrors.username}
+                        variant="outlined"
                     />
-                    {formErrors.username && <p className="error">{formErrors.username}</p>}
-                </div>
+                </Box>
 
-                <div className="form-group">
-                    <label htmlFor='email'>Email: <span className="required">*</span></label>
-                    <input type="email" required name="email" placeholder="your@email.com"
+                <Box sx={{ mb: 2 }}>
+                    <TextField
+                        fullWidth
+                        required
+                        label="Email"
                         value={form.email}
-                        onChange={(e) => { setForm({ ...form, email: e.target.value }) }}
+                        onChange={(e) => setForm({ ...form, email: e.target.value })}
+                        error={!!formErrors.email}
+                        helperText={formErrors.email}
+                        variant="outlined"
                     />
-                    {formErrors.email && <p className="error">{formErrors.email}</p>}
-                </div>
+                </Box>
 
-                <div className="form-group">
-                    <label htmlFor='password'>Password: <span className="required">*</span></label>
-                    <input type="password" required name="password" placeholder="Password"
+                <Box sx={{ mb: 2 }}>
+                    <TextField
+                        fullWidth
+                        required
+                        label="Password"
+                        type="password"
                         value={form.password}
-                        onChange={(e) => { setForm({ ...form, password: e.target.value }) }}
+                        onChange={(e) => setForm({ ...form, password: e.target.value })}
+                        error={!!formErrors.password}
+                        helperText={
+                            formErrors.password && (
+                                <>
+                                    {formErrors.password.slice(0, formErrors.password.length / 2)} <br />
+                                    {formErrors.password.slice(formErrors.password.length / 2)}
+                                </>
+                            )
+                        }
+                        variant="outlined"
                     />
-                    {formErrors.password && <p className="error">
-                        {formErrors.password.slice(0, formErrors.password.length / 2)}    <br />
-                        {formErrors.password.slice(formErrors.password.length / 2)}
-                    </p>}
-                </div>
+                </Box>
 
-                <div className="form-group">
-                    <label htmlFor='repeatPassword'>Repeat Password: <span className="required">*</span></label>
-                    <input type="password" required name="repeatPassword" placeholder="Repeat password"
+                <Box sx={{ mb: 2 }}>
+                    <TextField
+                        fullWidth
+                        required
+                        label="Repeat Password"
+                        type="password"
                         value={form.repeatPassword}
-                        onChange={(e) => { setForm({ ...form, repeatPassword: e.target.value }) }}
+                        onChange={(e) => setForm({ ...form, repeatPassword: e.target.value })}
+                        error={!!formErrors.repeatPassword}
+                        helperText={formErrors.repeatPassword}
+                        variant="outlined"
                     />
-                    {formErrors.repeatPassword && <p className="error">{formErrors.repeatPassword}</p>}
-                </div>
+                </Box>
 
-                <div className='registerButtonAndLink'>
-                    <button type="submit" onClick={userRegister}>Register</button>
-                    <div>Already have an account? <NavLink to="/auth/login" className="signButton">Sign in</NavLink></div>
-                </div>
+                <Box sx={{ textAlign: 'center', mb: 2 }}>
+                    {loading ? <CircularProgress /> : (
+                        <Button variant="contained" onClick={userRegister}>
+                            Register
+                        </Button>
+                    )}
+                </Box>
+
+                <Box sx={{ textAlign: 'center' }}>
+                    <Typography variant="body2">
+                        Already have an account? <NavLink to="/auth/login">Sign in</NavLink>
+                    </Typography>
+                </Box>
             </form>
-        </div>
+        </Box>
     );
 }
 

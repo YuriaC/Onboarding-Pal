@@ -26,6 +26,8 @@ userRouter.post('/register', userController.register)
     .get('/personalinfo', userController.getPersonalinfo)
     .get('/userinfo', authenticateJWT, userController.getUserInfo)
     .get('/registration-history', authenticateJWT,isHR, userController.getRegistrationHistory)
+    .get('/applications', authenticateJWT, isHR, userController.getApplications)
+
     .get('/getuserdocs', authenticateJWT, AWSCredentialsMiddleware, userController.getUserDocs)
     // .get('/housedetails', userController.getHousedetails)
     // .post('/facilityreport', userController.addFacilityreport)
