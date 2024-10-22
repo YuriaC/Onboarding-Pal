@@ -14,20 +14,20 @@ const Login = () => {
     const navigate = useNavigate();
     const user = useSelector((state) => state.user);
 
-    
+
     // Function to handle the login process
     const userLogin = (e) => {
         e.preventDefault();
-            dispatch(loginUserThunk({ form, navigate }));
+        dispatch(loginUserThunk({ form, navigate }));
     };
 
  
 
     return (
         <Container maxWidth="sm" sx={{ marginTop: 8 }}>
-            <Box 
-                component="form" 
-                onSubmit={userLogin} 
+            <Box
+                component="form"
+                onSubmit={userLogin}
                 sx={{ display: 'flex', flexDirection: 'column', gap: 2, padding: 2, boxShadow: 3, borderRadius: 2 }}
             >
                 <Typography variant="h4" align="center" gutterBottom>
@@ -47,7 +47,7 @@ const Login = () => {
                     fullWidth
                     value={form.userInput}
                     onChange={(e) => setForm({ ...form, userInput: e.target.value })}
-                    
+
                 />
 
                 <TextField
@@ -60,19 +60,19 @@ const Login = () => {
                     onChange={(e) => setForm({ ...form, password: e.target.value })}
                 />
 
-            
 
-                <Button 
-                    type="submit" 
-                    variant="contained" 
-                    color="primary" 
-                    fullWidth 
+
+                <Button
+                    type="submit"
+                    variant="contained"
+                    color="primary"
+                    fullWidth
                     sx={{ mt: 2, mb: 1 }}
                 >
                     Login
                 </Button>
 
-             
+
             </Box>
         </Container>
     );

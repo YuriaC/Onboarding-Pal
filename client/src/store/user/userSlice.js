@@ -17,7 +17,7 @@ export const loginUserThunk = createAsyncThunk(
             // Navigate based on role
             const userRole = response.data.data.role;
             if (userRole === 'hr') {
-                navigate('/hr/employee-profiles'); // Redirect HR to the appropriate page
+                navigate('/hr/home'); // Redirect HR to the appropriate page
             } else if (userRole === 'employee') {
                 const response = await axios.get(`${USER_ENDPOINT}/userinfo`, { withCredentials: true })
                 console.log('response:', response)
