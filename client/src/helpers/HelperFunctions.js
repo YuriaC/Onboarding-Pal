@@ -12,11 +12,12 @@ export const resetObject = (obj) => {
 
     for (let key in obj) {
         if (typeof obj[key] === 'number') {
-            ret[key] = 0
+            ret[key] = undefined
         }
         else if (typeof obj[key] === 'string') {
             ret[key] = ''
         }
+        // ret[key] = null
     }
 
     return ret

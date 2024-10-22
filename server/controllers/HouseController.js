@@ -38,19 +38,31 @@ const getHouses = async (req, res) => {
 
 const addHouse = async (request, response) => {
   try {
-    // const {
-    //   address,
-    //   landlordName,
-    //   landlordPhone,
-    //   landlordEmail,
-    //   numBeds,
-    //   numMattresses,
-    //   numTables,
-    //   numChairs,
-    // } = request.body
+    const {
+      street,
+      city,
+      state,
+      zip,
+      landlordName,
+      landlordPhone,
+      landlordEmail,
+      numBeds,
+      numMattresses,
+      numTables,
+      numChairs,
+    } = request.body
+
+    const address = `${street}, ${city}, ${state} ${zip}`
 
     const house = await House.create({
-      ...request.body
+      address,
+      landlordName,
+      landlordPhone,
+      landlordEmail,
+      numBeds,
+      numMattresses,
+      numTables,
+      numChairs,
     })
 
     response.status(200).json(house)
