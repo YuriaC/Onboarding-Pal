@@ -77,7 +77,12 @@ const deleteHouse = async (request, response) => {
 const getHouseById = async (request, response) => {
   try {
     const { houseId } = request.params
-    const house = await House.findById(houseId)
+    const house = await House.findById(houseId).populate('employees').populate({
+        path: 'reports',
+        populate: {
+            path: 'comments'
+        }
+    })
     if (!house) {
       return response.status(404).json('House not found!')
     }

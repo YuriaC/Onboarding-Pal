@@ -1,12 +1,18 @@
 import { useState, useEffect } from 'react'
+import { useParams } from 'react-router-dom'
 import axios from 'axios'
-import { COMMENT_ENDPOINT, REPORT_ENDPOINT, USER_ENDPOINT } from '../constants'
+import { COMMENT_ENDPOINT, HOUSE_ENDPOINT, REPORT_ENDPOINT, USER_ENDPOINT } from '../constants'
 import { toast, ToastContainer } from 'material-react-toastify'
 import 'material-react-toastify/dist/ReactToastify.css'
-import { Card, CardContent, Typography, List, ListItem, ListItemText, Box, Button, TextField, Accordion, AccordionDetails, AccordionSummary, ListItemIcon } from '@mui/material'
+import { Card, CardContent, Typography, List, ListItem, ListItemText, Box, Button, TextField, Accordion, AccordionDetails, AccordionSummary, ListItemIcon, Pagination } from '@mui/material'
 import PhoneIcon from '@mui/icons-material/Phone'
+import EmailIcon from '@mui/icons-material/Email'
+import DirectionsCarIcon from '@mui/icons-material/DirectionsCar'
 
-const Housing = () => {
+
+const HouseDetails = () => {
+
+    const { houseId } = useParams()
 
     const [houseData, setHouseData] = useState({
         address: '',
@@ -24,6 +30,7 @@ const Housing = () => {
     const [userInfo, setUserInfo] = useState({
         id: '',
         username: '',
+        role: '',
     })
     const [isCreatingReport, setIsCreatingReport] = useState(false)
     const [commentChanges, setCommentChanges] = useState({})
@@ -34,16 +41,24 @@ const Housing = () => {
         title: '',
         description: '',
     })
+    const [reportsPage, setReportsPage] = useState(1)
+    const reportsPerPage = 5
+    const currReports = houseData.reports.slice((reportsPage - 1) * reportsPerPage, reportsPage * reportsPerPage)
 
     useEffect(() => {
-        axios.get(`${USER_ENDPOINT}/userinfo`, { withCredentials: true })
-            .then(response => {
-                const { house } = response.data
-                console.log('response.data:', response.data)
+        const fetchData = async () => {
+            try {
+                const userResponse = await axios.get(`${USER_ENDPOINT}/userinfo`, { withCredentials: true })
+                const userData = userResponse.data
+                console.log('userData:', userData)
                 setUserInfo({
-                    id: response.data._id,
-                    username: response.data.username,
+                    id: userData._id,
+                    username: userData.username,
+                    role: userData.role,
                 })
+                const houseResponse = await axios.get(`${HOUSE_ENDPOINT}/details/${houseId}`, { withCredentials: true })
+                const houseResData = houseResponse.data
+                console.log('houseResData:', houseResData)
                 const {
                     address,
                     employees,
@@ -55,18 +70,10 @@ const Housing = () => {
                     numMattresses,
                     numTables,
                     reports,
-                } = house
-                const houseId = house._id
-                console.log('house:', house)
-                const otherEmployees = employees.filter(employee => {
-                    return (
-                        employee._id !== response.data._id
-                    )
-                })
-                console.log('otherEmployees:', otherEmployees)
+                } = houseResData
                 setHouseData({
                     address,
-                    employees: otherEmployees,
+                    employees,
                     landlordEmail,
                     landlordName,
                     landlordPhone,
@@ -74,11 +81,7 @@ const Housing = () => {
                     numChairs,
                     numMattresses,
                     numTables,
-                    reports: reports.filter((report) => {
-                        return (
-                            report.createdBy === response.data.username
-                        )
-                    }),
+                    reports,
                     houseId,
                 })
                 let newComments = {}
@@ -92,11 +95,36 @@ const Housing = () => {
                 }
                 setNewReportComments(newCommentReports)
                 setCommentChanges(newComments)
-                console.log('reports:', reports)
-            })
-            .catch(error => {
-                toast.error(`Error getting user info! Error: ${error.message}`)
-            })
+            }
+            catch (error) {
+                toast.error(`Error fetching data! Error: ${error.message}`)
+            }
+        }
+        // axios.get(`${USER_ENDPOINT}/userinfo`, { withCredentials: true })
+        //     .then(response => {
+        //         // const { house } = response.data
+        //         // const otherEmployees = employees.filter(employee => {
+        //         //     return (
+        //         //         employee._id !== response.data._id
+        //         //     )
+        //         // })
+        //         // let newComments = {}
+        //         // let newCommentReports = {}
+        //         // for (const report of reports) {
+        //         //     newCommentReports[report._id] = ''
+        //         //     const comments = report.comments
+        //         //     for (const comment of comments) {
+        //         //         newComments[comment._id] = comment.description
+        //         //     }
+        //         // }
+        //         // setNewReportComments(newCommentReports)
+        //         // setCommentChanges(newComments)
+        //         // console.log('reports:', reports)
+        //     })
+        //     .catch(error => {
+        //         toast.error(`Error getting user info! Error: ${error.message}`)
+        //     })
+        fetchData()
     }, [submitted])
 
     const submitReport = (e) => {
@@ -177,8 +205,13 @@ const Housing = () => {
             })
     }
 
+    const viewEmployee = (e, employeeId) => {
+        e.preventDefault()
+        console.log('employeeId:', employeeId)
+    }
+
     return (
-        <div style={{ width: '90vw' }}>
+        <div>
             <Box sx={{ margin: 'auto', mt: 5 }}>
                 <Card>
                     <CardContent>
@@ -186,7 +219,23 @@ const Housing = () => {
                             {houseData ? houseData.address : 'No address found'}
                         </Typography>
                         <Typography variant='h5'>
-                            Roommates:
+                            Landlord:
+                        </Typography>
+                        <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: '1rem' }}>
+                            <Typography variant='body1' color='textPrimary'>
+                                {houseData.landlordName}
+                            </Typography>
+                            <Typography variant='body1' color='textPrimary'>
+                                <PhoneIcon />
+                                {houseData.landlordPhone}
+                            </Typography>
+                            <Typography variant='body1' color='textPrimary'>
+                                <EmailIcon />
+                                {houseData.landlordEmail}
+                            </Typography>
+                        </Box>
+                        <Typography variant='h5'>
+                            {userInfo.role === 'employee' ? 'Roommates:' : 'Employees:'}
                         </Typography>
                         {houseData && houseData.employees.length > 0
                             ? (
@@ -194,10 +243,30 @@ const Housing = () => {
                                     {houseData.employees.map((roommate, index) => {
                                         console.log('roommate:', roommate)
                                         return (
-                                            <ListItem key={index}>
-                                                <ListItemText primary={`${roommate.firstName}${roommate.preferredName ? ` "${roommate.preferredName}"` : ''}${roommate.middleName ? ` ${roommate.middleName}`: ''} ${roommate.lastName}`} />
-                                                <ListItemIcon><PhoneIcon /></ListItemIcon>
-                                                <Typography>{roommate.cellPhone}</Typography>
+                                            <ListItem key={index} sx={{ display: 'flex', justifyContent: 'space-evenly' }}>
+                                                <ListItemText sx={{ cursor: 'pointer' }} onClick={(e) => viewEmployee(e, roommate._id)} primary={`${roommate.firstName}${roommate.preferredName ? ` "${roommate.preferredName}"` : ''}${roommate.middleName ? ` ${roommate.middleName}`: ''} ${roommate.lastName}`} />
+                                                <Box>
+                                                    <ListItemIcon><PhoneIcon /></ListItemIcon>
+                                                    {/* <Typography>{roommate.cellPhone}</Typography> */}
+                                                    <ListItemText secondary={roommate.cellPhone} />
+                                                </Box>
+                                                <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                                                    <ListItemIcon><EmailIcon /></ListItemIcon>
+                                                    {/* <Typography>{roommate.email}</Typography> */}
+                                                    <ListItemText secondary={roommate.email} />
+                                                </Box>
+                                                <Box>
+                                                    {!roommate.carColor && !roommate.carMake && !roommate.carModel
+                                                        ? <Typography>No car info</Typography>
+                                                        :
+                                                        <>
+                                                            <ListItemIcon>
+                                                                <DirectionsCarIcon />
+                                                            </ListItemIcon>
+                                                            <ListItemText secondary={`${roommate.carColor} ${roommate.carMake} ${roommate.carModel}`} />
+                                                        </>
+                                                    }
+                                                </Box>
                                             </ListItem>
                                         )
                                     })}
@@ -205,13 +274,13 @@ const Housing = () => {
                             )
                             : (
                                 <Typography variant='body1' color='text.secondary'>
-                                    No roommates at this time
+                                    No employees assigned to this house at this time
                                 </Typography>
                             )}
                     </CardContent>
                 </Card>
             </Box>
-            <Box sx={{ margin: 'auto', mt: 2 }}>
+            {userInfo.role === 'employee' && <Box sx={{ margin: 'auto', mt: 2 }}>
                 <Button onClick={() => setIsCreatingReport(!isCreatingReport)}>
                     Create Facility Report
                 </Button>
@@ -244,19 +313,20 @@ const Housing = () => {
                         </form>
                     </>
                 }
-            </Box>
+            </Box>}
             <Box sx={{ margin: 'auto', mt: 2 }}>
                 <Card>
                     {houseData.reports.length === 0
-                        ? <Typography>You haven&apos;t made any reports for this house</Typography>
+                        ? <Typography>No reports have been made about this house at this time</Typography>
                         : (
                             <>
                                 <Button onClick={() => setIsViewingReports(!isViewingReports)}>
-                                    View Your Reports
+                                    View{userInfo.role === 'employee' ? ' Your ' : ' '}Reports
                                 </Button>
                                 {isViewingReports &&
+                                <>
                                     <List>
-                                        {houseData.reports.map((report, index) => {
+                                        {currReports.map((report, index) => {
 
                                             return (
                                                 <Accordion key={index} sx={{ minWidth: '60vw' }}>
@@ -279,7 +349,7 @@ const Housing = () => {
 
                                                                 return (
                                                                     <ListItem key={comment._id}>
-                                                                        <form onSubmit={(e) => editComment(e, comment._id)} style={{ display: 'flex', width: '70%' }}>
+                                                                        <form onSubmit={(e) => editComment(e, comment._id)} style={{ display: 'flex', width: '65%' }}>
                                                                             <TextField
                                                                                 value={commentChanges[comment._id]}
                                                                                 onChange={(e) => handleCommentChange(e, comment._id)}
@@ -323,6 +393,13 @@ const Housing = () => {
                                             )
                                         })}
                                     </List>
+                                    <Pagination
+                                        count={Math.ceil(houseData.reports.length / reportsPerPage)}
+                                        page={reportsPage}
+                                        onChange={(_, value) => setReportsPage(value)}
+                                        sx={{ display: 'flex', justifyContent: 'center', mt: 2 }}
+                                    />
+                                </>
                                 }
                             </>
                         )
@@ -334,4 +411,4 @@ const Housing = () => {
     )
 }
 
-export default Housing
+export default HouseDetails

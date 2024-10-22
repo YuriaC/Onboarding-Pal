@@ -5,6 +5,7 @@ const { faker } = require('@faker-js/faker')
 const argon2 = require("argon2");
 
 const MONGO_URI = process.env.MONGO_URI
+const password = "Abcd1234@"
 
 // console.log(MONGO_URI)
 
@@ -30,7 +31,7 @@ mongoose.connect(MONGO_URI)
                 })
             }
 
-            const hashedPassword = await argon2.hash("ABCD1234@"); // THIS IS THE PASSWARD
+            const hashedPassword = await argon2.hash(password); // THIS IS THE PASSWARD
 
             await House.insertMany(houses)
             const house = await House.findOne({}).exec();
@@ -41,10 +42,30 @@ mongoose.connect(MONGO_URI)
                     password: hashedPassword,
                     role: "employee",
                     house: house._id,
+                    firstName: 'Test',
+                    lastName: 'Employee',
+                    onboardingStatus: 'Pending',
+                  },
+                  {
+                    username: 'EmployeeTest2',
+                    email: "test2@gmail.com",
+                    password: hashedPassword,
+                    role: "employee",
+                    house: house._id,
+                    firstName: 'Test',
+                    lastName: 'Employee 2',
+                    onboardingStatus: 'Rejected',
+                    registrationHistory: {
+                        email: "test2@gmail.com",
+                        status: 'Registered'
+                    }
+                    
                   },
                   {
                     username: 'HRTest',
-                    email: "test2@gmail.com",
+                    firstName: 'Test',
+                    lastName: 'HR',
+                    email: "test3@gmail.com",
                     password: hashedPassword,
                     role: "hr",
                   }
@@ -54,8 +75,8 @@ mongoose.connect(MONGO_URI)
             await house.save()
         
         }
-        if (process.env.NODE_ENV !== 'production'){
-            // seed().then(() => console.log('Successfully seeded with 5 house and 2 users: EmployeeTest and HRTest with password: ABCD1234@')).catch(error => console.log('Error seeding:', error.message))
+        if (process.env.NODE_ENV !== 'production') {
+            // seed().then(() => console.log(`Successfully seeded with 5 house and 2 users: EmployeeTest and HRTest with password: ${password}`)).catch(error => console.log('Error seeding:', error.message))
         }
 
     })

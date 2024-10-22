@@ -1,10 +1,13 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import './Personal.css';
 import axios from 'axios';
-import { token, USER_ENDPOINT } from '../constants';
-import { toast } from 'react-toastify';
+import { USER_ENDPOINT } from '../constants';
+import { toast, ToastContainer } from 'material-react-toastify';
+import 'material-react-toastify/dist/ReactToastify.css'
+import { Box, Card, CardActions, CardContent, Typography, Button } from '@mui/material'
 
 const Personal = () => {
+    console.log('Personal')
     const [isEditing, setIsEditing] = useState(false);
     const [formData, setFormData] = useState({
         firstName: '',
@@ -16,7 +19,7 @@ const Personal = () => {
         ssn: '',
         dob: '',
         gender: '',
-        address: {
+        address: {//
             building: '',
             street: '',
             city: '',
@@ -53,10 +56,11 @@ const Personal = () => {
 
 
     useEffect(() => {
-        axios.get(`${USER_ENDPOINT}/getdocs`, {
-            headers: {
-                'Authorization': `Bearer ${token}`
-            }
+        axios.get(`${USER_ENDPOINT}/getuserdocs`, {
+            // headers: {
+            //     'Authorization': `Bearer ${token}`
+            // },
+            withCredentials: true,
         })
         .then(response => {
             toast.success('Successfully fetched user files!')
@@ -75,6 +79,7 @@ const Personal = () => {
 
     const handleChange = (e) => {
         const { name, value } = e.target;
+        console.log(value)
         setFormData((prevData) => ({ ...prevData, [name]: value }));
     };
 
@@ -265,14 +270,14 @@ const Personal = () => {
                         <div>
                             {formData.emergencyContact.map((contact, index) => {
                                 return (
-                                    <>
+                                    <div key={contact.phone}>
                                         <input type='text' name='firstName' placeholder='First Name' value={contact.firstName || ''} onChange={(e)=>{handleEmergencyContactChange(e, index)}} />
                                         <input type='text' name='lastName' placeholder='Last Name' value={contact.lastName || ''} onChange={(e)=>{handleEmergencyContactChange(e, index)}} />
                                         <input type='text' name='middleName' placeholder='Middle Name' value={contact.middleName || ''} onChange={(e)=>{handleEmergencyContactChange(e, index)}} />
                                         <input type='text' name='phone' placeholder='Phone' value={contact.phone || ''} onChange={(e)=>{handleEmergencyContactChange(e, index)}} />
                                         <input type='email' name='email' placeholder='Email' value={contact.email || ''} onChange={(e)=>{handleEmergencyContactChange(e, index)}} />
                                         <input type='relationship' name='relationship' placeholder='relationship' value={contact.relationship || ''} onChange={(e)=>{handleEmergencyContactChange(e, index)}} />
-                                    </>
+                                    </div>
                                 )
                             })}
                         </div>
@@ -280,14 +285,14 @@ const Personal = () => {
                         <div>
                             {formData.emergencyContact.map((contact, index) => {
                                 return (
-                                    <>
+                                    <div key={contact.phone}>
                                         <input type='text' name='firstName' placeholder='First Name' value={contact.firstName || ''} disabled={true} />
                                         <input type='text' name='lastName' placeholder='Last Name' value={contact.lastName || ''} disabled={true} />
                                         <input type='text' name='middleName' placeholder='Middle Name' value={contact.middleName || ''} disabled={true} />
                                         <input type='text' name='phone' placeholder='Phone' value={contact.phone || ''} disabled={true} />
                                         <input type='email' name='email' placeholder='Email' value={contact.email || ''} disabled={true} />
                                         <input type='relationship' name='relationship' placeholder='relationship' value={contact.relationship || ''} disabled={true} />
-                                    </>
+                                    </div>
                                 )
                             })}
                         </div>
@@ -301,31 +306,60 @@ const Personal = () => {
                         <input type="file" multiple onChange={handleDocumentUpload} accept=".pdf,.jpg,.jpeg,.png" />
                         {formData.documents.length > 0 && (
                             <ul>
-                                {formData.documents.map((doc, index) => (
+                                {Object.keys(formData.documents).map((key, index) => {
+                                    
+                                    // Might need to look over this
+                                    const doc = formData.documents[key]
+                                    console.log('doc:', doc)
+
+                                    return (
                                     <li key={doc.name}>
                                         {doc.name}
                                         <button onClick={() => previewDocument(doc)}>Preview</button>
                                         <button onClick={() => downloadDocument(doc)}>Download</button>
                                     </li>
-                                ))}
+                                )})}
                             </ul>
                         )}
                     </div>
                 ) : (
                     <div>
                         {Object.keys(formData.documents).length > 0 ? (
-                            <ul>
+                            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, mb: '2rem' }}>
                                 {Object.keys(formData.documents).map((key) => {
-                                    const doc = formData.documents[key]
+                                    const docs = formData.documents
+                                    const doc = docs[key]
+                                    let fileName
+                                    switch (key) {
+                                        case 'profilePictureURL':
+                                            fileName = 'Profile Picture'
+                                            break
+                                        case 'driversLicenseCopy_url':
+                                            fileName = "Driver's License"
+                                            break
+                                        case 'optUrl':
+                                            fileName = 'OPT Receipt'
+                                            break
+                                    }
                                     return (
-                                        <li key={key}>
-                                            {key}
-                                            <button onClick={() => previewDocument(key, doc)}>Preview</button>
-                                            <button onClick={() => downloadDocument(key, doc)}>Download</button>
-                                        </li>
-                                    )})
-                                }
-                            </ul>
+                                        <>
+                                            <Card key={`${key}-download`} sx={{ minWidth: 275 }}>
+                                                <CardContent>
+                                                    <Typography variant='h6'>{fileName}</Typography>
+                                                </CardContent>
+                                                <CardActions sx={{ justifyContent: 'center' }}>
+                                                    <Button href={doc.download} download>
+                                                        Download
+                                                    </Button>
+                                                    <Button onClick={() => window.open(doc.preview, '_blank')}>
+                                                        Preview
+                                                    </Button>
+                                                </CardActions>
+                                            </Card>
+                                        </>
+                                    )
+                                })}
+                            </Box>
                         ) : (
                             <p>No documents uploaded</p>
                         )}
@@ -335,6 +369,7 @@ const Personal = () => {
 
             <button onClick={handleEditToggle}>{isEditing ? 'Cancel' : 'Edit'}</button>
             {isEditing && <button onClick={handleSave}>Save</button>}
+            <ToastContainer />
         </div>
     );
 };

@@ -35,7 +35,6 @@
     font-size: 1rem;
 }
 
-
 .form-group .required {
     color: red;
 }
@@ -49,10 +48,10 @@
     transition: border-color 0.3s ease-in-out, box-shadow 0.3s ease-in-out;
 }
 
-.form-group input:focus {
+/* .form-group input:focus {
     border-color: #3498db;
     box-shadow: 0 0 8px rgba(52, 152, 219, 0.5);
-}
+} */
 
 .form-group input:hover {
     border-color: #2980b9;
@@ -91,4 +90,9 @@ button:hover {
 
 .signButton {
     color: #646cff;
+}
+
+.signUpText {
+    margin-top: .3rem;
+    font-size: smaller;
 }

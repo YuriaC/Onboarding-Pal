@@ -2,10 +2,10 @@
 const User = require('../models/User');
 const House = require('../models/House');
 const Contact = require('../models/Contact');
-const Yup = require('yup');
-const { JSDOM } = require('jsdom');
+const Yup = require('yup');  // 
+const { JSDOM } = require('jsdom');  //
 const argon2 = require("argon2");
-const DOMPurify = require('isomorphic-dompurify');
+const DOMPurify = require('isomorphic-dompurify');  //
 const generateToken = require("../utils/generateToken");
 const { sendMail } = require("../utils/sendMails");
 const jwt = require('jsonwebtoken');
@@ -22,16 +22,10 @@ const registerSchema = Yup.object().shape({
         .required('Email is required.'),
     password: Yup.string()
         .trim()
-        .required('Message cannot be empty.'),
-  });
-const loginSchema_username = Yup.object().shape({
-    username: Yup.string()
-        .matches(/^[a-zA-Z0-9_]{3,16}$/, 'Username must be 3-16 characters long and alphanumeric.')
-        .required('Username is required.'),
-    password: Yup.string()
-        .trim()
-        .required('Message cannot be empty.'),
+        .required('Password cannot be empty.'),
 });
+
+
 const sanitizeInput = (input) => {
     const dom = new JSDOM('');
     const purify = DOMPurify(dom.window);
@@ -46,7 +40,7 @@ const register = async (req,res) =>{
     try{
         const duplicate = await User.findOne({ username }).lean().exec();
         if (duplicate) {
-          return res.status(409).json({ message: 'Username already exists' });
+            return res.status(409).json({ message: 'Username already exists' });
         }
 
 
@@ -55,46 +49,38 @@ const register = async (req,res) =>{
         ]);
         
         /* If we're creating the user elsewhere */
-        const existingUser = await User.findOne({ email }).lean().exec();
-
+        const existingUser = await User.findOne({ email:email });
 
         if (existingUser) {
             const hashedPassword = await argon2.hash(password);
             // update user schema if user resend the link
-            const updatedUser = await User.updateOne(
-                { email: email },
-                {
-                    username,
-                    password: hashedPassword,
-                    role: 'employee',
-                    house: randomHouse[0]._id,
-                    //house: find house id randomly assign one
-                    onboardingStatus: 'pending',
-                    registrationHistory: {
-                        $set: {
-                            email: email,
-                            status: 'registered',
-                        },
-                    },
-                }
-            );
+            existingUser.username = username;
+            existingUser.password = hashedPassword;
+            existingUser.role = 'employee';
+            existingUser.house = randomHouse[0]._id;
+            existingUser.onboardingStatus = 'Pending';
+            existingUser.registrationHistory.email = email;
+            existingUser.registrationHistory.status = 'Registered';
+            await existingUser.save();
             // Add user ID to their assigned house as well
-            randomHouse.employees.push(updatedUser._id)
-            await randomHouse.save()
+            const house = await House.findById(randomHouse[0]._id)
+            house.employees.push(existingUser._id)
+            await house.save()
         }else{
             return res.status(404).json({ message: 'Email not Found!' });
         }
         /* End section */
         
         /* If we're creating the user right here */
-        const hashedPassword = await argon2.hash(password);
         //add new employee to the house
         await House.updateOne(
             {_id:randomHouse[0]._id},{
             $push:{"employees":existingUser._id}//push into the employee array
         });
         // generate JWT token
-        const token = generateToken(existingUser._id.toString(), username, role);
+        const token = generateToken(existingUser._id.toString(), username, existingUser.role);
+        
+        console.log(existingUser)
         // assign cookies
         res.cookie('auth_token', token);
         return res.status(200).json('Register Successfully');
@@ -103,38 +89,46 @@ const register = async (req,res) =>{
         return res.status(500).json({ message: error.message});
     }
 };
+
 const sendRegistrationLink = async (req,res) =>{
     // Get user information
-    const { email } = req.body;
-    if (!email ) {
-        return res.status(400).json({ message: 'Email is required.' });
+    const { email,name } = req.body;
+    if (!email || !name) {
+        return res.status(400).json({ message: 'Email is required and name is required' });
       }
+
+      const {firstName, lastName} = name.trim().split(' ');
       const sanitizedEmail = sanitizeInput(email);
+      const sanitizedFirstName = sanitizeInput(firstName);
+      const sanitizedLastName = sanitizeInput(lastName);
+
+      console.log(sanitizedFirstName, sanitizedLastName, sanitizedEmail)
       const token = jwt.sign(
         { email: sanitizedEmail },
         process.env.ACCESS_TOKEN_SECRET,
         { expiresIn: '3h' }
       );
       const frontendURL = process.env.FRONTEND_URL ? process.env.FRONTEND_URL : 'http://localhost:5173';
-      const registrationLink = `${frontendURL}/auth/registration?token=${token}`;
+      const registrationLink = `${frontendURL}/register?token=${token}`;
       try {
         // Check if user already exists
         const existingUser = await User.findOne({ email: sanitizedEmail }).lean().exec();
         if (existingUser) {
-            if(existingUser.registrationHistory.status === 'registered'){
+            if(existingUser.registrationHistory.status === 'Registered') {
                 return res.status(409).json({ message: 'User with this email already exists.' });
             }
             // Update user schema if user resend the link
             const updatedUser = await User.updateOne(
                 { email: sanitizedEmail },
                 {
-                    registrationHistory: {
-                        $set: {
-                            email: sanitizedEmail,
+                    $set: {  
+                        firstName: sanitizedFirstName,
+                        email: sanitizedEmail,
+                        lastName: sanitizedLastName,
+                        registrationHistory: {
                             status: 'Pending',
                             expiresAt: Date.now() + 3 * 60 * 60 * 1000,
                             token: token
-                            
                         }
                     }
                 });
@@ -145,6 +139,8 @@ const sendRegistrationLink = async (req,res) =>{
             // Create registration link and user schema when user first register
               const newUser = await User.create({
                 email: sanitizedEmail,
+                firstName: sanitizedFirstName,
+                lastName: sanitizedLastName,
                 password: '',
                 role: 'employee',
                 onboardingStatus: 'Pending',
@@ -158,7 +154,6 @@ const sendRegistrationLink = async (req,res) =>{
               if(!newUser){
                 return res.status(500).json({ message: 'Failed to create user.' });
               }
-              console.log(newUser,"USer Created");
         }
         // Send registration email
         const mailResult = await sendMail(
@@ -211,101 +206,56 @@ const checkRegister = async (req, res) => {
     }
   };
 
-  const login = async(req,res)=>{ 
-    // tested working
-    //await loginSchema_username.validate(req.body);
-    if(!req.body.userinput || !req.body.password){
-        return res.status(401).json({ message: 'Missing required fields!' });
-    }
+const login = async (req, res) => {
+    // Tested working. User can login with either username or email
+    // const loginData = req.body.form;
+    // const loginData = req.body
+    // await loginSchema.validate(loginData);
+    // const credential = sanitizeInput(loginData.credential);
+    // const password = sanitizeInput(loginData.password);
+    // console.log(credential, password);  // debug
+    const { username, password } = req.body
 
-    const usernameRegex = /^[a-zA-Z0-9_]+$/;
-    
-    const isEmail = validator.isEmail(req.body.userinput);
 
-    const isUsername = !validator.isEmpty(req.body.userinput)
-      && validator.isLength(req.body.userinput, { min: 3, max: 16 })
-      && validator.matches(req.body.userinput, usernameRegex);
-    
-    if (!isEmail && !isUsername) {
-      return res.status(401).json({ message: 'Invalid credentials' });
-    }
-    
-    const userinput = sanitizeInput(req.body.userinput);
-    const password = sanitizeInput(req.body.password);
-    try{
-        const user = await User.findOne({ 
-            $or: [
-                {username: userinput},
-                {email: userinput}
-            ]
-         })
-        .select('password username role')
-        .lean()
-        .exec();
-
+    try {
+        let user = await User.findOne({email: username})
+            .select(['username','password','role'])
+            .lean()
+            .exec();
 
         if (!user) {
-        return res.status(401).json({ message: 'Invalid credentials' });
+            // console.log('no matching email found, searching username');  // debug
+            user = await User.findOne({username: username})
+                .select(['username','password', 'role'])
+                .lean()
+                .exec();
+
+            if (!user) {
+                // console.log('did not find matching username either...');  // debug
+                return res.status(404).send({message:"User doesn't exist."});
+            } 
         }
 
-        // check if password is correct
-        const isPasswordCorrect = await argon2.verify(user.password, password);
-        if (!isPasswordCorrect) {
-        return res.status(401).json({ message: 'Invalid credentials' });
+        // verify hashed password
+        const validPassword = await argon2.verify(user.password, password);
+        if (!validPassword) {
+            return res.status(401).json({message:"Wrong password!"});
         }
 
-        // generate JWT token
+        //generate JWT TOKEN
         const token = generateToken(user._id, user.username, user.role);
-        res.cookie('auth_token', token);
-        return res.status(200).json({
-            userId: user._id,
-            userinput: userinput,
-            role: user.role
-        });
-    } catch (error) {
-        console.error(error);
-        return res.status(500).json({ message: error.message });
-    }
+        // console.log(`JWT token, ${token}, generated. \n`);  // debug
+        res.cookie('auth_token', token, {
+            maxAge: 3600000,
+            sameSite: 'strict',
+                    }); 
 
+        return res.status(200).json({data: user, message:`Login Successful. Welcome, ${user.username}!`});
+        } catch (e) {
+            return res.status(500).json({message: `ERROR: ${e}.`});  
+        }
 };
-/*
-const login = async(req,res)=>{ 
-    // tested working
-    //await loginSchema_username.validate(req.body);
-    validator.isEmail(req.body.userinput);
-    const userinput = sanitizeInput(req.body.userinput);
-    const password = sanitizeInput(req.body.password);
-    try{
-        const user = await User.findOne({ userinput })
-        .select('password username role')
-        .lean()
-        .exec();
 
-
-        if (!user) {
-        return res.status(401).json({ message: 'Invalid credentials' });
-        }
-
-        // check if password is correct
-        const isPasswordCorrect = await argon2.verify(user.password, password);
-        if (!isPasswordCorrect) {
-        return res.status(401).json({ message: 'Invalid credentials' });
-        }
-
-        // generate JWT token
-        const token = generateToken(user._id, user.username, user.role);
-        res.cookie('auth_token', token);
-        return res.status(200).json({
-            userId: user._id,
-            userinput: userinput,
-            role: user.role
-        });
-    } catch (error) {
-        console.error(error);
-        return res.status(500).json({ message: error.message });
-    }
-
-};*/
 
 const getOnboardingStatus = async(req,res) =>{
     // tested working
@@ -411,6 +361,7 @@ const setApplicationInput = async(req,res) =>{
     const dlnum = req.body.dlNum;
     const dldate = req.body.dlExpDate;
     const { refFirstName, refLastName, refMiddleName, refPhone, refEmail, refRelationship } = req.body
+    const { visaStartDate, visaEndDate, visaTitle } = req.body
     const emergencyContacts = req.body.emergencyContacts
 
     const s3 = new S3Client({
@@ -514,6 +465,7 @@ const setApplicationInput = async(req,res) =>{
                 "birthday": dob,
                 "gender": gender,
                 "workAuth": workauth,
+                // "workAuthFile_url": workauth_url,
                 "driversLicenseNumber": dlnum,
                 "driversLicenseExpDate": dldate,
                 "driversLicenseCopy_url": dlCopyURL,
@@ -521,6 +473,9 @@ const setApplicationInput = async(req,res) =>{
                 "referer": isReferred === 'Yes' ? reference._id : null,
                 "optUrl": optReceiptURL,
                 "emergencyContacts": emergencyContactIds,
+                "visaStartDate": visaStartDate,
+                "visaEndDate": visaEndDate,
+                "visaTitle": visaTitle,
             }
         }
         );
@@ -631,9 +586,8 @@ const setContactInput = async(req,res) =>{
 
 const getUserDocs = async (req, res) => {
     try {
-        const { username } = req.body
+        const { username } = req.user
         const { AccessKeyId, SecretAccessKey, SessionToken } = req.credentials
-
         const s3 = new S3Client({
             region: process.env.AWS_REGION,
             credentials: {
@@ -667,9 +621,19 @@ const getUserDocs = async (req, res) => {
                 Key: fileName,
                 ResponseContentDisposition: `attachment; filename="${fileName}"`,
             }
+            const previewParams = {
+                Bucket: process.env.S3_BUCKET,
+                Key: fileName,
+                // ResponseContentDisposition: `attachment; filename="${fileName}"`,
+            }
             const command = new GetObjectCommand(params)
-            const signedUrl = await getSignedUrl(s3, command, { expiresIn: 300 })
-            ret[key] = signedUrl
+            const previewCommand = new GetObjectCommand(previewParams)
+            const signedURL = await getSignedUrl(s3, command, { expiresIn: 300 })
+            const previewSignedURL = await getSignedUrl(s3, previewCommand, { expiresIn: 300 })
+            ret[key] = {
+                download: signedURL,
+                preview: previewSignedURL
+            }
         }
         res.status(200).json(ret)
     }
@@ -713,17 +677,55 @@ const getPersonalinfo = async(req,res) =>{
         //     i983Url: user.i983Url,
         //     i20Url: user.i20Url,
         // });
+
         return res.status(200).json(user)
     }catch (error) {
         console.error(error);
         return res.status(500).json({ message: error.message });
     }
 };
+const getRegistrationHistory = async(req,res) =>{
+    //tested working
+    try{
+        const Users = await User.find({ role: "employee"}).select('-password').lean().exec(); 
+        return res.status(200).json(Users)
+    }catch (error) {
+        console.error(error);
+        return res.status(500).json({ message: error.message });    
+
+    }
+}
+const getApplications = async(req,res) =>{
+    try{
+        const users = await User.find({ role: "employee",  "registrationHistory.status": { $ne: "Pending" } }).select('-password').lean().exec();
+
+        console.log(users)
+        if (!users) {
+            return res.status(401).json({ message: 'User not Found!' });
+        } 
+        const pending = users.filter(user => user.onboardingStatus === 'Pending');
+        const approved = users.filter(user => user.onboardingStatus === 'Approved');
+        const rejected = users.filter(user => user.onboardingStatus === 'Rejected');
+        return res.status(200).json({pending, approved, rejected})
+    }catch (error) {
+        console.error(error);
+        return res.status(500).json({ message: error.message });    
+
+    }
+}
 
 const getUserInfo = async (req, res) =>{
-    const { username } = req.body
+    const { username } = req.user
     try{
-        const user = await User.findOne({ username }).populate('referer').populate('emergencyContacts').lean().exec();
+        const user = await User.findOne({ username }).populate('referer').populate({
+            path: 'house',
+            populate: [
+                { path: 'employees' },
+                { path: 'reports', populate: {
+                    path: 'comments'
+                }
+            }]
+        }).populate('emergencyContacts').lean().exec();
         if (!user) {
             return res.status(401).json({ message: 'User not Found!' });
         }
@@ -733,7 +735,15 @@ const getUserInfo = async (req, res) =>{
         return res.status(500).json({ message: error.message });
     }
 };
-
+const logout = async (req, res) => {
+    try {
+        res.clearCookie('auth_token');
+        return res.status(200).json({ message: 'Logout successful' });
+    } catch (error) {
+        console.error(error);
+        return res.status(500).json({ message: error.message });
+    }
+};
 const updateWorkauthdoc = async(req,res) =>{
     //tested working
     const username = req.body.username;
@@ -900,4 +910,7 @@ module.exports = {
     getUserInfo,
     getEmpolyeesProfileForHR,
     getPersonalinfoById,
+    logout,
+    getRegistrationHistory,
+    getApplications
 }

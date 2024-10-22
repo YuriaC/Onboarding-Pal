@@ -1,8 +1,9 @@
 import { useState, useEffect } from 'react'
-import { ToastContainer, toast } from 'react-toastify'
-import { token, USER_ENDPOINT, username } from '../constants'
+import { ToastContainer, toast } from 'material-react-toastify'
+import { USER_ENDPOINT, username } from '../constants'
 import axios from 'axios'
-import { Box, Button, Card, CardActions, CardContent, Typography } from '@mui/joy'
+import { Box, Button, Card, CardActions, CardContent, Typography, CardHeader } from '@mui/material'
+import 'material-react-toastify/dist/ReactToastify.css'
 
 const Onboarding = () => {
 
@@ -21,7 +22,7 @@ const Onboarding = () => {
         zip: null,
         ssn: null,
         dob: null,
-        gender: 'Male',
+        gender: '',
         carMake: '',
         carModel: '',
         CarColor: '',
@@ -29,11 +30,20 @@ const Onboarding = () => {
         workPhone: '',
         isPermRes: '',
         permResStatus: '',
-        nonPermWorkAuth: 'H1-B',
+        nonPermWorkAuth: '',
         hasDriversLicense: '',
         isReferred: '',
         dlNum: '',
         dlExpDate: null,
+        refFirstName: '',
+        refLastName: '',
+        refMiddleName: '',
+        refPhone: '',
+        refEmail: '',
+        refRelationship: '',
+        visaStartDate: null,
+        visaEndDate: null,
+        visaTitle: '',
         emergencyContacts: [
             {
                 firstName: '',
@@ -56,9 +66,10 @@ const Onboarding = () => {
 
     useEffect(() => {
         axios.get(`${USER_ENDPOINT}/userinfo`, {
-            headers: {
-                'Authorization': `Bearer ${token}`
-            }
+            // headers: {
+            //     'Authorization': `Bearer ${token}`
+            // },
+            withCredentials: true,
         })
         .then(response => {
             setUserEmail(response.data.email)
@@ -73,9 +84,10 @@ const Onboarding = () => {
             }
         })
         .catch(error => {
+            console.log('error:', error)
             toast.error(`Error fetching user info! Error: ${error.message}`)
         })
-    }, [])
+    }, [submitted])
 
     const setDataToForm = (data) => {
         const {
@@ -88,7 +100,7 @@ const Onboarding = () => {
             workPhone,
             carMake,
             carModel,
-            CarColor,
+            carColor,
             ssn,
             birthday,
             gender,
@@ -99,6 +111,10 @@ const Onboarding = () => {
             emergencyContacts,
             hrFeedback,
             onboardingStatus,
+            workAuth,
+            visaStartDate,
+            visaEndDate,
+            visaTitle,
         } = data
         console.log('data:', data)
         const newEmContacts = []
@@ -123,7 +139,7 @@ const Onboarding = () => {
             workPhone,
             carMake,
             carModel,
-            CarColor,
+            carColor,
             ssn,
             dob: birthday.split('T')[0],
             gender,
@@ -140,14 +156,25 @@ const Onboarding = () => {
             state: address.split(', ')[3].split(' ')[0],
             zip: address.split(', ')[3].split(' ')[1],
             hrFeedback: onboardingStatus === 'Rejected' ? hrFeedback : '',
+            refFirstName: referer.firstName,
+            refLastName: referer.lastName,
+            refPhone: referer.cellPhone,
+            refEmail: referer.email,
+            refMiddleName: referer.middleName,
+            refRelationship: referer.relationship,
+            nonPermWorkAuth: workAuth,
+            visaStartDate: visaStartDate ? visaStartDate.split('T')[0] : '',
+            visaEndDate: visaEndDate ? visaEndDate.split('T')[0] : '',
+            visaTitle,
         })
     }
 
     const getDocs = async () => {
         const response = await axios.get(`${USER_ENDPOINT}/getuserdocs`, {
-            headers: {
-                'Authorization': `Bearer ${token}`
-            }
+            // headers: {
+            //     'Authorization': `Bearer ${token}`
+            // },
+            withCredentials: true,
         })
         setDocs(response.data)
         console.log('response:', response)
@@ -195,8 +222,9 @@ const Onboarding = () => {
             await axios.post(`${USER_ENDPOINT}/applicationinput`, data, {
                 headers: {
                     'Content-Type': 'multipart/form-data',
-                    'Authorization': `Bearer ${token}`,
-                }
+                    // 'Authorization': `Bearer ${token}`,
+                },
+                withCredentials: true,
             })
             toast.success('Successfully submitted application!')
             setSubmitted(!submitted)
@@ -239,13 +267,19 @@ const Onboarding = () => {
 
     return (
         <div>
-            <h2>Status: {appStatus}</h2>
+            <h2 style={{ color: appStatus === 'Rejected' ? 'red' : 'black' }}>Status: {appStatus}</h2>
             {appStatus === 'Pending' && <h3>Please wait for HR to review your application.</h3>}
             {formData.hrFeedback &&
-                <div>
-                    <h3>Feedback from HR:</h3>
-                    <h4>{formData.hrFeedback}</h4>
-                </div>
+                <Box sx={{ maxWidth: 400, margin: 'auto', mt: 2, mb: 2 }}>
+                    <Card sx={{ backgroundColor: '#f8d7da', color: '#721c24' }}>
+                        <CardHeader title='Feedback from HR:' sx={{ paddingBottom: 0 }} />
+                        <CardContent>
+                            <Typography variant='body1'>
+                                {formData.hrFeedback}
+                            </Typography>
+                        </CardContent>
+                    </Card>
+                </Box>
             }
             <form onSubmit={handleSubmit}>
                 <label>First Name: </label>
@@ -297,8 +331,9 @@ const Onboarding = () => {
                 <label>Date of Birth: </label>
                 <input type='date' name='dob' value={formData.dob} onChange={handleChange} disabled={appStatus === 'Pending'} required />
                 <label>Gender: </label>
-                <select name='gender' onChange={handleChange} disabled={appStatus === 'Pending'}>
-                    <option value='Male' selected>Male</option>
+                <select name='gender' value={formData.gender} onChange={handleChange} disabled={appStatus === 'Pending'}>
+                    <option value='' selected>Select gender</option>
+                    <option value='Male'>Male</option>
                     <option value='Female'>Female</option>
                     <option value='I do not wish to answer'>I do not wish to answer</option>
                 </select>
@@ -324,8 +359,9 @@ const Onboarding = () => {
                         <>
                             <br />
                             <label>What is your work authorization? </label>
-                            <select name='nonPermWorkAuth' onChange={handleChange} disabled={appStatus === 'Pending'} required>
-                                <option value='H1-B' selected>H1-B</option>
+                            <select name='nonPermWorkAuth' value={formData.nonPermWorkAuth} onChange={handleChange} disabled={appStatus === 'Pending'} required>
+                                <option value='' disabled selected>Select work auth</option>
+                                <option value='H1-B'>H1-B</option>
                                 <option value='L2'>L2</option>
                                 <option value='F1(CPT/OPT)'>F1(CPT/OPT)</option>
                                 <option value='H4'>H4</option>
@@ -342,15 +378,15 @@ const Onboarding = () => {
                                 <>
                                     <br />
                                     <label>Visa title: </label>
-                                    <input type='text' name='visaTitle' onChange={handleChange} disabled={appStatus === 'Pending'} />
+                                    <input type='text' name='visaTitle' value={formData.visaTitle} onChange={handleChange} disabled={appStatus === 'Pending'} />
                                 </>
                             }
                             <br />
                             <label>Work authorization start date: </label>
-                            <input type='date' name='visaStartDate' onChange={handleChange} disabled={appStatus === 'Pending'} />
+                            <input type='date' name='visaStartDate' value={formData.visaStartDate} onChange={handleChange} disabled={appStatus === 'Pending'} />
                             <br />
                             <label>Work authorization end date: </label>
-                            <input type='date' name='visaEndDate' onChange={handleChange} disabled={appStatus === 'Pending'} />
+                            <input type='date' name='visaEndDate' value={formData.visaEndDate} onChange={handleChange} disabled={appStatus === 'Pending'} />
                         </>
                     }
                 </fieldset>
@@ -388,25 +424,25 @@ const Onboarding = () => {
                         <>
                             <br />
                             <label>First Name: </label>
-                            <input type='text' name='refFirstName' onChange={handleChange} disabled={appStatus === 'Pending'} required />
+                            <input type='text' name='refFirstName' value={formData.refFirstName} onChange={handleChange} disabled={appStatus === 'Pending'} required />
                             <label>Last Name: </label>
-                            <input type='text' name='refLastName' onChange={handleChange} disabled={appStatus === 'Pending'} required />
+                            <input type='text' name='refLastName' value={formData.refLastName} onChange={handleChange} disabled={appStatus === 'Pending'} required />
                             <label>Middle Name: </label>
-                            <input type='text' name='refMiddleName' onChange={handleChange} disabled={appStatus === 'Pending'} />
+                            <input type='text' name='refMiddleName' value={formData.refMiddleName} onChange={handleChange} disabled={appStatus === 'Pending'} />
                             <label>Phone: </label>
-                            <input type='tel' name='refPhone' onChange={handleChange} disabled={appStatus === 'Pending'} required />
+                            <input type='tel' name='refPhone' value={formData.refPhone} onChange={handleChange} disabled={appStatus === 'Pending'} required />
                             <label>Email: </label>
-                            <input type='email' name='refEmail' onChange={handleChange} disabled={appStatus === 'Pending'} required />
+                            <input type='email' name='refEmail' value={formData.refEmail} onChange={handleChange} disabled={appStatus === 'Pending'} required />
                             <label>Relationship: </label>
-                            <input type='text' name='refRelationship' onChange={handleChange} disabled={appStatus === 'Pending'} required />
+                            <input type='text' name='refRelationship' value={formData.refRelationship} onChange={handleChange} disabled={appStatus === 'Pending'} required />
                         </>
                     }
                 </fieldset>
                 <br />
                 <fieldset>
-                    <legend>Emergency Contacts</legend>
+                    <legend>Emergency Contact{formData.emergencyContacts.length === 1 ? '' : 's'}</legend>
                     {formData.emergencyContacts.map((contact, index) => (
-                        <div key={contact.counter}>
+                        <div key={index}>
                             <label>First Name</label>
                             <input type='text' name='firstName' value={contact.firstName} onChange={(e) => handleEmContactChange(e, index)} disabled={appStatus === 'Pending'} required />
                             <label>Last Name</label>
@@ -419,13 +455,13 @@ const Onboarding = () => {
                             <input type='email' name='emEmail' value={contact.emEmail} onChange={(e) => handleEmContactChange(e, index)} disabled={appStatus === 'Pending'} required />
                             <label>Relationship</label>
                             <input type='text' name='relationship' value={contact.relationship} onChange={(e) => handleEmContactChange(e, index)} disabled={appStatus === 'Pending'} required />
-                            {formData.emergencyContacts.length !== 1 &&
+                            {formData.emergencyContacts.length !== 1 && appStatus !== 'Pending' &&
                                 <button onClick={(e) => removeEmergencyContact(e, index)} disabled={appStatus === 'Pending'}>Remove Contact</button>
                             }
                             <br />
                         </div>
                     ))}
-                    <button onClick={addEmergencyContact} disabled={appStatus === 'Pending'}>Add Contact</button>
+                    {appStatus !== 'Pending' && <button onClick={addEmergencyContact} disabled={appStatus === 'Pending'}>Add Contact</button>}
                 </fieldset>
                 <input type='submit' value='Submit' disabled={appStatus === 'Pending'} />
             </form>
@@ -452,11 +488,12 @@ const Onboarding = () => {
                                         <Typography variant='h6'>{fileName}</Typography>
                                     </CardContent>
                                     <CardActions sx={{ justifyContent: 'center' }}>
-                                        <a href={doc} download>
-                                            <Button size='small' href={doc} download>
-                                                Download
-                                            </Button>
-                                        </a>
+                                        <Button href={doc.download} download>
+                                            Download
+                                        </Button>
+                                        <Button onClick={() => window.open(doc.preview, '_blank')}>
+                                            Preview
+                                        </Button>
                                     </CardActions>
                                 </Card>
                             </>

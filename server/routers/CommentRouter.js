@@ -1,9 +1,12 @@
 
 const express = require('express')
-const { addComment } = require('../controllers/CommentController')
+const { addComment, editComment } = require('../controllers/CommentController')
+const { authenticateJWT } = require("../middlewares/AuthMiddleware");
 
 const commentRouter = express.Router()
 
-commentRouter.post('/', addComment)
+commentRouter
+    .post('/', authenticateJWT, addComment)
+    .put('/', editComment)
 
 module.exports = commentRouter
