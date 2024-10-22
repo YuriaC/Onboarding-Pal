@@ -7,6 +7,7 @@ import 'material-react-toastify/dist/ReactToastify.css'
 import { Box, Card, CardActions, CardContent, Typography, Button } from '@mui/material'
 
 const Personal = () => {
+    console.log('Personal')
     const [isEditing, setIsEditing] = useState(false);
     const [formData, setFormData] = useState({
         firstName: '',
