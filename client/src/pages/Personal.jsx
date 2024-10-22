@@ -7,6 +7,7 @@ import 'material-react-toastify/dist/ReactToastify.css'
 import { Box, Card, CardActions, CardContent, Typography, Button } from '@mui/material'
 
 const Personal = () => {
+    console.log('Personal')
     const [isEditing, setIsEditing] = useState(false);
     const [formData, setFormData] = useState({
         firstName: '',
@@ -18,7 +19,7 @@ const Personal = () => {
         ssn: '',
         dob: '',
         gender: '',
-        address: {
+        address: {//
             building: '',
             street: '',
             city: '',
@@ -78,6 +79,7 @@ const Personal = () => {
 
     const handleChange = (e) => {
         const { name, value } = e.target;
+        console.log(value)
         setFormData((prevData) => ({ ...prevData, [name]: value }));
     };
 
@@ -268,14 +270,14 @@ const Personal = () => {
                         <div>
                             {formData.emergencyContact.map((contact, index) => {
                                 return (
-                                    <>
+                                    <div key={contact.phone}>
                                         <input type='text' name='firstName' placeholder='First Name' value={contact.firstName || ''} onChange={(e)=>{handleEmergencyContactChange(e, index)}} />
                                         <input type='text' name='lastName' placeholder='Last Name' value={contact.lastName || ''} onChange={(e)=>{handleEmergencyContactChange(e, index)}} />
                                         <input type='text' name='middleName' placeholder='Middle Name' value={contact.middleName || ''} onChange={(e)=>{handleEmergencyContactChange(e, index)}} />
                                         <input type='text' name='phone' placeholder='Phone' value={contact.phone || ''} onChange={(e)=>{handleEmergencyContactChange(e, index)}} />
                                         <input type='email' name='email' placeholder='Email' value={contact.email || ''} onChange={(e)=>{handleEmergencyContactChange(e, index)}} />
                                         <input type='relationship' name='relationship' placeholder='relationship' value={contact.relationship || ''} onChange={(e)=>{handleEmergencyContactChange(e, index)}} />
-                                    </>
+                                    </div>
                                 )
                             })}
                         </div>
@@ -283,14 +285,14 @@ const Personal = () => {
                         <div>
                             {formData.emergencyContact.map((contact, index) => {
                                 return (
-                                    <>
+                                    <div key={contact.phone}>
                                         <input type='text' name='firstName' placeholder='First Name' value={contact.firstName || ''} disabled={true} />
                                         <input type='text' name='lastName' placeholder='Last Name' value={contact.lastName || ''} disabled={true} />
                                         <input type='text' name='middleName' placeholder='Middle Name' value={contact.middleName || ''} disabled={true} />
                                         <input type='text' name='phone' placeholder='Phone' value={contact.phone || ''} disabled={true} />
                                         <input type='email' name='email' placeholder='Email' value={contact.email || ''} disabled={true} />
                                         <input type='relationship' name='relationship' placeholder='relationship' value={contact.relationship || ''} disabled={true} />
-                                    </>
+                                    </div>
                                 )
                             })}
                         </div>

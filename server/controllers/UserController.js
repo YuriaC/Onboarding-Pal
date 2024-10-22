@@ -588,7 +588,6 @@ const getUserDocs = async (req, res) => {
     try {
         const { username } = req.user
         const { AccessKeyId, SecretAccessKey, SessionToken } = req.credentials
-
         const s3 = new S3Client({
             region: process.env.AWS_REGION,
             credentials: {
@@ -720,9 +719,12 @@ const getUserInfo = async (req, res) =>{
     try{
         const user = await User.findOne({ username }).populate('referer').populate({
             path: 'house',
-            populate: {
-                path: 'employees',
-            }
+            populate: [
+                { path: 'employees' },
+                { path: 'reports', populate: {
+                    path: 'comments'
+                }
+            }]
         }).populate('emergencyContacts').lean().exec();
         if (!user) {
             return res.status(401).json({ message: 'User not Found!' });
