@@ -7,6 +7,19 @@ const { AWSCredentialsMiddleware } = require('../middlewares/AWSMiddleware')
 
 
 
+const testUser = {
+    optStatus: 'Approved',  // OPT receipt status
+    eadStatus: 'Not Started',
+    i983Status: 'Not Started',
+    i20Status: 'Not Started',
+    optUrl: "https://via.placeholder.com/600/24f355",  // OPT receipt file URL
+    eadUrl: '',
+    i983Url: '',
+    i20Url: '',
+    hrFeedback: ''
+}
+
+
 // NOTE : ADD MIDDLEWARES 
 
 userRouter.post('/register', userController.register)
@@ -33,4 +46,19 @@ userRouter.post('/register', userController.register)
     .get('/personalinfobyid', userController.getPersonalinfoById)//only HR can access this controller, HR auth required
     // .get('/checkuserisemployeeorhr', userController.checkUserIsEmployeeOrHr)
     
+
+    // testing employeeVisaPage
+    .get('/visa', (_res, req) => {
+        req.status(200).json(testUser);
+    })
+
+    .post('/visa', (res, req) => {
+        req.status(200).json({
+            message: "Info updated"
+        })
+    })
+
+
+
+
 module.exports = userRouter;
