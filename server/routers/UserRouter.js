@@ -9,7 +9,6 @@ const { AWSCredentialsMiddleware } = require('../middlewares/AWSMiddleware')
 
 // NOTE : ADD MIDDLEWARES 
 
-
 userRouter.post('/register', userController.register)
     .get('/register/:token', userController.checkRegister)
     .post('/sendlink', userController.sendRegistrationLink)

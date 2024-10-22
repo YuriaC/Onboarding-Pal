@@ -53,6 +53,9 @@ function App() {
           <Route path='/onboarding' element={<Onboarding />} />
           <Route path="/personalTest" element={<Personal />} />
 
+          <Route path='/visa' element={<VisaStatusEmployees />} />
+
+
           <Route path="*" element={<Redirect />} />
         </Routes>
       </BrowserRouter>
