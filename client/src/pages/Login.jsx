@@ -70,9 +70,7 @@ const Login = () => {
                     sx={{ mt: 2, mb: 1 }}
                 >
                     Login
-                </Button>
-
-             
+                </Button>             
             </Box>
         </Container>
     );
