@@ -42,10 +42,30 @@ mongoose.connect(MONGO_URI)
                     password: hashedPassword,
                     role: "employee",
                     house: house._id,
+                    firstName: 'Test',
+                    lastName: 'Employee',
+                    onboardingStatus: 'Pending',
+                  },
+                  {
+                    username: 'EmployeeTest2',
+                    email: "test2@gmail.com",
+                    password: hashedPassword,
+                    role: "employee",
+                    house: house._id,
+                    firstName: 'Test',
+                    lastName: 'Employee 2',
+                    onboardingStatus: 'Rejected',
+                    registrationHistory: {
+                        email: "test2@gmail.com",
+                        status: 'Registered'
+                    }
+                    
                   },
                   {
                     username: 'HRTest',
-                    email: "test2@gmail.com",
+                    firstName: 'Test',
+                    lastName: 'HR',
+                    email: "test3@gmail.com",
                     password: hashedPassword,
                     role: "hr",
                   }
