@@ -1,31 +1,30 @@
 import { Outlet, Navigate } from 'react-router-dom';
-import { useSelector, useDispatch } from 'react-redux';
-import { getUserThunk } from '../../store/user/userSlice';
-import { useEffect } from 'react';
-
+import { getUserRoleFromCookie } from '../../helpers/HelperFunctions';
 const RoleGuard = ({ role }) => {
-    const { role: userRole, loading } = useSelector((state) => state.user); // Include loading from user state
-    const dispatch = useDispatch();
 
-    // Dispatch the userInfoThunk to get user info
-    useEffect(() => {
-        dispatch(getUserThunk());
-    }, [dispatch]);
+    const userRole = getUserRoleFromCookie();
+    // If the user's role doesn't match the required role, redirect them to their correct home page
+    // Get the url params, if the string after role/ doesn't exist, redirect them to the home page
+    const currentURL = window.location.href;
+    if (!currentURL.includes('/employee/onboarding') && 
+        !currentURL.includes('/employee/housing') && 
+        !currentURL.includes('/employee/visa-status') && 
+        !currentURL.includes('/employee/profile') &&
+        !currentURL.includes('/hr/home') && 
+        !currentURL.includes('/hr/employee-profiles') && 
+        !currentURL.includes('/hr/visa-status') && 
+        !currentURL.includes('/hr/hiring')) {
 
-    // If the data is still loading, do not redirect yet
-    if (loading) {
-        // You can show a loader or just return null until the user info is fetched
-        return <div>Loading...</div>; // Optional: you can display a loading spinner or some UI here
+        return <Navigate to="/not-found" />;
     }
 
-    // If the user's role doesn't match the required role, redirect them to their correct home page
     if (userRole && userRole !== role) {
         return userRole === 'hr' ? <Navigate to="/hr/home" /> : <Navigate to="/employee/onboarding" />;
     }
 
     // Allow access to the page if the role matches
 
-    console.log('userRole:', userRole, 'role:', role);
+    console.log('In RoleGuard. userRole:', userRole, 'role:', role);
     return <Outlet /> ;
 };
 

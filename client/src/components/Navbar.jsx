@@ -1,17 +1,22 @@
-import React from 'react';
 import { NavLink, Outlet, useNavigate } from 'react-router-dom';
-import { useSelector, useDispatch } from 'react-redux';
+import { useDispatch } from 'react-redux';
 import { AppBar, Toolbar, Typography, Box, Container, Button, Stack } from '@mui/material';
 import { logoutUserThunk } from '../store/user/userSlice';
+import { getUserRoleFromCookie } from '../helpers/HelperFunctions';
 
 const Navbar = () => {
-    const userRole = useSelector((state) => state.user.role); // Fetch user role from Redux store
+    const userRole = getUserRoleFromCookie();
     const dispatch = useDispatch();
     const navigate = useNavigate();
-
     const handleLogout = () => {
-        dispatch(logoutUserThunk());  // Dispatch the logout action
+        // Remove the token from the cookie
+
+        document.cookie = '';
         navigate('/login'); // Redirect to login page after logout
+
+        dispatch(logoutUserThunk());  // Dispatch the logout action
+
+
     };
 
     return (
@@ -64,12 +69,6 @@ const Navbar = () => {
                                         className={({ isActive }) => (isActive ? 'active-link' : 'nav-link')}
                                     >
                                         Home
-                                    </NavLink>
-                                    <NavLink
-                                        to="/hr/employee-profiles"
-                                        className={({ isActive }) => (isActive ? 'active-link' : 'nav-link')}
-                                    >
-                                        Employee Profiles
                                     </NavLink>
                                     <NavLink
                                         to="/hr/hiring"
