@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { ToastContainer, toast } from 'material-react-toastify'
-import { token, USER_ENDPOINT, username } from '../constants'
+import { USER_ENDPOINT, username } from '../constants'
 import axios from 'axios'
 import { Box, Button, Card, CardActions, CardContent, Typography, CardHeader } from '@mui/material'
 import 'material-react-toastify/dist/ReactToastify.css'

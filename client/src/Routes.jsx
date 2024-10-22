@@ -15,6 +15,8 @@ import HousingMgmt from './pages/HousingMgmt';
 import NotFound from './pages/NotFound';
 import LoginGuard from './components/guards/LoginGuard';
 import RoleGuard from './components/guards/RoleGuard';
+import HouseDetails from './pages/HouseDetails';
+import AddHouse from './pages/AddHouse';
 const RoutesComponent = () => {
   return (
     <BrowserRouter>
@@ -43,8 +45,10 @@ const RoutesComponent = () => {
               <Route path="home" element={<EmployeeProfiles />} />
               <Route path="employee-profiles/:employeeId" element={<EmployeeDetail />} />
               <Route path="housing-management" element={<HousingMgmt />}/>
+              <Route path='house-details/:houseId' element={<HouseDetails />} />
               <Route path="hiring" element={<Hiring />} />
               <Route path="visa-status" element={<VisaStatusHR />} />
+              <Route path="addhouse" element={<AddHouse />} />
             </Route>
           </Route>
         

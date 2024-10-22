@@ -3,7 +3,7 @@ import { HOUSE_ENDPOINT, token } from '../constants'
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import axios from 'axios'
-import resetObject from '../helpers/HelperFunctions';
+import { resetObject } from '../helpers/HelperFunctions';
 
 const AddHouse = () => {
 
