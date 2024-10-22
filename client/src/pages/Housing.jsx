@@ -1,9 +1,10 @@
 import { useState, useEffect } from 'react'
 import axios from 'axios'
-import { REPORT_ENDPOINT, USER_ENDPOINT } from '../constants'
+import { COMMENT_ENDPOINT, REPORT_ENDPOINT, USER_ENDPOINT } from '../constants'
 import { toast, ToastContainer } from 'material-react-toastify'
 import 'material-react-toastify/dist/ReactToastify.css'
-import { Card, CardContent, Typography, List, ListItem, ListItemText, Box, Button, TextField, Accordion, AccordionDetails, AccordionSummary } from '@mui/material'
+import { Card, CardContent, Typography, List, ListItem, ListItemText, Box, Button, TextField, Accordion, AccordionDetails, AccordionSummary, ListItemIcon } from '@mui/material'
+import PhoneIcon from '@mui/icons-material/Phone'
 
 const Housing = () => {
 
@@ -20,8 +21,13 @@ const Housing = () => {
         reports: [],
         houseId: '',
     })
-    // const [employeeId, setEmployeeId] = useState('')
+    const [userInfo, setUserInfo] = useState({
+        id: '',
+        username: '',
+    })
     const [isCreatingReport, setIsCreatingReport] = useState(false)
+    const [commentChanges, setCommentChanges] = useState({})
+    const [newReportComments, setNewReportComments] = useState({})
     const [isViewingReports, setIsViewingReports] = useState(false)
     const [submitted, setSubmitted] = useState(false)
     const [reportFormData, setReportFormData] = useState({
@@ -34,7 +40,10 @@ const Housing = () => {
             .then(response => {
                 const { house } = response.data
                 console.log('response.data:', response.data)
-                // setEmployeeId(response.data._id)
+                setUserInfo({
+                    id: response.data._id,
+                    username: response.data.username,
+                })
                 const {
                     address,
                     employees,
@@ -72,20 +81,28 @@ const Housing = () => {
                     }),
                     houseId,
                 })
+                let newComments = {}
+                let newCommentReports = {}
+                for (const report of reports) {
+                    newCommentReports[report._id] = ''
+                    const comments = report.comments
+                    for (const comment of comments) {
+                        newComments[comment._id] = comment.description
+                    }
+                }
+                setNewReportComments(newCommentReports)
+                setCommentChanges(newComments)
                 console.log('reports:', reports)
             })
             .catch(error => {
                 toast.error(`Error getting user info! Error: ${error.message}`)
             })
-    }, [])
+    }, [submitted])
 
     const submitReport = (e) => {
         e.preventDefault()
         console.log('reportFormData:', reportFormData)
         axios.post(REPORT_ENDPOINT, { ...reportFormData, houseId: houseData.houseId }, {
-            // headers: {
-            //     'Authorization': `Bearer ${localStorage.getItem('token')}`
-            // },
             withCredentials: true,
         })
         .then(() => {
@@ -107,12 +124,65 @@ const Housing = () => {
         })
     }
 
+    const handleAddCommentChange = (e, reportId) => {
+        const { value } = e.target
+        console.log('reportId:', reportId)
+        console.log('value:', value)
+        setNewReportComments({
+            ...newReportComments,
+            [reportId]: value,
+        })
+    }
+
+    const addNewComment = async (e, reportId) => {
+        e.preventDefault()
+        console.log('newReportComments[reportId]:', newReportComments[reportId])
+        console.log('reportId:', reportId)
+        const description = newReportComments[reportId]
+        await axios.post(`${COMMENT_ENDPOINT}`, { reportId, description }, {
+            withCredentials: true,
+        })
+            .then(() => {
+                setSubmitted(prev => !prev)
+                toast.success('Successfully added new comment!')
+            })
+            .catch(error => {
+                console.log('error:', error)
+                toast.error(`Error adding new comment! Error: ${error.message}`)
+            })
+    }
+
+    const handleCommentChange = (e, commentId) => {
+        const { value } = e.target
+        setCommentChanges({
+            ...commentChanges,
+            [commentId]: value,
+        })
+    }
+
+    const editComment = async (e, commentId) => {
+        e.preventDefault()
+        const description = commentChanges[commentId]
+        console.log('New comment:', commentChanges[commentId])
+        await axios.put(`${COMMENT_ENDPOINT}`, { commentId, description }, {
+            withCredentials: true,
+        })
+            .then(() => {
+                setSubmitted(prev => !prev)
+                toast.success('Successfully edited comment!')
+            })
+            .catch(error => {
+                console.log('error:', error)
+                toast.error(`Error editing comment! Error: ${error.message}`)
+            })
+    }
+
     return (
         <div>
             <Box sx={{ margin: 'auto', mt: 5 }}>
                 <Card>
                     <CardContent>
-                        <Typography variant='h3' gutterBottom>
+                        <Typography variant='h4' sx={{ mb: '2rem' }}>
                             {houseData ? houseData.address : 'No address found'}
                         </Typography>
                         <Typography variant='h5'>
@@ -122,10 +192,12 @@ const Housing = () => {
                             ? (
                                 <List>
                                     {houseData.employees.map((roommate, index) => {
-
+                                        console.log('roommate:', roommate)
                                         return (
                                             <ListItem key={index}>
-                                                <ListItemText primary={roommate.firstName} />
+                                                <ListItemText primary={`${roommate.firstName}${roommate.preferredName ? ` "${roommate.preferredName}"` : ''}${roommate.middleName ? ` ${roommate.middleName}`: ''} ${roommate.lastName}`} />
+                                                <ListItemIcon><PhoneIcon /></ListItemIcon>
+                                                <Typography>{roommate.cellPhone}</Typography>
                                             </ListItem>
                                         )
                                     })}
@@ -146,9 +218,6 @@ const Housing = () => {
                 {isCreatingReport &&
                     <>
                         <form onSubmit={submitReport}>
-                            {/* <label>Title: </label>
-                            <input type='text' name='title' value={reportFormData.title} onChange={handleChange} required />
-                            <br /> */}
                             <TextField
                                 label='Title'
                                 name='title'
@@ -167,18 +236,14 @@ const Housing = () => {
                                 margin='normal'
                                 value={reportFormData.description}
                                 onChange={handleChange}
+                                sx={{ mb: 2 }}
                             />
                             <Button type='submit' variant='contained' color='primary'>
                                 Submit
                             </Button>
-                            {/* <label>Description: </label>
-                            <textarea name='description' value={reportFormData.description} onChange={handleChange} required></textarea> */}
-                            {/* <input type='submit' value='Submit' /> */}
                         </form>
                     </>
                 }
-                {/* <br /> */}
-                {/* <button>View Your Reports</button> */}
             </Box>
             <Box sx={{ margin: 'auto', mt: 2 }}>
                 <Card>
@@ -194,27 +259,14 @@ const Housing = () => {
                                         {houseData.reports.map((report, index) => {
 
                                             return (
-                                                <Accordion key={index}>
+                                                <Accordion key={index} sx={{ minWidth: '60vw' }}>
                                                     <AccordionSummary>
-                                                        {/* <Box sx={{ display: 'flex', justifyContent: 'space-between', width: '100%' }}>
-                                                            <Box>
-                                                                <Typography>{report.title}</Typography>
-                                                                <Typography>{report.description}</Typography>
-                                                            </Box>
-                                                            <Box>
-                                                                <Typography>{report.createdBy}</Typography>
-                                                                <Typography>{report.timestamp}</Typography>
-                                                            </Box>
-                                                            <Box>
-                                                                <Typography>Status: {report.status}</Typography>
-                                                            </Box>
-                                                        </Box> */}
                                                         <Box sx={{ width: '100%' }}>
                                                             <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
-                                                                    <Typography sx={{ fontWeight: 'bold' }}>{report.title}</Typography>
-                                                                    <Typography color='text.secondary'>{report.createdBy}</Typography>
-                                                                    <Typography color='text.secondary'>{report.timestamp}</Typography>
-                                                                    <Typography>Status: {report.status}</Typography>
+                                                                <Typography sx={{ fontWeight: 'bold' }}>{report.title}</Typography>
+                                                                <Typography color='text.secondary'>{report.createdBy}</Typography>
+                                                                <Typography color='text.secondary'>{report.timestamp}</Typography>
+                                                                <Typography>Status: {report.status}</Typography>
                                                             </Box>
                                                             <Box>
                                                                 <Typography variant='body2'>{report.description}</Typography>
@@ -223,16 +275,48 @@ const Housing = () => {
                                                     </AccordionSummary>
                                                     <AccordionDetails>
                                                         <List>
-                                                            {report.comments.map((comment, commentIndex) => {
+                                                            {report.comments.map((comment) => {
 
                                                                 return (
-                                                                    <ListItem key={commentIndex}>
-                                                                        <ListItemText primary={comment.description} />
+                                                                    <ListItem key={comment._id}>
+                                                                        <form onSubmit={(e) => editComment(e, comment._id)} style={{ display: 'flex', width: '65%' }}>
+                                                                            <TextField
+                                                                                value={commentChanges[comment._id]}
+                                                                                onChange={(e) => handleCommentChange(e, comment._id)}
+                                                                                sx={{ width: '100%', mr: '1rem', color: 'black' }}
+                                                                                variant='outlined'
+                                                                                slotProps={{
+                                                                                    input: {
+                                                                                        readOnly: comment.createdBy !== userInfo.username,
+                                                                                    }
+                                                                                }}
+                                                                            />
+                                                                            {comment.createdBy === userInfo.username &&
+                                                                                <Button type='submit' sx={{ mr: '1rem' }}>
+                                                                                    Edit Comment
+                                                                                </Button>
+                                                                            }
+                                                                        </form>
                                                                         <ListItemText secondary={comment.createdBy} />
-                                                                        <ListItemText secondary={comment.timestamp} />
+                                                                        <ListItemText secondary={`${comment.timestamp}${comment.isEdited ? ' *' : ''}`} />
                                                                     </ListItem>
                                                                 )
                                                             })}
+                                                            <ListItem>
+                                                                <form onSubmit={(e) => addNewComment(e, report._id)} style={{ display: 'flex', width: '100%' }}>
+                                                                    <TextField
+                                                                        value={newReportComments[report._id]}
+                                                                        onChange={(e) => handleAddCommentChange(e, report._id)}
+                                                                        sx={{ width: '80%' }}
+                                                                        variant='outlined'
+                                                                        placeholder='Add new comment'
+                                                                        required
+                                                                    />
+                                                                    <Button type='submit' sx={{ ml: '1rem' }}>
+                                                                        Add Comment
+                                                                    </Button>
+                                                                </form>
+                                                            </ListItem>
                                                         </List>
                                                     </AccordionDetails>
                                                 </Accordion>
