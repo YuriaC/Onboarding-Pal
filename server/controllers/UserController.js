@@ -586,7 +586,14 @@ const setContactInput = async(req,res) =>{
 
 const getUserDocs = async (req, res) => {
     try {
-        const { username } = req.user
+        let username
+        const { role } = req.user
+        if (role === 'hr') {
+            username = req.body.username
+        }
+        else {
+            username = req.user.username
+        }
         const { AccessKeyId, SecretAccessKey, SessionToken } = req.credentials
         const s3 = new S3Client({
             region: process.env.AWS_REGION,
@@ -734,6 +741,51 @@ const getUserInfo = async (req, res) =>{
         return res.status(500).json({ message: error.message });
     }
 };
+const getUserInfoById = async (req, res) =>{
+    const { userId } = req.params
+    try{
+        const user = await User.findById(userId)
+            .populate('referer')
+            // .populate({
+            //     path: 'house',
+            //     populate: [
+            //         { path: 'employees' },
+            //         { path: 'reports', populate: {
+            //             path: 'comments'
+            //         }
+            //     }]
+            // })
+            .populate('emergencyContacts').lean().exec();
+        if (!user) {
+            return res.status(401).json({ message: 'User not Found!' });
+        }
+        return res.status(200).json(user)
+    } catch (error) {
+        console.error(error);
+        return res.status(500).json({ message: error.message });
+    }
+};
+const updateAppStatus = async (req, res) => {
+    try {
+        const { employeeId } = req.params
+        const { newStatus, feedback } = req.body
+        const employee = await User.findById(employeeId)
+        if (!employee) {
+            return res.status(404).json('Employee not found!')
+        }
+
+        employee.onboardingStatus = newStatus
+        if (newStatus === 'Rejected') {
+            employee.hrFeedback = feedback
+        }
+        employee.save()
+
+        return res.status(200).json(employee)
+    }
+    catch (error) {
+        res.status(500).json(error)
+    }
+}
 const logout = async (req, res) => {
     try {
         res.clearCookie('auth_token');
@@ -911,5 +963,7 @@ module.exports = {
     getPersonalinfoById,
     logout,
     getRegistrationHistory,
-    getApplications
+    getApplications,
+    getUserInfoById,
+    updateAppStatus,
 }

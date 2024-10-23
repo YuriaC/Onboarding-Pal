@@ -66,9 +66,6 @@ const Onboarding = () => {
 
     useEffect(() => {
         axios.get(`${USER_ENDPOINT}/userinfo`, {
-            // headers: {
-            //     'Authorization': `Bearer ${token}`
-            // },
             withCredentials: true,
         })
         .then(response => {

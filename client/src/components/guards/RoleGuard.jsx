@@ -16,6 +16,7 @@ const RoleGuard = ({ role }) => {
         !currentURL.includes('/hr/addhouse') && 
         !currentURL.includes('/hr/house-details') && 
         !currentURL.includes('/hr/housing-management') && 
+        !currentURL.includes('/hr/application') && 
         !currentURL.includes('/hr/hiring')) {
 
         return <Navigate to="/not-found" />;
