@@ -8,6 +8,9 @@ export const CONTACT_ENDPOINT = `${API_BASE_URL}/contacts`
 export const REPORT_ENDPOINT = `${API_BASE_URL}/reports`
 export const COMMENT_ENDPOINT = `${API_BASE_URL}/comments`
 
+export const phoneRegex = /^(\([0-9]{3}\)|[0-9]{3})[-.\s]?[0-9]{3}[-.\s]?[0-9]{4}$/
+export const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+
 // HR
 // export const token = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MTIzLCJ1c2VybmFtZSI6IkhSVGVzdCIsInJvbGUiOiJociIsImlhdCI6MTcyOTMyODAxNywiZXhwIjoxNzI5MzM4ODE3fQ.ExQNnb25DDX2Wd_dVHxzdmDafdb2VgW1PIegqKavFK4'
 // Employee

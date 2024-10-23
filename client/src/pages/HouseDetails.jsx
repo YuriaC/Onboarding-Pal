@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { useParams } from 'react-router-dom'
+import { useNavigate, useParams } from 'react-router-dom'
 import axios from 'axios'
 import { COMMENT_ENDPOINT, HOUSE_ENDPOINT, REPORT_ENDPOINT, USER_ENDPOINT } from '../constants'
 import { toast, ToastContainer } from 'material-react-toastify'
@@ -13,6 +13,7 @@ import DirectionsCarIcon from '@mui/icons-material/DirectionsCar'
 const HouseDetails = () => {
 
     const { houseId } = useParams()
+    const navigate = useNavigate()
 
     const [houseData, setHouseData] = useState({
         address: '',
@@ -207,21 +208,38 @@ const HouseDetails = () => {
 
     const viewEmployee = (e, employeeId) => {
         e.preventDefault()
-        console.log('employeeId:', employeeId)
+        navigate(`/hr/employee-profiles/${employeeId}`)
     }
 
     return (
-        <div>
+        <div style={{ width: '80vw' }}>
             <Box sx={{ margin: 'auto', mt: 5 }}>
                 <Card>
                     <CardContent>
                         <Typography variant='h4' sx={{ mb: '2rem' }}>
                             {houseData ? houseData.address : 'No address found'}
                         </Typography>
-                        <Typography variant='h5'>
+                        <Typography variant='h5' sx={{ mb: 1 }}>
+                            Facility Info:
+                        </Typography>
+                        <Box sx={{ display: 'flex', justifyContent: 'start', mb: '2rem', gap: 4 }}>
+                            <Typography variant='body1' color='textPrimary'>
+                                Beds: {houseData.numBeds}
+                            </Typography>
+                            <Typography variant='body1' color='textPrimary'>
+                                Mattresses: {houseData.numMattresses}
+                            </Typography>
+                            <Typography variant='body1' color='textPrimary'>
+                                Tables: {houseData.numTables}
+                            </Typography>
+                            <Typography variant='body1' color='textPrimary'>
+                                Chairs: {houseData.numChairs}
+                            </Typography>
+                        </Box>
+                        <Typography variant='h5' sx={{ mb: 1 }}>
                             Landlord:
                         </Typography>
-                        <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: '1rem' }}>
+                        <Box sx={{ display: 'flex', justifyContent: 'start', mb: '2rem', gap: 4 }}>
                             <Typography variant='body1' color='textPrimary'>
                                 {houseData.landlordName}
                             </Typography>
@@ -243,19 +261,22 @@ const HouseDetails = () => {
                                     {houseData.employees.map((roommate, index) => {
                                         console.log('roommate:', roommate)
                                         return (
-                                            <ListItem key={index} sx={{ display: 'flex', justifyContent: 'space-evenly' }}>
-                                                <ListItemText sx={{ cursor: 'pointer' }} onClick={(e) => viewEmployee(e, roommate._id)} primary={`${roommate.firstName}${roommate.preferredName ? ` "${roommate.preferredName}"` : ''}${roommate.middleName ? ` ${roommate.middleName}`: ''} ${roommate.lastName}`} />
-                                                <Box>
-                                                    <ListItemIcon><PhoneIcon /></ListItemIcon>
+                                            <ListItem key={index} sx={{ display: 'flex', justifyContent: 'start', gap: 4 }}>
+                                                {/* <ListItemText sx={{ cursor: 'pointer', width: '3rem' }} onClick={(e) => viewEmployee(e, roommate._id)} primary={`${roommate.firstName}${roommate.preferredName ? ` "${roommate.preferredName}"` : ''}${roommate.middleName ? ` ${roommate.middleName}`: ''} ${roommate.lastName}`} /> */}
+                                                <Typography sx={{ cursor: 'pointer' }} onClick={(e) => viewEmployee(e, roommate._id)}>{`${roommate.firstName}${roommate.preferredName ? ` "${roommate.preferredName}"` : ''}${roommate.middleName ? ` ${roommate.middleName}`: ''} ${roommate.lastName}`}</Typography>
+                                                <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                                                    {/* <ListItemIcon><PhoneIcon /></ListItemIcon> */}
+                                                    <PhoneIcon />
                                                     {/* <Typography>{roommate.cellPhone}</Typography> */}
-                                                    <ListItemText secondary={roommate.cellPhone} />
+                                                    <ListItemText secondary={roommate.cellPhone || 'No phone provided'} />
                                                 </Box>
                                                 <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                                                    <ListItemIcon><EmailIcon /></ListItemIcon>
+                                                    {/* <ListItemIcon><EmailIcon /></ListItemIcon> */}
+                                                    <EmailIcon />
                                                     {/* <Typography>{roommate.email}</Typography> */}
                                                     <ListItemText secondary={roommate.email} />
                                                 </Box>
-                                                <Box>
+                                                <Box sx={{ display: 'flex', alignItems: 'center' }}>
                                                     {!roommate.carColor && !roommate.carMake && !roommate.carModel
                                                         ? <Typography>No car info</Typography>
                                                         :
@@ -263,7 +284,7 @@ const HouseDetails = () => {
                                                             <ListItemIcon>
                                                                 <DirectionsCarIcon />
                                                             </ListItemIcon>
-                                                            <ListItemText secondary={`${roommate.carColor} ${roommate.carMake} ${roommate.carModel}`} />
+                                                            <ListItemText secondary={`${[roommate.carColor, roommate.carMake, roommate.carModel].filter(Boolean).join(' ')}`} />
                                                         </>
                                                     }
                                                 </Box>
@@ -276,7 +297,8 @@ const HouseDetails = () => {
                                 <Typography variant='body1' color='text.secondary'>
                                     No employees assigned to this house at this time
                                 </Typography>
-                            )}
+                            )
+                        }
                     </CardContent>
                 </Card>
             </Box>
@@ -334,12 +356,12 @@ const HouseDetails = () => {
                                                         <Box sx={{ width: '100%' }}>
                                                             <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
                                                                 <Typography sx={{ fontWeight: 'bold' }}>{report.title}</Typography>
-                                                                <Typography color='text.secondary'>{report.createdBy}</Typography>
+                                                                <Typography color='text.secondary'>Creator: {report.createdBy}</Typography>
                                                                 <Typography color='text.secondary'>{report.timestamp}</Typography>
                                                                 <Typography>Status: {report.status}</Typography>
                                                             </Box>
                                                             <Box>
-                                                                <Typography variant='body2'>{report.description}</Typography>
+                                                                <Typography variant='body2'>Description: {report.description}</Typography>
                                                             </Box>
                                                         </Box>
                                                     </AccordionSummary>
@@ -348,7 +370,10 @@ const HouseDetails = () => {
                                                             {report.comments.map((comment) => {
 
                                                                 return (
-                                                                    <ListItem key={comment._id}>
+                                                                    <ListItem
+                                                                        key={comment._id}
+                                                                        // sx={{ display: 'flex', justifyContent: 'space-between' }} // Doesn't do anything
+                                                                    >
                                                                         <form onSubmit={(e) => editComment(e, comment._id)} style={{ display: 'flex', width: '65%' }}>
                                                                             <TextField
                                                                                 value={commentChanges[comment._id]}
@@ -397,7 +422,7 @@ const HouseDetails = () => {
                                         count={Math.ceil(houseData.reports.length / reportsPerPage)}
                                         page={reportsPage}
                                         onChange={(_, value) => setReportsPage(value)}
-                                        sx={{ display: 'flex', justifyContent: 'center', mt: 2 }}
+                                        sx={{ display: 'flex', justifyContent: 'center', mt: 2, mb: 2 }}
                                     />
                                 </>
                                 }

@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { HOUSE_ENDPOINT, token } from '../constants';
+import { HOUSE_ENDPOINT } from '../constants';
 import axios from 'axios'
 import { useNavigate } from 'react-router-dom';
 import { ToastContainer, toast } from 'react-toastify';
@@ -36,9 +36,6 @@ const HousingMgmt = () => {
     const handleDelete = (e, houseId, address) => {
         e.preventDefault()
         axios.delete(`${HOUSE_ENDPOINT}/delete/${houseId}`, {
-            // headers: {
-            //     'Authorization': `Bearer ${token}`
-            // },
             withCredentials: true,
         })
             .then(response => {
@@ -60,7 +57,7 @@ const HousingMgmt = () => {
     return (
         <div>
             <h1>Housing Management</h1>
-            <button onClick={() => navigate('/addhouse')}>Add House</button>
+            <button onClick={() => navigate('/hr/addhouse')}>Add House</button>
             <Box sx={{ justifyContent: 'center', width: '100%' }}>
             {houses.map((house, index) => {
                 return (
