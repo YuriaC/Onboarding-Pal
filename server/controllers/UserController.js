@@ -347,7 +347,7 @@ const setApplicationInput = async(req,res) =>{
     const { files } = req
     const { AccessKeyId, SecretAccessKey, SessionToken } = req.credentials
     const { building, street, city, state, zip } = req.body
-    const address = `${building}, ${street}, ${city}, ${state} ${zip}`
+    const address = `${building} ${street}, ${city}, ${state} ${zip}`
     const { permResStatus } = req.body
     const cellPhone = req.body.cellPhone;
     const workPhone = req.body.workPhone
@@ -415,7 +415,6 @@ const setApplicationInput = async(req,res) =>{
                 cellPhone: refPhone,
                 email: refEmail,
                 relationship: refRelationship,
-                // relationshipToId: "6711edc999bed2d3ff6f0f45",
             })
             if (!reference) {
                 return res.status(500).json('Error creating reference!')
@@ -465,7 +464,6 @@ const setApplicationInput = async(req,res) =>{
                 "birthday": dob,
                 "gender": gender,
                 "workAuth": workauth,
-                // "workAuthFile_url": workauth_url,
                 "driversLicenseNumber": dlnum,
                 "driversLicenseExpDate": dldate,
                 "driversLicenseCopy_url": dlCopyURL,
@@ -586,7 +584,14 @@ const setContactInput = async(req,res) =>{
 
 const getUserDocs = async (req, res) => {
     try {
-        const { username } = req.user
+        let username
+        const { role } = req.user
+        if (role === 'hr') {
+            username = req.body.username
+        }
+        else {
+            username = req.user.username
+        }
         const { AccessKeyId, SecretAccessKey, SessionToken } = req.credentials
         const s3 = new S3Client({
             region: process.env.AWS_REGION,
@@ -608,7 +613,7 @@ const getUserDocs = async (req, res) => {
             driversLicenseCopy_url,
         }
         const ret = {}
-        for (const key of ['profilePictureURL', 'optUrl', 'driversLicenseCopy_url']) {
+        for (const key of ['profilePictureURL', 'optUrl', 'driversLicenseCopy_url', 'eadUrl', 'i983Url', 'i20Url']) {
             const url = urls[key]
             if (!url) {
                 continue
@@ -624,7 +629,6 @@ const getUserDocs = async (req, res) => {
             const previewParams = {
                 Bucket: process.env.S3_BUCKET,
                 Key: fileName,
-                // ResponseContentDisposition: `attachment; filename="${fileName}"`,
             }
             const command = new GetObjectCommand(params)
             const previewCommand = new GetObjectCommand(previewParams)
@@ -735,6 +739,42 @@ const getUserInfo = async (req, res) =>{
         return res.status(500).json({ message: error.message });
     }
 };
+const getUserInfoById = async (req, res) =>{
+    const { userId } = req.params
+    try{
+        const user = await User.findById(userId)
+            .populate('referer')
+            .populate('emergencyContacts').lean().exec();
+        if (!user) {
+            return res.status(401).json({ message: 'User not Found!' });
+        }
+        return res.status(200).json(user)
+    } catch (error) {
+        console.error(error);
+        return res.status(500).json({ message: error.message });
+    }
+};
+const updateAppStatus = async (req, res) => {
+    try {
+        const { employeeId } = req.params
+        const { newStatus, feedback } = req.body
+        const employee = await User.findById(employeeId)
+        if (!employee) {
+            return res.status(404).json('Employee not found!')
+        }
+
+        employee.onboardingStatus = newStatus
+        if (newStatus === 'Rejected') {
+            employee.hrFeedback = feedback
+        }
+        employee.save()
+
+        return res.status(200).json(employee)
+    }
+    catch (error) {
+        res.status(500).json(error)
+    }
+}
 const logout = async (req, res) => {
     try {
         res.clearCookie('auth_token');
@@ -961,4 +1001,6 @@ module.exports = {
     getApplications,
     getAllUser,
     sendEmailNotification
+    getUserInfoById,
+    updateAppStatus,
 }

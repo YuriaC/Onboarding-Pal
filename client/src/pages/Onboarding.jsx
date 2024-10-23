@@ -66,9 +66,6 @@ const Onboarding = () => {
 
     useEffect(() => {
         axios.get(`${USER_ENDPOINT}/userinfo`, {
-            // headers: {
-            //     'Authorization': `Bearer ${token}`
-            // },
             withCredentials: true,
         })
         .then(response => {
@@ -116,7 +113,6 @@ const Onboarding = () => {
             visaEndDate,
             visaTitle,
         } = data
-        console.log('data:', data)
         const newEmContacts = []
         for (const emContact of emergencyContacts) {
             const { firstName, lastName, middleName, cellPhone, email, relationship } = emContact
@@ -129,6 +125,14 @@ const Onboarding = () => {
                 relationship,
             })
         }
+        const stateAndZip = address.split(', ')[2]
+        const lastSpaceIndex = stateAndZip.lastIndexOf(' ')
+        const state = stateAndZip.substring(0, lastSpaceIndex)
+        const zip = stateAndZip.substring(lastSpaceIndex + 1)
+        const buildingAndStreet = address.split(', ')[0]
+        const firstSpaceIndex = buildingAndStreet.indexOf(' ')
+        const building = buildingAndStreet.substring(0, firstSpaceIndex)
+        const street = buildingAndStreet.substring(firstSpaceIndex + 1)
         setFormData({
             ...formData,
             firstName,
@@ -150,11 +154,11 @@ const Onboarding = () => {
             dlExpDate: driversLicenseExpDate.split('T')[0],
             isReferred: referer ? 'Yes' : 'No',
             emergencyContacts: newEmContacts,
-            building: address.split(', ')[0],
-            street: address.split(', ')[1],
-            city: address.split(', ')[2],
-            state: address.split(', ')[3].split(' ')[0],
-            zip: address.split(', ')[3].split(' ')[1],
+            building,
+            street,
+            city: address.split(', ')[1],
+            state,
+            zip,
             hrFeedback: onboardingStatus === 'Rejected' ? hrFeedback : '',
             refFirstName: referer.firstName,
             refLastName: referer.lastName,
@@ -171,9 +175,6 @@ const Onboarding = () => {
 
     const getDocs = async () => {
         const response = await axios.get(`${USER_ENDPOINT}/getuserdocs`, {
-            // headers: {
-            //     'Authorization': `Bearer ${token}`
-            // },
             withCredentials: true,
         })
         setDocs(response.data)
@@ -215,14 +216,12 @@ const Onboarding = () => {
 
     const handleSubmit = async (e) => {
         e.preventDefault()
-        console.log('formData:', formData)
         const data = createFormData(formData)
 
         try {
             await axios.post(`${USER_ENDPOINT}/applicationinput`, data, {
                 headers: {
                     'Content-Type': 'multipart/form-data',
-                    // 'Authorization': `Bearer ${token}`,
                 },
                 withCredentials: true,
             })

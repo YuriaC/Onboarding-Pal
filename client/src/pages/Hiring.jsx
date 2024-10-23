@@ -2,8 +2,12 @@ import  { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { Box, Tabs, Tab, TextField, Button, Typography, List, ListItem, ListItemText } from '@mui/material';
 import { sendRegistrationLinkThunk, fetchRegistrationHistoryThunk, fetchApplicationsThunk } from '../store/user/userSlice';
+import { useNavigate } from 'react-router-dom';
 
 const Hiring = () => {
+
+    const navigate = useNavigate()
+
     const [selectedTab, setSelectedTab] = useState(0);
     const [email, setEmail] = useState('');
     const [name, setName] = useState('');
@@ -39,9 +43,10 @@ const Hiring = () => {
             });
     };
 
-    const handleViewApplication = (applicationId) => {
+    const handleViewApplication = (employeeId) => {
         // Logic to open the application in a new tab
-        window.open(`/application/${applicationId}`, '_blank');
+        // window.open(`/hr/application/${employeeId}`, '_blank');
+        navigate(`/hr/application/${employeeId}`)
     };
 
     return (
@@ -104,16 +109,17 @@ const Hiring = () => {
                         <Typography>No pending applications</Typography>
                     ) : (
                         <List>
-                            {pendingApplications.map(application => (
-                                <ListItem key={application.id}>
+                            {pendingApplications.map(application => {
+                                return (
+                                <ListItem key={application._id}>
                                     <ListItemText
                                         primary={`Name: ${application.firstName} ${application.lastName} | Email: ${application.email}`}
                                     />
-                                    <Button onClick={() => handleViewApplication(application.id)}>
+                                    <Button onClick={() => handleViewApplication(application._id)}>
                                         View Application
                                     </Button>
                                 </ListItem>
-                            ))}
+                            )})}
                         </List>
                     )}
 
@@ -123,16 +129,17 @@ const Hiring = () => {
                         <Typography>No rejected applications</Typography>
                     ) : (
                         <List>
-                            {rejectedApplications.map(application => (
-                                <ListItem key={application.id}>
+                            {rejectedApplications.map(application => {
+                                return (
+                                <ListItem key={application._id}>
                                     <ListItemText
                                         primary={`Name: ${application.firstName} ${application.lastName} | Email: ${application.email}`}
                                     />
-                                    <Button onClick={() => handleViewApplication(application.id)}>
+                                    <Button onClick={() => handleViewApplication(application._id)}>
                                         View Application
                                     </Button>
                                 </ListItem>
-                            ))}
+                            )})}
                         </List>
                     )}
 
