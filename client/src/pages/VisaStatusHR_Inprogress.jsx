@@ -1,113 +1,80 @@
 import {useState, useEffect} from 'react';
 import MyDocument from './PdfViewer';
+import axios from 'axios';
 import { pdfjs } from "react-pdf";
 
-//dummy_user for local testing without bn data flows
-const startdate = new Date(2023, 9, 12);
-const enddate = new Date(2025, 9, 12);
-const dummy_user = [
-    {
-        _id:1,
-        firstName:"dummy1",
-        lastName:"dummy1lastname",
-        workAuth:"f1",
-        visaStartDate:startdate,
-        visaEndDate:enddate,
-        workAuthFile_url:"http://localhost:3000/pdfs/dummy.pdf",
-        optStatus:"approved",
-        eadStatus:"approved",
-        i983Status:"approved",
-        i20Status:"approved",
-    },
-    {
-        _id:2,
-        firstName:"dummy2",
-        lastName:"dummy1lastname",
-        workAuth:"OPT",
-        visaStartDate:startdate,
-        visaEndDate:enddate,
-        workAuthFile_url:"http://localhost:3000/pdfs/dummy.pdf",
-        optStatus:"approved",
-        eadStatus:"pending",
-        i983Status:"pending",
-        i20Status:"pending",
-    },
-    {
-        _id:3,
-        firstName:"dummy2",
-        lastName:"dummy1lastname",
-        workAuth:"OPT",
-        visaStartDate:startdate,
-        visaEndDate:enddate,
-        workAuthFile_url:"http://localhost:3000/pdfs/dummy.pdf",
-        optStatus:"pending",
-        eadStatus:"pending",
-        i983Status:"pending",
-        i20Status:"pending",
-    },
-    {
-        _id:4,
-        firstName:"dummy4",
-        lastName:"dummy1lastname",
-        workAuth:"OPT",
-        visaStartDate:startdate,
-        visaEndDate:enddate,
-        workAuthFile_url:"http://localhost:3000/pdfs/dummy.pdf",
-        eadUrl:"http://localhost:3000/pdfs/dummy.pdf",
-        i983Url:"http://localhost:3000/pdfs/dummy.pdf",
-        i20Url:"http://localhost:3000/pdfs/dummy.pdf",
-        optStatus:"pending",
-        eadStatus:"pending",
-        i983Status:"pending",
-        i20Status:"pending",
-    }
-]
 
+//pdfjs.GlobalWorkerOptions.workerSrc = `//unpkg.com/pdfjs-dist@${pdfjs.version}/build/pdf.worker.min.mjs`;
 //Setup woker for pdf loadings
 // the original url will cause MMIE issue so use the downloaded version of mjs file
-pdfjs.GlobalWorkerOptions.workerSrc = '/pdf.worker.min.mjs';
+//pdfjs.GlobalWorkerOptions.workerSrc = '/pdf.worker.min.mjs';
+
+pdfjs.GlobalWorkerOptions.workerSrc = `http://localhost:3000/workers/pdf.worker.min.mjs`;
+//  pdfjs.GlobalWorkerOptions.workerSrc = new URL(
+//     'pdfjs-dist/build/pdf.worker.min.mjs',
+//     import.meta.url,
+//   ).toString();
+// import pdfWorker from 'pdfjs-dist/build/pdf.worker.min.js?url';
+
+// // Set the worker source
+// pdfjs.GlobalWorkerOptions.workerSrc = pdfWorker;
+
+// fetch('/pdf.worker.min.js')
+//   .then((res) => {
+//     if (!res.ok) throw new Error('Failed to load worker');
+//     console.log('Worker loaded successfully');
+//   })
+//   .catch((err) => console.error(err));
 
 const VisaStatusHR_inprogress = ()=>{
     
     const today = new Date();
-    const [users,setUsers] = useState(dummy_user);
-    const [showNotifyBtn, setShowNotifyBtn] = useState(true);
-    const [notifyID, setNotifyID] = useState();
     const [fileDisplayId, setFileDisplayId] = useState();
     const [showFileBtn, setShowFileBtn] = useState(false);
     const [currentFileUrl, setCurrentFileUrl] = useState();
-    const [showInprogress, setShowInprogress] = useState(true);
 
 
     // for users that holds f1-opt option
     // OPT Receipt should be submitted during onboarding stage
     // OPT EAD, I-983, I-20 should be submitted subsequently.
 
-    
-    //const pdfUrl = 'https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf';
-    const pdfFile="http://localhost:3000/pdfs/dummy.pdf";
+    const [employees,setEmployees] = useState([]); // Static employee data
+    // Fetch all users from the backend API
+    useEffect(() => {
+        const fetchUsers = async () => {
+        try {
+            const response = await axios.get('http://localhost:3000/api/users/alluser');
+            setEmployees(response.data); // Store fetched users in state
+        } catch (error) {
+            console.error('Error fetching employees:', error);
+        }
+        };
+
+        fetchUsers();
+    }, []);
 
     const formatDateToMDY = (date) => {
-        const month = String(date.getMonth() + 1).padStart(2, '0'); // Months are 0-indexed
-        const day = String(date.getDate()).padStart(2, '0'); // Ensure 2-digit day
-        const year = date.getFullYear();
-      
+        const dateobj = new Date(date);
+        const month = String(dateobj.getMonth() + 1).padStart(2, '0'); // Months are 0-indexed
+        const day = String(dateobj.getDate()).padStart(2, '0'); // Ensure 2-digit day
+        const year = dateobj.getFullYear();
         return `${month}/${day}/${year}`;
     }
 
     const calculateDaysDifference = (endDate, currentDate) => {
         // Convert both dates to milliseconds
-        const timeDiff = endDate - currentDate; // Absolute difference to avoid negative values
+        const dateobj = new Date(endDate);
+        const timeDiff = dateobj - currentDate; // Absolute difference to avoid negative values
         // Convert milliseconds to days (1 day = 24 * 60 * 60 * 1000 ms)
         const dayDiff = Math.ceil(timeDiff / (1000 * 60 * 60 * 24));
         return dayDiff;
     }
 
     const haveFileToReview = (user_to_check) =>{
-        return user_to_check.optStatus === "pending" || user_to_check.eadStatus === "pending" || user_to_check.i983Status === "pending" || user_to_check.i20Status === "pending";
+        return user_to_check.optStatus === "Pending" || user_to_check.eadStatus === "Pending" || user_to_check.i983Status === "Pending" || user_to_check.i20Status === "Pending";
     }
     const allFileApproved = (user_to_check) =>{
-        return user_to_check.optStatus === "approved" && user_to_check.eadStatus === "approved" && user_to_check.i983Status === "approved" && user_to_check.i20Status === "approved";
+        return user_to_check.optStatus === "Approved" && user_to_check.eadStatus === "Approved" && user_to_check.i983Status === "Approved" && user_to_check.i20Status === "Approved";
     }
 
     const stepStatusChecker = (user_tocheck) =>{
@@ -115,16 +82,16 @@ const VisaStatusHR_inprogress = ()=>{
         const ead = user_tocheck.eadStatus;
         const i983 = user_tocheck.i983Status;
         const i20 = user_tocheck.i20Status;
-        if(opt==="pending" || opt === "rejected"){
+        if(opt==="Pending" || opt === "rejected"){
             return "opt";
         }
-        if(opt==="approved" && (ead === "pending" || ead ==="rejected")){
+        if(opt==="Approved" && (ead === "Pending" || ead ==="rejected")){
             return "ead";
         }
-        if(opt==="approved" && ead === "approved" &&(i983 === "pending" || i983 ==="rejected")){
+        if(opt==="Approved" && ead === "Approved" &&(i983 === "Pending" || i983 ==="rejected")){
             return "i983";
         }
-        if(opt==="approved" && ead === "approved" && i983 === "approved" &&(i20 === "pending" || i20 ==="rejected")){
+        if(opt==="Approved" && ead === "Approved" && i983 === "Approved" &&(i20 === "Pending" || i20 ==="rejected")){
             return "i20";
         }
         if(allFileApproved(user_tocheck)){
@@ -134,7 +101,7 @@ const VisaStatusHR_inprogress = ()=>{
     }
 
     const nextstepsHandler = (user)=>{
-        // checks user status if pending then pop to set next steps
+        // checks user status if Pending then pop to set next steps
         const review_opt_receipt = "OPT receipt waiting for HR approval";
         const review_ead = "EAD waiting for HR approval";
         const review_i983 = "i983 waiting for HR approval";
@@ -145,7 +112,7 @@ const VisaStatusHR_inprogress = ()=>{
         const submit_i20 = "submit i20";
         const alldone = "all visa file submitted and reviewed";
         if(stepStatusChecker(user) === "opt"){
-            if(user.workAuthFile_url){
+            if(user.optUrl){
                 //show the file, 
                 return review_opt_receipt;
             }
@@ -186,15 +153,14 @@ const VisaStatusHR_inprogress = ()=>{
 
     }
 
-    
-    const actionHandler = (user,decision) =>{
+    const actionHandler = async(user,decision) =>{
         // action1: files submitted, need review to approve or reject (when reject send message to user management)
         // action2: submit the next document, send reminder to the user
         // approve/reject
         const step_status = stepStatusChecker(user);
             //user set corresponding status to approve // api call to update the database
             if(step_status === "opt"){
-                setUsers((prevUsers) =>
+                setEmployees((prevUsers) =>
                     prevUsers.map((user_itr) =>
                         user_itr._id === user._id ? { ...user_itr, optStatus: decision } : user_itr
                     )
@@ -202,21 +168,21 @@ const VisaStatusHR_inprogress = ()=>{
             };
             
             if(step_status === "ead"){
-                setUsers((prevUsers) =>
+                setEmployees((prevUsers) =>
                     prevUsers.map((user_itr) =>
                         user_itr._id === user._id ? { ...user_itr, eadStatus: decision } : user_itr
                     )
                 )
             }
             if(step_status === "i983"){
-                setUsers((prevUsers) =>
+                setEmployees((prevUsers) =>
                     prevUsers.map((user_itr) =>
                         user_itr._id === user._id ? { ...user_itr, i983Status: decision } : user_itr
                     )
                 )
             }
             if(step_status === "i20"){
-                setUsers((prevUsers) =>
+                setEmployees((prevUsers) =>
                     prevUsers.map((user_itr) =>
                         user_itr._id === user._id ? { ...user_itr, i20Status: decision } : user_itr
                     )
@@ -225,32 +191,71 @@ const VisaStatusHR_inprogress = ()=>{
         if(decision === "rejected"){
             //if rejected, send this message to the employee side to remind resubmission.
             console.log(`Hello ${user.firstName} ${user.lastName}, your submitted file for ${step_status} has been rejected by HR, please resubmit.`)
+            //todo, modify the message to the user
+
         }
 
+        //modify the changed visa document status for user
+        try {
+            const response = await axios.post(`http://localhost:3000/api/users/updateworkauthStatus`, {
+              id: user._id,
+              optStatus: decision
+            });
+            console.log('User updated:', response.data);
+            alert('User updated successfully!');
+          } catch (error) {
+            console.error('Error updating user:', error);
+            alert('Failed to update user.');
+          }
+
     }
-    const notificationHandler = (user) =>{
+    const notificationHandler = async(user) =>{
         //send an email notification to the user
         const step_status = stepStatusChecker(user);
         let message_to_employee = "";
         if(step_status!=="i20"){
-            message_to_employee = `Hello ${user.firstName} ${user.lastName}, your submission of ${step_status} has been approved, please submit the next document.`;
+            message_to_employee = `Hello ${user.firstName} ${user.lastName}, your submission of ${step_status} has been Approved, please submit the next document.`;
         }else{
-            message_to_employee = `Hello ${user.firstName} ${user.lastName}, all of your submitted visa documents has been reviewed and approved.`;
+            message_to_employee = `Hello ${user.firstName} ${user.lastName}, all of your submitted visa documents has been reviewed and Approved.`;
         }
-        console.log(message_to_employee);
+        
+        // console.log(message_to_employee);
+        try {
+            const response = await axios.post(`http://localhost:3000/api/users/emailNotify`, {
+              id: user._id,
+              firstName: "balala",
+              lastName: user.lastName,
+              useremail: user.email,
+              notification:message_to_employee
+            });
+            console.log('Email Notification sent:', response.data);
+            alert('Email Notification sent successfully!');
+          } catch (error) {
+            console.error('Error Email Notification sent:', error);
+            alert('Failed to sent Email Notification!');
+          }
     }
 
     const viewFileHandler = (user) =>{
-        console.log(user._id);
-        if(user._id !== fileDisplayId){
+        if(user._id !== fileDisplayId && showFileBtn){
             setFileDisplayId(user._id);
             
         }else{
             setFileDisplayId(null);
         }
-
         setShowFileBtn(!showFileBtn);
-        setCurrentFileUrl(user.workAuthFile_url);
+        if(stepStatusChecker(user)==="opt"){
+            setCurrentFileUrl(user.optUrl);
+        }
+        if(stepStatusChecker(user)==="ead"){
+            setCurrentFileUrl(user.eadUrl);
+        }
+        if(stepStatusChecker(user)==="i983"){
+            setCurrentFileUrl(user.i983Url);
+        }
+        if(stepStatusChecker(user)==="i20"){
+            setCurrentFileUrl(user.i20Url);
+        }
     }
     
     return (
@@ -274,7 +279,7 @@ const VisaStatusHR_inprogress = ()=>{
                     </tr>
                 </thead>
                 <tbody>
-                {users.map((user,index)=>(
+                {employees.map((user,index)=>(
                     <tr key={index}>
                         <td>{user.firstName}</td>
                         <td>{user.lastName}</td>
@@ -289,7 +294,7 @@ const VisaStatusHR_inprogress = ()=>{
                         <td>
                             {!allFileApproved(user) &&
                             (<div>
-                                <button onClick={() => actionHandler(user,'approved')}>Approve</button>
+                                <button onClick={() => actionHandler(user,'Approved')}>Approve</button>
                                 <button onClick={() => actionHandler(user,'rejected')}>Reject</button>
                             </div>)
                             }

@@ -839,13 +839,13 @@ const updateWorkauthdoc = async(req,res) =>{
 
 const updateWorkauthStatus = async(req,res) => {
     //tested working
-    const username = req.body.username;
+    const id = req.body.id;
     const optStatus = req.body.optStatus;
     const eadStatus = req.body.eadStatus;
     const i983Status = req.body.i983Status;
     const i20Status = req.body.i20Status;
     try{
-        const user = await User.findOne({ username })
+        const user = await User.findById(id)
         .lean()
         .exec();
         if (!user) {
@@ -932,6 +932,52 @@ const getPersonalinfoById = async(req,res) =>{
     }
 } 
 
+const getAllUser = async(req,res) =>{
+    try {
+        const users = await User.find({role:{ $ne:"hr"}},"email firstName lastName preferredName workAuth visaStartDate visaEndDate optUrl eadUrl i983Url i20Url optStatus eadStatus i983Status i20Status");
+        res.json(users);
+      } catch (error) {
+        res.status(500).json({ error: 'Failed to fetch users' });
+    }
+};
+
+const sendEmailNotification = async(req,res)=>{
+
+    // Get user information
+    const { id, firstName, lastName, useremail, notification} = req.body;
+    console.log(req.body.email);
+    if (!useremail || !id) {
+        return res.status(400).json({ message: 'Email is required and name is required' });
+    }
+    const sanitizedEmail = sanitizeInput(useremail);
+    const sanitizedFirstName = sanitizeInput(firstName);
+    const sanitizedLastName = sanitizeInput(lastName);
+
+    console.log(sanitizedFirstName, sanitizedLastName, sanitizedEmail)
+
+    try {
+    // Check if user already exists
+    const existingUser = await User.findById(id).lean().exec();
+    if(!existingUser){
+        return res.status(409).json({ message: 'User with this email does not exists.' });
+    }
+    // Send registration email
+    //todo need to change the email receiver
+    // todo need to test the email content
+    const mailResult = await sendMail(
+        notification,
+        sanitizedEmail,
+        'Notification from Beaconfire - Please check or update your visa documents',
+        'dminhnguyen161@gmail.com' 
+        );
+    if (mailResult.error) {
+        return res.status(500).json({ message: 'Failed to send email.', error: mailResult.error });
+    }
+    return res.status(200).json({ message: 'Notification sent successfully to ' + sanitizedEmail });
+    } catch (error) {
+        return res.status(500).json({ message: 'Server error.', error: error.message });
+    }
+}
 module.exports = {
     register,
     login,
@@ -953,6 +999,8 @@ module.exports = {
     logout,
     getRegistrationHistory,
     getApplications,
+    getAllUser,
+    sendEmailNotification
     getUserInfoById,
     updateAppStatus,
 }
