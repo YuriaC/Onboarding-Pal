@@ -3,7 +3,7 @@ import { useNavigate, useParams } from 'react-router-dom'
 import { USER_ENDPOINT } from '../constants'
 import axios from 'axios'
 import { toast, ToastContainer } from 'react-toastify'
-import { Avatar, Box, Button, TextField } from '@mui/material'
+import { Avatar, Box, Button, TextField, Typography } from '@mui/material'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faUser } from '@fortawesome/free-solid-svg-icons'
 
@@ -55,6 +55,7 @@ const Application = () => {
         email: '',
         emergencyContacts: [],
         hrFeedback: '',
+        onboardingStatus: '',
     })
 
     useEffect(() => {
@@ -89,6 +90,7 @@ const Application = () => {
             carColor,
             ssn,
             birthday,
+            email,
             gender,
             permResStatus,
             driversLicenseNumber,
@@ -134,6 +136,7 @@ const Application = () => {
             carModel,
             carColor,
             ssn,
+            email,
             dob: birthday ? birthday.split('T')[0] : null,
             gender,
             permResStatus,
@@ -145,9 +148,10 @@ const Application = () => {
             emergencyContacts: newEmContacts,
             building,
             street,
-            city: address ? address.split(', ')[2] : '',
+            city: address ? address.split(', ')[1] : '',
             state,
             zip,
+            onboardingStatus,
             hrFeedback: onboardingStatus === 'Rejected' ? hrFeedback : '',
             refFirstName: referer ? referer.firstName : '',
             refLastName: referer ? referer.lastName : '',
@@ -167,6 +171,7 @@ const Application = () => {
             withCredentials: true,
         })
             .then(() => {
+                // window.close()
                 navigate('/hr/hiring')
             })
             .catch(error => {
@@ -179,6 +184,7 @@ const Application = () => {
             withCredentials: true,
         })
             .then(() => {
+                // window.close()
                 navigate('/hr/hiring')
             })
             .catch(error => {
@@ -200,7 +206,8 @@ const Application = () => {
                     <FontAwesomeIcon icon={faUser} />
                 </Avatar>
             }
-            <form>
+            <form style={{ width: '50vw' }}>
+            <Typography variant='h4' sx={{ mt: 2, mb: 2 }}>{formData.onboardingStatus}</Typography>
                 <label>First Name: </label>
                 <input type='text' name='firstName' value={formData.firstName} disabled required />
                 <label>Last Name: </label>
@@ -253,12 +260,6 @@ const Application = () => {
                     <legend>Work Authorization</legend>
                     {formData.isPermRes === 'Yes' &&
                         <>
-                            <br />
-                            <label>What kind of permanent residence?</label>
-                            <input type='radio' name='permResStatus' checked={formData.permResStatus === 'Citizen'} value='Citizen' disabled required />
-                            <label>Citizen</label>
-                            <input type='radio' name='permResStatus' checked={formData.permResStatus === 'Green Card'} value='Green Card' disabled />
-                            <label>Green Card</label>
                             <label>Permanent Residence: {formData.permResStatus}</label>
                         </>
                     }
@@ -268,9 +269,9 @@ const Application = () => {
                             <label>Work Authorization: {formData.workAuth || 'Not specified'}</label>
                             {formData.nonPermWorkAuth === 'F1(CPT/OPT)' &&
                                 <>
-                                    <br />
+                                    {/* <br />
                                     <label>Upload your OPT Receipt: </label>
-                                    <input type='file' name='optReceipt' disabled required />
+                                    <input type='file' name='optReceipt' disabled required /> */}
                                 </>
                             }
                             {formData.nonPermWorkAuth === 'Other' &&
@@ -292,33 +293,22 @@ const Application = () => {
                 <br />
                 <fieldset>
                     <legend>Driver&#39;s License</legend>
-                    <label>Do you have a driver&#39;s license?</label>
-                    <input type='radio' name='hasDriversLicense' checked={formData.hasDriversLicense === 'Yes'} value='Yes' disabled required />
-                    <label>Yes</label>
-                    <input type='radio' name='hasDriversLicense' checked={formData.hasDriversLicense === 'No'} value='No' disabled />
-                    <label>No</label>
+                    <label>Has driver&#39;s license: {formData.hasDriversLicense}</label>
                     {formData.hasDriversLicense === 'Yes' &&
                         <>
-                            <br />
+                            <br /><br />
                             <label>Driver&#39;s License Number: </label>
                             <input type='number' name='dlNum' value={formData.dlNum} disabled required />
                             <br />
                             <label>Driver&#39;s License Expiration: </label>
                             <input type='date' name='dlExpDate' value={formData.dlExpDate} disabled required />
-                            <br />
-                            <label>Driver&#39;s License Copy: </label>
-                            <input type='file' name='dlCopy' disabled required />
                         </>
                     }
                 </fieldset>
                 <br />
                 <fieldset>
                     <legend>Reference</legend>
-                    <label>Did someone refer you to this company?</label>
-                    <input type='radio' name='isReferred' checked={formData.isReferred === 'Yes'} value='Yes' disabled required />
-                    <label>Yes</label>
-                    <input type='radio' name='isReferred' checked={formData.isReferred === 'No'} value='No' disabled />
-                    <label>No</label>
+                    <label>Referred: {formData.isReferred}</label>
                     {formData.isReferred === 'Yes' &&
                         <>
                             <br />
@@ -354,24 +344,27 @@ const Application = () => {
                             <input type='email' name='emEmail' value={contact.emEmail} disabled required />
                             <label>Relationship</label>
                             <input type='text' name='relationship' value={contact.relationship} disabled required />
-                            <br />
                         </div>
                     ))}
                 </fieldset>
             </form>
-            <Box sx={{ display: 'flex', justifyContent: 'center', gap: 2, mt: 4, mb: 4 }}>
-                <Button variant='contained' sx={{ backgroundColor: 'green', color: 'white', '&:hover': { backgroundColor: 'darkgreen' } }} onClick={handleApproval}>
-                    Approve
-                </Button>
-                <Button variant='contained' sx={{ backgroundColor: 'red', color: 'white', '&:hover': { backgroundColor: 'darkred' } }} onClick={() => setIsRejecting(!isRejecting)}>
-                    Reject
-                </Button>
-            </Box>
-            {isRejecting &&
-                <Box sx={{ mb: 4, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2 }}>
-                    <TextField fullWidth required placeholder='Give feedback' onChange={handleChange} value={feedback} />
-                    <Button sx={{ backgroundColor: 'red', color: 'white', '&:hover': { backgroundColor: 'darkred' } }} onClick={handleRejection}>Submit Rejection</Button>
-                </Box>
+            {formData.onboardingStatus === 'Pending' &&
+                <>
+                    <Box sx={{ display: 'flex', justifyContent: 'center', gap: 2, mt: 4, mb: 4 }}>
+                        <Button variant='contained' sx={{ backgroundColor: 'green', color: 'white', '&:hover': { backgroundColor: 'darkgreen' } }} onClick={handleApproval}>
+                            Approve
+                        </Button>
+                        <Button variant='contained' sx={{ backgroundColor: 'red', color: 'white', '&:hover': { backgroundColor: 'darkred' } }} onClick={() => setIsRejecting(!isRejecting)}>
+                            Reject
+                        </Button>
+                    </Box>
+                    {isRejecting &&
+                        <Box sx={{ mb: 4, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2 }}>
+                            <TextField fullWidth required placeholder='Give feedback' onChange={handleChange} value={feedback} />
+                            <Button sx={{ backgroundColor: 'red', color: 'white', '&:hover': { backgroundColor: 'darkred' } }} onClick={handleRejection}>Submit Rejection</Button>
+                        </Box>
+                    }
+                </>
             }
             <ToastContainer />
         </div> : 'Loading...'}

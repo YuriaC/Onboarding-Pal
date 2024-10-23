@@ -126,9 +126,10 @@ const sendRegistrationLink = async (req,res) =>{
                         email: sanitizedEmail,
                         lastName: sanitizedLastName,
                         registrationHistory: {
-                            status: 'Pending',
+                            // status: 'Pending',
                             expiresAt: Date.now() + 3 * 60 * 60 * 1000,
-                            token: token
+                            token: token,
+                            link: registrationLink,
                         }
                     }
                 });
@@ -143,12 +144,13 @@ const sendRegistrationLink = async (req,res) =>{
                 lastName: sanitizedLastName,
                 password: '',
                 role: 'employee',
-                onboardingStatus: 'Pending',
+                // onboardingStatus: 'Not Started',
                 registrationHistory: {
                   email: sanitizedEmail,
-                  status: 'Pending',
+                //   status: 'Pending',
                   expiresAt: Date.now() + 3 * 60 * 60 * 1000,
-                  token: token
+                  token: token,
+                  link: registrationLink,
                 },
               });
               if(!newUser){
@@ -1000,7 +1002,7 @@ module.exports = {
     getRegistrationHistory,
     getApplications,
     getAllUser,
-    sendEmailNotification
+    sendEmailNotification,
     getUserInfoById,
     updateAppStatus,
 }
