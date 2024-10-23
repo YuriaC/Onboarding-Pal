@@ -851,9 +851,9 @@ const updateWorkauthStatus = async(req,res) => {
         if (!user) {
             return res.status(401).json({ message: 'User not Found!' });
         }
-
-        let update_status = { 
-        }
+        
+        let update_status = {}
+        
         if(optStatus){
             update_status.optStatus = optStatus;
         }
@@ -889,6 +889,8 @@ const updateWorkauthStatus = async(req,res) => {
         return res.status(500).json({ message: error.message });
     }
 }
+
+
 const getEmpolyeesProfileForHR = async(req, res)=>{
     const {searchTerm} = req.query;
     const regexSearchTerm = new RegExp(searchTerm, 'i');

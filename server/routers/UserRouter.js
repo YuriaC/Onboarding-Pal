@@ -6,7 +6,6 @@ const { authenticateJWT, isHR } = require('../middlewares/AuthMiddleware');
 const { AWSCredentialsMiddleware } = require('../middlewares/AWSMiddleware')
 
 
-
 // NOTE : ADD MIDDLEWARES 
 const userValidator = require("../middlewares/UserValidator");
 

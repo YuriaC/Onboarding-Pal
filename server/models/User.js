@@ -34,10 +34,10 @@ const UserSchema = new Schema({
     driversLicenseNumber: { type: String, default: "" },
     driversLicenseExpDate: { type: Date, default: null },
     driversLicenseCopy_url: { type: String, default: "" },
-    optStatus: { type: String, enum: statuses, default: "Pending" },
-    eadStatus: { type: String, enum: statuses, default: "Pending" },
-    i983Status: { type: String, enum: statuses, default: "Pending" },
-    i20Status: { type: String, enum: statuses, default: "Pending" },
+    optStatus: { type: String, enum: statuses, default: "Not Started" },
+    eadStatus: { type: String, enum: statuses, default: "Not Started" },
+    i983Status: { type: String, enum: statuses, default: "Not Started" },
+    i20Status: { type: String, enum: statuses, default: "Not Started" },
     optUrl: { type: String , default: "" },
     eadUrl: { type: String , default: "" },
     i983Url: { type: String , default: "" },
@@ -53,6 +53,7 @@ const UserSchema = new Schema({
       },
     role: { type: String, enum: ['employee', 'hr'], default: "employee" },
     hrFeedback: { type: String, default: '' },
+    hrVisaFeedBack: { type: String, default: '' }  // for visa status management
 });
 
 const User = mongoose.model('User', UserSchema);
