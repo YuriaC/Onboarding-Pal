@@ -415,7 +415,6 @@ const setApplicationInput = async(req,res) =>{
                 cellPhone: refPhone,
                 email: refEmail,
                 relationship: refRelationship,
-                // relationshipToId: "6711edc999bed2d3ff6f0f45",
             })
             if (!reference) {
                 return res.status(500).json('Error creating reference!')
@@ -465,7 +464,6 @@ const setApplicationInput = async(req,res) =>{
                 "birthday": dob,
                 "gender": gender,
                 "workAuth": workauth,
-                // "workAuthFile_url": workauth_url,
                 "driversLicenseNumber": dlnum,
                 "driversLicenseExpDate": dldate,
                 "driversLicenseCopy_url": dlCopyURL,
@@ -746,15 +744,6 @@ const getUserInfoById = async (req, res) =>{
     try{
         const user = await User.findById(userId)
             .populate('referer')
-            // .populate({
-            //     path: 'house',
-            //     populate: [
-            //         { path: 'employees' },
-            //         { path: 'reports', populate: {
-            //             path: 'comments'
-            //         }
-            //     }]
-            // })
             .populate('emergencyContacts').lean().exec();
         if (!user) {
             return res.status(401).json({ message: 'User not Found!' });

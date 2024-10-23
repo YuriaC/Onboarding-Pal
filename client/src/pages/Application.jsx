@@ -74,7 +74,6 @@ const Application = () => {
     }, [])
 
     const setDataToForm = (data) => {
-        console.log('data:', data)
         const {
             firstName,
             lastName,
@@ -113,6 +112,14 @@ const Application = () => {
                 relationship,
             })
         }
+        const stateAndZip = address ? address.split(', ')[2] : ''
+        const lastSpaceIndex = address ? stateAndZip.lastIndexOf(' ') : 0
+        const state = address ? stateAndZip.substring(0, lastSpaceIndex) : ''
+        const zip = address ? stateAndZip.substring(lastSpaceIndex + 1) : ''
+        const buildingAndStreet = address ? address.split(', ')[0] : ''
+        const firstSpaceIndex = address ? buildingAndStreet.indexOf(' ') : 0
+        const building = address ? buildingAndStreet.substring(0, firstSpaceIndex) : ''
+        const street = address ? buildingAndStreet.substring(firstSpaceIndex + 1) : ''
         setFormData({
             ...formData,
             firstName,
@@ -134,11 +141,11 @@ const Application = () => {
             dlExpDate: driversLicenseExpDate ? driversLicenseExpDate.split('T')[0] : null,
             isReferred: referer ? 'Yes' : 'No',
             emergencyContacts: newEmContacts,
-            building: address ? address.split(', ')[0] : '',
-            street: address ? address.split(', ')[1] : '',
+            building,
+            street,
             city: address ? address.split(', ')[2] : '',
-            state: address ? address.split(', ')[3].split(' ')[0] : '',
-            zip: address ? address.split(', ')[3].split(' ')[1] : '',
+            state,
+            zip,
             hrFeedback: onboardingStatus === 'Rejected' ? hrFeedback : '',
             refFirstName: referer ? referer.firstName : '',
             refLastName: referer ? referer.lastName : '',

@@ -113,7 +113,6 @@ const Onboarding = () => {
             visaEndDate,
             visaTitle,
         } = data
-        console.log('data:', data)
         const newEmContacts = []
         for (const emContact of emergencyContacts) {
             const { firstName, lastName, middleName, cellPhone, email, relationship } = emContact
@@ -134,8 +133,6 @@ const Onboarding = () => {
         const firstSpaceIndex = buildingAndStreet.indexOf(' ')
         const building = buildingAndStreet.substring(0, firstSpaceIndex)
         const street = buildingAndStreet.substring(firstSpaceIndex + 1)
-        console.log(address.split(', ')[0].split(' ', 2))
-        console.log('buildingAndStreet:', buildingAndStreet)
         setFormData({
             ...formData,
             firstName,
@@ -178,9 +175,6 @@ const Onboarding = () => {
 
     const getDocs = async () => {
         const response = await axios.get(`${USER_ENDPOINT}/getuserdocs`, {
-            // headers: {
-            //     'Authorization': `Bearer ${token}`
-            // },
             withCredentials: true,
         })
         setDocs(response.data)
@@ -222,14 +216,12 @@ const Onboarding = () => {
 
     const handleSubmit = async (e) => {
         e.preventDefault()
-        console.log('formData:', formData)
         const data = createFormData(formData)
 
         try {
             await axios.post(`${USER_ENDPOINT}/applicationinput`, data, {
                 headers: {
                     'Content-Type': 'multipart/form-data',
-                    // 'Authorization': `Bearer ${token}`,
                 },
                 withCredentials: true,
             })

@@ -101,30 +101,7 @@ const HouseDetails = () => {
                 toast.error(`Error fetching data! Error: ${error.message}`)
             }
         }
-        // axios.get(`${USER_ENDPOINT}/userinfo`, { withCredentials: true })
-        //     .then(response => {
-        //         // const { house } = response.data
-        //         // const otherEmployees = employees.filter(employee => {
-        //         //     return (
-        //         //         employee._id !== response.data._id
-        //         //     )
-        //         // })
-        //         // let newComments = {}
-        //         // let newCommentReports = {}
-        //         // for (const report of reports) {
-        //         //     newCommentReports[report._id] = ''
-        //         //     const comments = report.comments
-        //         //     for (const comment of comments) {
-        //         //         newComments[comment._id] = comment.description
-        //         //     }
-        //         // }
-        //         // setNewReportComments(newCommentReports)
-        //         // setCommentChanges(newComments)
-        //         // console.log('reports:', reports)
-        //     })
-        //     .catch(error => {
-        //         toast.error(`Error getting user info! Error: ${error.message}`)
-        //     })
+        
         fetchData()
     }, [submitted])
 
@@ -262,18 +239,13 @@ const HouseDetails = () => {
                                         console.log('roommate:', roommate)
                                         return (
                                             <ListItem key={index} sx={{ display: 'flex', justifyContent: 'start', gap: 4 }}>
-                                                {/* <ListItemText sx={{ cursor: 'pointer', width: '3rem' }} onClick={(e) => viewEmployee(e, roommate._id)} primary={`${roommate.firstName}${roommate.preferredName ? ` "${roommate.preferredName}"` : ''}${roommate.middleName ? ` ${roommate.middleName}`: ''} ${roommate.lastName}`} /> */}
                                                 <Typography sx={{ cursor: 'pointer' }} onClick={(e) => viewEmployee(e, roommate._id)}>{`${roommate.firstName}${roommate.preferredName ? ` "${roommate.preferredName}"` : ''}${roommate.middleName ? ` ${roommate.middleName}`: ''} ${roommate.lastName}`}</Typography>
                                                 <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                                                    {/* <ListItemIcon><PhoneIcon /></ListItemIcon> */}
                                                     <PhoneIcon />
-                                                    {/* <Typography>{roommate.cellPhone}</Typography> */}
                                                     <ListItemText secondary={roommate.cellPhone || 'No phone provided'} />
                                                 </Box>
                                                 <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                                                    {/* <ListItemIcon><EmailIcon /></ListItemIcon> */}
                                                     <EmailIcon />
-                                                    {/* <Typography>{roommate.email}</Typography> */}
                                                     <ListItemText secondary={roommate.email} />
                                                 </Box>
                                                 <Box sx={{ display: 'flex', alignItems: 'center' }}>
