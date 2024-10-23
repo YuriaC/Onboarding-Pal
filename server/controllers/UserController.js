@@ -347,7 +347,7 @@ const setApplicationInput = async(req,res) =>{
     const { files } = req
     const { AccessKeyId, SecretAccessKey, SessionToken } = req.credentials
     const { building, street, city, state, zip } = req.body
-    const address = `${building}, ${street}, ${city}, ${state} ${zip}`
+    const address = `${building} ${street}, ${city}, ${state} ${zip}`
     const { permResStatus } = req.body
     const cellPhone = req.body.cellPhone;
     const workPhone = req.body.workPhone

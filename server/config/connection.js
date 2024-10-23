@@ -44,7 +44,7 @@ mongoose.connect(MONGO_URI)
                     house: house._id,
                     firstName: 'Test',
                     lastName: 'Employee',
-                    onboardingStatus: 'Pending',
+                    // onboardingStatus: 'Pending',
                   },
                   {
                     username: 'EmployeeTest2',
