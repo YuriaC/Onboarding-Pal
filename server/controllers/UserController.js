@@ -894,9 +894,9 @@ const updateWorkauthStatus = async(req,res) => {
 const getEmpolyeesProfileForHR = async(req, res)=>{
     const {searchTerm} = req.query;
     const regexSearchTerm = new RegExp(searchTerm, 'i');
-
     try{
         const filterUser = await User.find({
+            role: { $ne: 'hr' },
             $or: [
                 {username: regexSearchTerm},
                 {firstName: regexSearchTerm},
