@@ -50,6 +50,7 @@ const UserSchema = new Schema({
         email: { type: String, default: "" },
         status: { type: String, enum: ['Pending', 'Registered'], default: "Pending" },
         expiresAt: { type: Date, default: null },
+        link: { type: String, default: '' },
       },
     role: { type: String, enum: ['employee', 'hr'], default: "employee" },
     hrFeedback: { type: String, default: '' },

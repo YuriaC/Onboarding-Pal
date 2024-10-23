@@ -5,8 +5,12 @@ import { USER_ENDPOINT } from '../constants';
 import { toast, ToastContainer } from 'material-react-toastify';
 import 'material-react-toastify/dist/ReactToastify.css'
 import { Box, Card, CardActions, CardContent, Typography, Button } from '@mui/material'
+import { useNavigate } from 'react-router-dom';
 
 const Personal = () => {
+
+    const navigate = useNavigate()
+
     console.log('Personal')
     const [isEditing, setIsEditing] = useState(false);
     const [formData, setFormData] = useState({
@@ -48,7 +52,16 @@ const Personal = () => {
 
     const [formDataClone, setFormDataClone] = useState({});
 
-
+    useEffect(() => {
+        axios.get(`${USER_ENDPOINT}/userinfo`, { withCredentials: true })
+            .then(response => {
+                const { onboardingStatus } = response.data
+                if (onboardingStatus !== 'Approved') {
+                    return navigate('/employee/onboarding')
+                }
+            }
+        )
+    }, [])
 
     useEffect(() => {
         setFormDataClone(JSON.parse(JSON.stringify(formData)))
@@ -63,7 +76,7 @@ const Personal = () => {
             withCredentials: true,
         })
         .then(response => {
-            toast.success('Successfully fetched user files!')
+            // toast.success('Successfully fetched user files!')
             console.log('response.data:', response.data)
             setFormData({
                 ...formData,
@@ -191,14 +204,14 @@ const Personal = () => {
                 ) : (
                     <div>
                         <img src={formData.profilePicture} alt='profilePicture' width={100} height={100} />
-                        <input type="text" name="firstName" placeholder="First Name" value={formData.firstName} disabled={true} />
-                        <input type="text" name="lastName" placeholder="Last Name" value={formData.lastName} disabled={true} />
-                        <input type="text" name="middleName" placeholder="Middle Name" value={formData.middleName} disabled={true} />
-                        <input type="text" name="preferredName" placeholder="Preferred Name" value={formData.preferredName} disabled={true} />
-                        <input type="email" name="email" placeholder="email" value={formData.email} disabled={true} />
-                        <input type="text" name="ssn" placeholder="ssn" value={formData.ssn} disabled={true} />
-                        <input type="text" name="dob" placeholder="Date of Birth" value={formData.dob} disabled={true} />
-                        <select name="gender" value={formData.gender} disabled={true}>
+                        <input type="text" name="firstName" placeholder="First Name" value={formData.firstName} disabled />
+                        <input type="text" name="lastName" placeholder="Last Name" value={formData.lastName} disabled />
+                        <input type="text" name="middleName" placeholder="Middle Name" value={formData.middleName} disabled />
+                        <input type="text" name="preferredName" placeholder="Preferred Name" value={formData.preferredName} disabled />
+                        <input type="email" name="email" placeholder="email" value={formData.email} disabled />
+                        <input type="text" name="ssn" placeholder="ssn" value={formData.ssn} disabled />
+                        <input type="text" name="dob" placeholder="Date of Birth" value={formData.dob} disabled />
+                        <select name="gender" value={formData.gender} disabled>
                             <option value="Male">Male</option>
                             <option value="Female">Female</option>
                             <option value="Other">Other</option>

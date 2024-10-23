@@ -16,6 +16,7 @@ import {
     Typography,
     Paper
 } from '@mui/material'
+
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faUser } from '@fortawesome/free-solid-svg-icons'
 
@@ -65,6 +66,7 @@ const Application = () => {
         email: '',
         emergencyContacts: [],
         hrFeedback: '',
+        onboardingStatus: '',
     })
 
     useEffect(() => {
@@ -99,6 +101,7 @@ const Application = () => {
             carColor,
             ssn,
             birthday,
+            email,
             gender,
             permResStatus,
             driversLicenseNumber,
@@ -144,6 +147,7 @@ const Application = () => {
             carModel,
             carColor,
             ssn,
+            email,
             dob: birthday ? birthday.split('T')[0] : null,
             gender,
             permResStatus,
@@ -155,9 +159,10 @@ const Application = () => {
             emergencyContacts: newEmContacts,
             building,
             street,
-            city: address ? address.split(', ')[2] : '',
+            city: address ? address.split(', ')[1] : '',
             state,
             zip,
+            onboardingStatus,
             hrFeedback: onboardingStatus === 'Rejected' ? hrFeedback : '',
             refFirstName: referer ? referer.firstName : '',
             refLastName: referer ? referer.lastName : '',
@@ -177,6 +182,7 @@ const Application = () => {
             withCredentials: true,
         })
             .then(() => {
+                // window.close()
                 navigate('/hr/hiring')
             })
             .catch(error => {
@@ -189,6 +195,7 @@ const Application = () => {
             withCredentials: true,
         })
             .then(() => {
+                // window.close()
                 navigate('/hr/hiring')
             })
             .catch(error => {
