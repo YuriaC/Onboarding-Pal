@@ -53,6 +53,7 @@ const UserSchema = new Schema({
       },
     role: { type: String, enum: ['employee', 'hr'], default: "employee" },
     hrFeedback: { type: String, default: '' },
+    hrVisaFeedBack: { type: String, default: '' }  // for visa status management
 });
 
 const User = mongoose.model('User', UserSchema);
