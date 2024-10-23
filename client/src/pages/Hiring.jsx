@@ -48,7 +48,7 @@ const Hiring = () => {
     const handleViewApplication = (employeeId) => {
         // Logic to open the application in a new tab
         window.open(`/hr/application/${employeeId}`, '_blank');
-        // navigate(`/hr/application/${employeeId}`)
+
     };
 
     return (
