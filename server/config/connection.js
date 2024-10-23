@@ -46,15 +46,15 @@ mongoose.connect(MONGO_URI)
                     email: "test1@gmail.com",
                     password: hashedPassword,
                     role: "employee",
+                    birthday: new Date(),
                     house: house._id,
                     firstName: 'Test1',
                     lastName: 'Employee',
-                    onboardingStatus: 'Pending',
+                    onboardingStatus: 'Not Started',
                     visaStartDate: startdate,
                     visaEndDate:enddate,
                     workAuth:"OPT",
                     optUrl:pdfUrl,
-
                   },
                   {
                     username: 'EmployeeTest2',
@@ -62,6 +62,7 @@ mongoose.connect(MONGO_URI)
                     password: hashedPassword,
                     role: "employee",
                     house: house._id,
+                    birthday: new Date(),
                     firstName: 'Test',
                     lastName: 'Employee 2',
                     onboardingStatus: 'Rejected',
@@ -73,7 +74,6 @@ mongoose.connect(MONGO_URI)
                         status: 'Registered'
                     },
                     optUrl:pdfUrl,
-                    
                   },
                   {
                     username: 'HRTest',

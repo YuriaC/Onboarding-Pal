@@ -703,7 +703,6 @@ const getApplications = async(req,res) =>{
     try{
         const users = await User.find({ role: "employee",  "registrationHistory.status": { $ne: "Pending" } }).select('-password').lean().exec();
 
-        console.log(users)
         if (!users) {
             return res.status(401).json({ message: 'User not Found!' });
         } 
@@ -714,7 +713,6 @@ const getApplications = async(req,res) =>{
     }catch (error) {
         console.error(error);
         return res.status(500).json({ message: error.message });    
-
     }
 }
 
@@ -1002,7 +1000,7 @@ module.exports = {
     getRegistrationHistory,
     getApplications,
     getAllUser,
-    sendEmailNotification
+    sendEmailNotification,
     getUserInfoById,
     updateAppStatus,
 }
