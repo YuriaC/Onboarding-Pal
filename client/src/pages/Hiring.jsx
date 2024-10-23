@@ -48,7 +48,7 @@ const Hiring = () => {
     const handleViewApplication = (employeeId) => {
         // Logic to open the application in a new tab
         window.open(`/hr/application/${employeeId}`, '_blank');
-        // navigate(`/hr/application/${employeeId}`)
+
     };
 
     return (
@@ -156,7 +156,7 @@ const Hiring = () => {
                                     <ListItemText
                                         primary={`Name: ${application.firstName} ${application.lastName} | Email: ${application.email}`}
                                     />
-                                    <Button onClick={() => handleViewApplication(application.id)}>
+                                    <Button onClick={() => handleViewApplication(application._id)}>
                                         View Application
                                     </Button>
                                 </ListItem>
