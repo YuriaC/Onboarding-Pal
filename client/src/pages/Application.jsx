@@ -3,7 +3,9 @@ import { useNavigate, useParams } from 'react-router-dom'
 import { USER_ENDPOINT } from '../constants'
 import axios from 'axios'
 import { toast, ToastContainer } from 'react-toastify'
-import { Box, Button, TextField } from '@mui/material'
+import { Avatar, Box, Button, TextField } from '@mui/material'
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import { faUser } from '@fortawesome/free-solid-svg-icons'
 
 const Application = () => {
 
@@ -193,6 +195,11 @@ const Application = () => {
     return (
         <>
         {!isLoading ? <div>
+            {formData.profilePicture ? <></> :
+                <Avatar>
+                    <FontAwesomeIcon icon={faUser} />
+                </Avatar>
+            }
             <form>
                 <label>First Name: </label>
                 <input type='text' name='firstName' value={formData.firstName} disabled required />
