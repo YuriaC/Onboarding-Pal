@@ -608,7 +608,7 @@ const getUserDocs = async (req, res) => {
             driversLicenseCopy_url,
         }
         const ret = {}
-        for (const key of ['profilePictureURL', 'optUrl', 'driversLicenseCopy_url']) {
+        for (const key of ['profilePictureURL', 'optUrl', 'driversLicenseCopy_url', 'eadUrl', 'i983Url', 'i20Url']) {
             const url = urls[key]
             if (!url) {
                 continue
@@ -624,7 +624,6 @@ const getUserDocs = async (req, res) => {
             const previewParams = {
                 Bucket: process.env.S3_BUCKET,
                 Key: fileName,
-                // ResponseContentDisposition: `attachment; filename="${fileName}"`,
             }
             const command = new GetObjectCommand(params)
             const previewCommand = new GetObjectCommand(previewParams)
