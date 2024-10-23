@@ -23,7 +23,7 @@ const Personal = () => {
         ssn: '',
         dob: '',
         gender: '',
-        address: {//
+        address: {
             building: '',
             street: '',
             city: '',

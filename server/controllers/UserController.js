@@ -338,7 +338,8 @@ const getHouse= async(req,res) =>{
 
 const setApplicationInput = async(req,res) =>{
     // tested working
-    const username = req.body.username;
+    const { userId } = req.user
+    // const username = req.body.username;
     const firstname = req.body.firstName;
     const lastname = req.body.lastName;
     const middlename = req.body.middleName;
@@ -350,7 +351,7 @@ const setApplicationInput = async(req,res) =>{
     const { AccessKeyId, SecretAccessKey, SessionToken } = req.credentials
     const { building, street, city, state, zip } = req.body
     const address = `${building} ${street}, ${city}, ${state} ${zip}`
-    const { permResStatus } = req.body
+    const { isPermRes, permResStatus } = req.body
     const cellPhone = req.body.cellPhone;
     const workPhone = req.body.workPhone
     const { carMake, carModel, carColor } = req.body
@@ -403,7 +404,7 @@ const setApplicationInput = async(req,res) =>{
 
         const uploadedFiles = await Promise.all(filePromises)
 
-        const user = await User.findOne({ username }).lean().exec();
+        const user = await User.findById(userId).lean().exec();
         if (!user) {
             return res.status(404).json('User not Found!');
         }
@@ -470,11 +471,12 @@ const setApplicationInput = async(req,res) =>{
                 "driversLicenseExpDate": dldate,
                 "driversLicenseCopy_url": dlCopyURL,
                 "permResStatus": permResStatus,
+                "isPermRes": isPermRes,
                 "referer": isReferred === 'Yes' ? reference._id : null,
                 "optUrl": optReceiptURL,
                 "emergencyContacts": emergencyContactIds,
-                "visaStartDate": visaStartDate,
-                "visaEndDate": visaEndDate,
+                "visaStartDate": visaStartDate || undefined,
+                "visaEndDate": visaEndDate || undefined,
                 "visaTitle": visaTitle,
             }
         }
@@ -721,9 +723,9 @@ const getApplications = async(req,res) =>{
 }
 
 const getUserInfo = async (req, res) =>{
-    const { username } = req.user
-    try{
-        const user = await User.findOne({ username }).populate('referer').populate({
+    const { userId } = req.user
+    try {
+        const user = await User.findById(userId).populate('referer').populate({
             path: 'house',
             populate: [
                 { path: 'employees' },
@@ -743,6 +745,7 @@ const getUserInfo = async (req, res) =>{
 };
 const getUserInfoById = async (req, res) =>{
     const { userId } = req.params
+    console.log('userId:', userId)
     try{
         const user = await User.findById(userId)
             .populate('referer')

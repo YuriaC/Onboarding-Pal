@@ -152,11 +152,11 @@ const Hiring = () => {
                     ) : (
                         <List>
                             {approvedApplications.map(application => (
-                                <ListItem key={application.id}>
+                                <ListItem key={application._id}>
                                     <ListItemText
                                         primary={`Name: ${application.firstName} ${application.lastName} | Email: ${application.email}`}
                                     />
-                                    <Button onClick={() => handleViewApplication(application.id)}>
+                                    <Button onClick={() => handleViewApplication(application._id)}>
                                         View Application
                                     </Button>
                                 </ListItem>

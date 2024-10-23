@@ -51,3 +51,11 @@ export const getUserRoleFromCookie = () => {
         return null;
     }
 };
+
+export const isNumeric = (str) => {
+    return !isNaN(str) && !isNaN(parseFloat(str))
+}
+
+export const checkZIP = (str) => {
+    return str.length === 5 && isNumeric(str)
+}

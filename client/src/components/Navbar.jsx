@@ -68,7 +68,7 @@ const Navbar = () => {
                                         to="/hr/home"
                                         className={({ isActive }) => (isActive ? 'active-link' : 'nav-link')}
                                     >
-                                        Home
+                                        Home/Employee Profiles
                                     </NavLink>
                                     <NavLink
                                         to="/hr/hiring"
