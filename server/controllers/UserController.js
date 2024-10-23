@@ -598,6 +598,7 @@ const getUserDocs = async (req, res) => {
         })
 
         const user = await User.findOne({ username: username }).lean().exec()
+        console.log(user)
         if (!user) {
             return res.status(404).json('User not found!')
         }
