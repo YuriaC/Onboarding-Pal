@@ -4,7 +4,7 @@ import axios from 'axios';
 import { USER_ENDPOINT } from '../constants';
 import { toast, ToastContainer } from 'material-react-toastify';
 import 'material-react-toastify/dist/ReactToastify.css'
-import { Box, Card, CardActions, CardContent, Typography, Button } from '@mui/material'
+import { Container, TextField, Box, Card, CardActions, CardContent, Typography, Button } from '@mui/material'
 
 const Personal = () => {
 
@@ -175,213 +175,397 @@ const Personal = () => {
     };
 
 
+    // return (
+    //     <Container maxWidth="md" sx={{padding: "2rem"}}>
+    //         <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, padding: 2, boxShadow: 3, borderRadius: 2,  backgroundColor: 'white'}}>
+    //         <h2>Personal Information</h2>
+    //         <div className="section">
+    //             <h3>Name</h3>
+    //             {isEditing ? (
+    //                 <div>
+    //                     <img src={formData.profilePicture} alt='profilePicture' width={100} height={100} />
+    //                     <input type='file' name='profilePicture' onChange={handleChange} accept='image/*' />
+    //                     <input type="text" name="firstName" placeholder="First Name" value={formData.firstName} onChange={handleChange} />
+    //                     <input type="text" name="lastName" placeholder="Last Name" value={formData.lastName} onChange={handleChange} />
+    //                     <input type="text" name="middleName" placeholder="Middle Name" value={formData.middleName} onChange={handleChange} />
+    //                     <input type="text" name="preferredName" placeholder="Preferred Name" value={formData.preferredName} onChange={handleChange} />
+    //                     <input type="email" name="email" placeholder="email" value={formData.email} onChange={handleChange} />
+    //                     <input type="text" name="ssn" placeholder="ssn" value={formData.ssn} onChange={handleChange} />
+    //                     <input type="text" name="dob" placeholder="Date of Birth" value={formData.dob} onChange={handleChange} />
+    //                     <select name="gender" value={formData.gender} onChange={handleChange}>
+    //                         <option value="Male">Male</option>
+    //                         <option value="Female">Female</option>
+    //                         <option value="Other">Other</option>
+    //                     </select>
+    //                 </div>
+    //             ) : (
+    //                 <div>
+    //                     <img src={formData.profilePicture} alt='profilePicture' width={100} height={100} />
+    //                     <input type="text" name="firstName" placeholder="First Name" value={formData.firstName} disabled />
+    //                     <input type="text" name="lastName" placeholder="Last Name" value={formData.lastName} disabled />
+    //                     <input type="text" name="middleName" placeholder="Middle Name" value={formData.middleName} disabled />
+    //                     <input type="text" name="preferredName" placeholder="Preferred Name" value={formData.preferredName} disabled />
+    //                     <input type="email" name="email" placeholder="email" value={formData.email} disabled />
+    //                     <input type="text" name="ssn" placeholder="ssn" value={formData.ssn} disabled />
+    //                     <input type="text" name="dob" placeholder="Date of Birth" value={formData.dob} disabled />
+    //                     <select name="gender" value={formData.gender} disabled>
+    //                         <option value="Male">Male</option>
+    //                         <option value="Female">Female</option>
+    //                         <option value="Other">Other</option>
+    //                     </select>
+    //                 </div>
+    //             )}
+    //         </div>
+
+    //         <div className="section">
+    //             <h3>Contact Info</h3>
+    //             {isEditing ? (
+    //                 <div>
+    //                     <input type="text" name="cellPhone" placeholder="Cell Phone" value={formData.contactInfo.cellPhone || ''} onChange={handleContactChange} />
+    //                     <input type="text" name="workPhone" placeholder="Work Phone" value={formData.contactInfo.workPhone || ''} onChange={handleContactChange} />
+    //                 </div>
+    //             ) : (
+    //                 <div>
+    //                     <input type="text" name="cellPhone" placeholder="Cell Phone" value={formData.contactInfo.cellPhone || ''} disabled={true} />
+    //                     <input type="text" name="workPhone" placeholder="Work Phone" value={formData.contactInfo.workPhone || ''} disabled={true} />
+    //                 </div>
+    //             )}
+    //         </div>
+
+    //         <div className="section">
+    //             <h3>Address</h3>
+    //             {isEditing ? (
+    //                 <div>
+    //                     <input type="text" name="building" placeholder="Building/Apt #" value={formData.address.building || ''} onChange={handleAddressChange} />
+    //                     <input type="text" name="street" placeholder="Street Name" value={formData.address.street || ''} onChange={handleAddressChange} />
+    //                     <input type="text" name="city" placeholder="City" value={formData.address.city || ''} onChange={handleAddressChange} />
+    //                     <input type="text" name="state" placeholder="State" value={formData.address.state || ''} onChange={handleAddressChange} />
+    //                     <input type="text" name="zip" placeholder="Zip Code" value={formData.address.zip || ''} onChange={handleAddressChange} />
+    //                 </div>
+    //             ) : (
+    //                 <div>
+    //                     <input type="text" name="building" placeholder="Building/Apt #" value={formData.address.building || ''} disabled={true} />
+    //                     <input type="text" name="street" placeholder="Street Name" value={formData.address.street || ''} disabled={true} />
+    //                     <input type="text" name="city" placeholder="City" value={formData.address.city || ''} disabled={true} />
+    //                     <input type="text" name="state" placeholder="State" value={formData.address.state || ''} disabled={true} />
+    //                     <input type="text" name="zip" placeholder="Zip Code" value={formData.address.zip || ''} disabled={true} />
+    //                 </div>
+    //             )}
+    //         </div>
+
+    //         <div className='section'>
+    //             <h3>Employment Status</h3>
+    //             {
+    //                 isEditing ?
+    //                     <div>
+    //                         <input type='text' name='visaTitle' placeholder='Visa Title' value={formData.employment.visaTitle || ''} onChange={handleEmployeeChange} />
+    //                         <input type='text' name='startDate' placeholder='Start Date' value={formData.employment.startDate || ''} onChange={handleEmployeeChange} />
+    //                         <input type='text' name='endDate' placeholder='End Date' value={formData.employment.endDate || ''} onChange={handleEmployeeChange} />
+    //                     </div>
+    //                     :
+    //                     <div>
+    //                         <input type='text' name='visaTitle' placeholder='Visa Title' value={formData.employment.visaTitle || ''} disabled={true} />
+    //                         <input type='text' name='startDate' placeholder='Start Date' value={formData.employment.startDate || ''} disabled={true} />
+    //                         <input type='text' name='endDate' placeholder='End Date' value={formData.employment.endDate || ''} disabled={true} />
+    //                     </div>
+    //             }
+    //         </div>
+
+    //         <div className='section'>
+    //             <h3>Emergency Contact</h3>
+    //             {
+    //                 isEditing ?
+    //                     <div>
+    //                         {formData.emergencyContact.map((contact, index) => {
+    //                             return (
+    //                                 <div key={contact.phone}>
+    //                                     <input type='text' name='firstName' placeholder='First Name' value={contact.firstName || ''} onChange={(e)=>{handleEmergencyContactChange(e, index)}} />
+    //                                     <input type='text' name='lastName' placeholder='Last Name' value={contact.lastName || ''} onChange={(e)=>{handleEmergencyContactChange(e, index)}} />
+    //                                     <input type='text' name='middleName' placeholder='Middle Name' value={contact.middleName || ''} onChange={(e)=>{handleEmergencyContactChange(e, index)}} />
+    //                                     <input type='text' name='phone' placeholder='Phone' value={contact.phone || ''} onChange={(e)=>{handleEmergencyContactChange(e, index)}} />
+    //                                     <input type='email' name='email' placeholder='Email' value={contact.email || ''} onChange={(e)=>{handleEmergencyContactChange(e, index)}} />
+    //                                     <input type='relationship' name='relationship' placeholder='relationship' value={contact.relationship || ''} onChange={(e)=>{handleEmergencyContactChange(e, index)}} />
+    //                                 </div>
+    //                             )
+    //                         })}
+    //                     </div>
+    //                     :
+    //                     <div>
+    //                         {formData.emergencyContact.map((contact) => {
+    //                             return (
+    //                                 <div key={contact.phone}>
+    //                                     <input type='text' name='firstName' placeholder='First Name' value={contact.firstName || ''} disabled={true} />
+    //                                     <input type='text' name='lastName' placeholder='Last Name' value={contact.lastName || ''} disabled={true} />
+    //                                     <input type='text' name='middleName' placeholder='Middle Name' value={contact.middleName || ''} disabled={true} />
+    //                                     <input type='text' name='phone' placeholder='Phone' value={contact.phone || ''} disabled={true} />
+    //                                     <input type='email' name='email' placeholder='Email' value={contact.email || ''} disabled={true} />
+    //                                     <input type='relationship' name='relationship' placeholder='relationship' value={contact.relationship || ''} disabled={true} />
+    //                                 </div>
+    //                             )
+    //                         })}
+    //                     </div>
+    //             }
+    //         </div>
+
+    //         <div className="section">
+    //             <h3>Documents</h3>
+    //             {isEditing ? (
+    //                 <div>
+    //                     <input type="file" multiple onChange={handleDocumentUpload} accept=".pdf,.jpg,.jpeg,.png" />
+    //                     {formData.documents.length > 0 && (
+    //                         <ul>
+    //                             {Object.keys(formData.documents).map((key) => {
+                                    
+    //                                 // Might need to look over this
+    //                                 const doc = formData.documents[key]
+    //                                 console.log('doc:', doc)
+
+    //                                 return (
+    //                                 <li key={doc.name}>
+    //                                     {doc.name}
+    //                                     <button onClick={() => previewDocument(doc)}>Preview</button>
+    //                                     <button onClick={() => downloadDocument(doc)}>Download</button>
+    //                                 </li>
+    //                             )})}
+    //                         </ul>
+    //                     )}
+    //                 </div>
+    //             ) : (
+    //                 <div>
+    //                     {Object.keys(formData.documents).length > 0 ? (
+    //                         <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, mb: '2rem' }}>
+    //                             {Object.keys(formData.documents).map((key) => {
+    //                                 const docs = formData.documents
+    //                                 const doc = docs[key]
+    //                                 let fileName
+    //                                 switch (key) {
+    //                                     case 'profilePictureURL':
+    //                                         fileName = 'Profile Picture'
+    //                                         break
+    //                                     case 'driversLicenseCopy_url':
+    //                                         fileName = "Driver's License"
+    //                                         break
+    //                                     case 'optUrl':
+    //                                         fileName = 'OPT Receipt'
+    //                                         break
+    //                                 }
+    //                                 return (
+    //                                     <>
+    //                                         <Card key={`${key}-download`} sx={{ minWidth: 275 }}>
+    //                                             <CardContent>
+    //                                                 <Typography variant='h6'>{fileName}</Typography>
+    //                                             </CardContent>
+    //                                             <CardActions sx={{ justifyContent: 'center' }}>
+    //                                                 <Button href={doc.download} download>
+    //                                                     Download
+    //                                                 </Button>
+    //                                                 <Button onClick={() => window.open(doc.preview, '_blank')}>
+    //                                                     Preview
+    //                                                 </Button>
+    //                                             </CardActions>
+    //                                         </Card>
+    //                                     </>
+    //                                 )
+    //                             })}
+    //                         </Box>
+    //                     ) : (
+    //                         <p>No documents uploaded</p>
+    //                     )}
+    //                 </div>
+    //             )}
+    //         </div>
+
+    //         <button onClick={handleEditToggle}>{isEditing ? 'Cancel' : 'Edit'}</button>
+    //         {isEditing && <button onClick={handleSave}>Save</button>}
+    //         <ToastContainer />
+    //         </Box>
+    //     </Container>
+    // );
 
     return (
-        <div className="personal-information">
-            <h2>Personal Information</h2>
-            <div className="section">
-                <h3>Name</h3>
-                {isEditing ? (
-                    <div>
-                        <img src={formData.profilePicture} alt='profilePicture' width={100} height={100} />
-                        <input type='file' name='profilePicture' onChange={handleChange} accept='image/*' />
-                        <input type="text" name="firstName" placeholder="First Name" value={formData.firstName} onChange={handleChange} />
-                        <input type="text" name="lastName" placeholder="Last Name" value={formData.lastName} onChange={handleChange} />
-                        <input type="text" name="middleName" placeholder="Middle Name" value={formData.middleName} onChange={handleChange} />
-                        <input type="text" name="preferredName" placeholder="Preferred Name" value={formData.preferredName} onChange={handleChange} />
-                        <input type="email" name="email" placeholder="email" value={formData.email} onChange={handleChange} />
-                        <input type="text" name="ssn" placeholder="ssn" value={formData.ssn} onChange={handleChange} />
-                        <input type="text" name="dob" placeholder="Date of Birth" value={formData.dob} onChange={handleChange} />
-                        <select name="gender" value={formData.gender} onChange={handleChange}>
-                            <option value="Male">Male</option>
-                            <option value="Female">Female</option>
-                            <option value="Other">Other</option>
-                        </select>
-                    </div>
-                ) : (
-                    <div>
-                        <img src={formData.profilePicture} alt='profilePicture' width={100} height={100} />
-                        <input type="text" name="firstName" placeholder="First Name" value={formData.firstName} disabled />
-                        <input type="text" name="lastName" placeholder="Last Name" value={formData.lastName} disabled />
-                        <input type="text" name="middleName" placeholder="Middle Name" value={formData.middleName} disabled />
-                        <input type="text" name="preferredName" placeholder="Preferred Name" value={formData.preferredName} disabled />
-                        <input type="email" name="email" placeholder="email" value={formData.email} disabled />
-                        <input type="text" name="ssn" placeholder="ssn" value={formData.ssn} disabled />
-                        <input type="text" name="dob" placeholder="Date of Birth" value={formData.dob} disabled />
-                        <select name="gender" value={formData.gender} disabled>
-                            <option value="Male">Male</option>
-                            <option value="Female">Female</option>
-                            <option value="Other">Other</option>
-                        </select>
-                    </div>
+        <Container maxWidth="sm" sx={{ padding: "2rem" }}>
+        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, padding: 2, boxShadow: 3, borderRadius: 2, backgroundColor: 'white' }}>
+            <Typography variant="h4">Personal Information</Typography>
+            {/* Name Section */}
+            <Typography variant="h6">Name</Typography>
+            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, padding: 2}} >
+                <img src={formData.profilePicture} alt='profilePicture'/>
+                {isEditing && (
+                    <TextField
+                        type='file'
+                        name='profilePicture'
+                        onChange={handleChange}
+                        accept='image/*'
+                        fullWidth
+                    />
                 )}
-            </div>
+                {['firstName', 'lastName', 'middleName', 'preferredName', 'email', 'ssn', 'dob'].map((field) => (
+                    <TextField
+                        key={field}
+                        name={field}
+                        label={field.charAt(0).toUpperCase() + field.slice(1)}
+                        value={formData[field]}
+                        onChange={handleChange}
+                        fullWidth
+                        disabled={!isEditing}
+                    />
+                ))}
+                <TextField
+                    select
+                    name="gender"
+                    label="Gender"
+                    value={formData.gender}
+                    onChange={handleChange}
+                    disabled={!isEditing}
+                    fullWidth
+                >
+                    {['Male', 'Female', 'Other'].map(gender => (
+                        <option key={gender} value={gender}>{gender}</option>
+                    ))}
+                </TextField>
+            </Box>
+                    
+                {/* Contact Info Section */}
+                <Typography variant="h6">Contact Info</Typography>
+                <Box>
+                    {['cellPhone', 'workPhone'].map((field) => (
+                        <TextField
+                            key={field}
+                            name={field}
+                            label={field.charAt(0).toUpperCase() + field.slice(1)}
+                            value={formData.contactInfo[field] || ''}
+                            onChange={handleContactChange}
+                            fullWidth
+                            disabled={!isEditing}
+                        />
+                    ))}
+                </Box>
 
+                {/* Address Section */}
+                <Typography variant="h6">Address</Typography>
+                <Box>
+                    {['building', 'street', 'city', 'state', 'zip'].map((field) => (
+                        <TextField
+                            key={field}
+                            name={field}
+                            label={field.charAt(0).toUpperCase() + field.slice(1)}
+                            value={formData.address[field] || ''}
+                            onChange={handleAddressChange}
+                            fullWidth
+                            disabled={!isEditing}
+                        />
+                    ))}
+                </Box>
 
+                {/* Employment Status Section */}
+                <Typography variant="h6">Employment Status</Typography>
+                <Box>
+                    {['visaTitle', 'startDate', 'endDate'].map((field) => (
+                        <TextField
+                            key={field}
+                            name={field}
+                            label={field.charAt(0).toUpperCase() + field.slice(1)}
+                            value={formData.employment[field] || ''}
+                            onChange={handleEmployeeChange}
+                            fullWidth
+                            disabled={!isEditing}
+                        />
+                    ))}
+                </Box>
 
-            <div className="section">
-                <h3>Contact Info</h3>
+                {/* Emergency Contact Section */}
+                <Typography variant="h6">Emergency Contact</Typography>
                 {isEditing ? (
-                    <div>
-                        <input type="text" name="cellPhone" placeholder="Cell Phone" value={formData.contactInfo.cellPhone || ''} onChange={handleContactChange} />
-                        <input type="text" name="workPhone" placeholder="Work Phone" value={formData.contactInfo.workPhone || ''} onChange={handleContactChange} />
-                    </div>
+                    <Box>
+                        {formData.emergencyContact.map((contact, index) => (
+                            <Box key={contact.phone} sx={{ marginBottom: 2 }}>
+                                {['firstName', 'lastName', 'middleName', 'phone', 'email', 'relationship'].map((field) => (
+                                    <TextField
+                                        key={field}
+                                        name={field}
+                                        label={field.charAt(0).toUpperCase() + field.slice(1)}
+                                        value={contact[field] || ''}
+                                        onChange={(e) => handleEmergencyContactChange(e, index)}
+                                        fullWidth
+                                    />
+                                ))}
+                            </Box>
+                        ))}
+                    </Box>
                 ) : (
-                    <div>
-                        <input type="text" name="cellPhone" placeholder="Cell Phone" value={formData.contactInfo.cellPhone || ''} disabled={true} />
-                        <input type="text" name="workPhone" placeholder="Work Phone" value={formData.contactInfo.workPhone || ''} disabled={true} />
-                    </div>
+                    <Box>
+                        {formData.emergencyContact.map((contact) => (
+                            <Box key={contact.phone} sx={{ marginBottom: 2 }}>
+                                {['firstName', 'lastName', 'middleName', 'phone', 'email', 'relationship'].map((field) => (
+                                    <TextField
+                                        key={field}
+                                        name={field}
+                                        label={field.charAt(0).toUpperCase() + field.slice(1)}
+                                        value={contact[field] || ''}
+                                        disabled
+                                        fullWidth
+                                    />
+                                ))}
+                            </Box>
+                        ))}
+                    </Box>
                 )}
-            </div>
 
-            <div className="section">
-                <h3>Address</h3>
+                {/* Documents Section */}
+                <Typography variant="h6">Documents</Typography>
                 {isEditing ? (
-                    <div>
-                        <input type="text" name="building" placeholder="Building/Apt #" value={formData.address.building || ''} onChange={handleAddressChange} />
-                        <input type="text" name="street" placeholder="Street Name" value={formData.address.street || ''} onChange={handleAddressChange} />
-                        <input type="text" name="city" placeholder="City" value={formData.address.city || ''} onChange={handleAddressChange} />
-                        <input type="text" name="state" placeholder="State" value={formData.address.state || ''} onChange={handleAddressChange} />
-                        <input type="text" name="zip" placeholder="Zip Code" value={formData.address.zip || ''} onChange={handleAddressChange} />
-                    </div>
-                ) : (
-                    <div>
-                        <input type="text" name="building" placeholder="Building/Apt #" value={formData.address.building || ''} disabled={true} />
-                        <input type="text" name="street" placeholder="Street Name" value={formData.address.street || ''} disabled={true} />
-                        <input type="text" name="city" placeholder="City" value={formData.address.city || ''} disabled={true} />
-                        <input type="text" name="state" placeholder="State" value={formData.address.state || ''} disabled={true} />
-                        <input type="text" name="zip" placeholder="Zip Code" value={formData.address.zip || ''} disabled={true} />
-                    </div>
-                )}
-            </div>
-
-            <div className='section'>
-                <h3>Employment Status</h3>
-                {
-                    isEditing ?
-                        <div>
-                            <input type='text' name='visaTitle' placeholder='Visa Title' value={formData.employment.visaTitle || ''} onChange={handleEmployeeChange} />
-                            <input type='text' name='startDate' placeholder='Start Date' value={formData.employment.startDate || ''} onChange={handleEmployeeChange} />
-                            <input type='text' name='endDate' placeholder='End Date' value={formData.employment.endDate || ''} onChange={handleEmployeeChange} />
-                        </div>
-                        :
-                        <div>
-                            <input type='text' name='visaTitle' placeholder='Visa Title' value={formData.employment.visaTitle || ''} disabled={true} />
-                            <input type='text' name='startDate' placeholder='Start Date' value={formData.employment.startDate || ''} disabled={true} />
-                            <input type='text' name='endDate' placeholder='End Date' value={formData.employment.endDate || ''} disabled={true} />
-                        </div>
-                }
-            </div>
-
-            <div className='section'>
-                <h3>Emergency Contact</h3>
-                {
-                    isEditing ?
-                        <div>
-                            {formData.emergencyContact.map((contact, index) => {
-                                return (
-                                    <div key={contact.phone}>
-                                        <input type='text' name='firstName' placeholder='First Name' value={contact.firstName || ''} onChange={(e)=>{handleEmergencyContactChange(e, index)}} />
-                                        <input type='text' name='lastName' placeholder='Last Name' value={contact.lastName || ''} onChange={(e)=>{handleEmergencyContactChange(e, index)}} />
-                                        <input type='text' name='middleName' placeholder='Middle Name' value={contact.middleName || ''} onChange={(e)=>{handleEmergencyContactChange(e, index)}} />
-                                        <input type='text' name='phone' placeholder='Phone' value={contact.phone || ''} onChange={(e)=>{handleEmergencyContactChange(e, index)}} />
-                                        <input type='email' name='email' placeholder='Email' value={contact.email || ''} onChange={(e)=>{handleEmergencyContactChange(e, index)}} />
-                                        <input type='relationship' name='relationship' placeholder='relationship' value={contact.relationship || ''} onChange={(e)=>{handleEmergencyContactChange(e, index)}} />
-                                    </div>
-                                )
-                            })}
-                        </div>
-                        :
-                        <div>
-                            {formData.emergencyContact.map((contact) => {
-                                return (
-                                    <div key={contact.phone}>
-                                        <input type='text' name='firstName' placeholder='First Name' value={contact.firstName || ''} disabled={true} />
-                                        <input type='text' name='lastName' placeholder='Last Name' value={contact.lastName || ''} disabled={true} />
-                                        <input type='text' name='middleName' placeholder='Middle Name' value={contact.middleName || ''} disabled={true} />
-                                        <input type='text' name='phone' placeholder='Phone' value={contact.phone || ''} disabled={true} />
-                                        <input type='email' name='email' placeholder='Email' value={contact.email || ''} disabled={true} />
-                                        <input type='relationship' name='relationship' placeholder='relationship' value={contact.relationship || ''} disabled={true} />
-                                    </div>
-                                )
-                            })}
-                        </div>
-                }
-            </div>
-
-            <div className="section">
-                <h3>Documents</h3>
-                {isEditing ? (
-                    <div>
+                    <Box>
                         <input type="file" multiple onChange={handleDocumentUpload} accept=".pdf,.jpg,.jpeg,.png" />
                         {formData.documents.length > 0 && (
                             <ul>
                                 {Object.keys(formData.documents).map((key) => {
-                                    
-                                    // Might need to look over this
-                                    const doc = formData.documents[key]
-                                    console.log('doc:', doc)
-
+                                    const doc = formData.documents[key];
                                     return (
-                                    <li key={doc.name}>
-                                        {doc.name}
-                                        <button onClick={() => previewDocument(doc)}>Preview</button>
-                                        <button onClick={() => downloadDocument(doc)}>Download</button>
-                                    </li>
-                                )})}
+                                        <li key={doc.name}>
+                                            {doc.name}
+                                            <Button onClick={() => previewDocument(doc)}>Preview</Button>
+                                            <Button onClick={() => downloadDocument(doc)}>Download</Button>
+                                        </li>
+                                    );
+                                })}
                             </ul>
                         )}
-                    </div>
+                    </Box>
                 ) : (
-                    <div>
+                    <Box>
                         {Object.keys(formData.documents).length > 0 ? (
                             <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, mb: '2rem' }}>
                                 {Object.keys(formData.documents).map((key) => {
-                                    const docs = formData.documents
-                                    const doc = docs[key]
-                                    let fileName
-                                    switch (key) {
-                                        case 'profilePictureURL':
-                                            fileName = 'Profile Picture'
-                                            break
-                                        case 'driversLicenseCopy_url':
-                                            fileName = "Driver's License"
-                                            break
-                                        case 'optUrl':
-                                            fileName = 'OPT Receipt'
-                                            break
-                                    }
+                                    const doc = formData.documents[key];
                                     return (
-                                        <>
-                                            <Card key={`${key}-download`} sx={{ minWidth: 275 }}>
-                                                <CardContent>
-                                                    <Typography variant='h6'>{fileName}</Typography>
-                                                </CardContent>
-                                                <CardActions sx={{ justifyContent: 'center' }}>
-                                                    <Button href={doc.download} download>
-                                                        Download
-                                                    </Button>
-                                                    <Button onClick={() => window.open(doc.preview, '_blank')}>
-                                                        Preview
-                                                    </Button>
-                                                </CardActions>
-                                            </Card>
-                                        </>
-                                    )
+                                        <Card key={`${key}-download`} sx={{ minWidth: 275 }}>
+                                            <CardContent>
+                                                <Typography variant='h6'>{doc.name}</Typography>
+                                            </CardContent>
+                                            <CardActions sx={{ justifyContent: 'center' }}>
+                                                <Button href={doc.download} download>
+                                                    Download
+                                                </Button>
+                                                <Button onClick={() => window.open(doc.preview, '_blank')}>
+                                                    Preview
+                                                </Button>
+                                            </CardActions>
+                                        </Card>
+                                    );
                                 })}
                             </Box>
                         ) : (
-                            <p>No documents uploaded</p>
+                            <Typography>No documents uploaded</Typography>
                         )}
-                    </div>
+                    </Box>
                 )}
-            </div>
 
-            <button onClick={handleEditToggle}>{isEditing ? 'Cancel' : 'Edit'}</button>
-            {isEditing && <button onClick={handleSave}>Save</button>}
-            <ToastContainer />
-        </div>
+                <Button variant="outlined" onClick={handleEditToggle}>{isEditing ? 'Cancel' : 'Edit'}</Button>
+                {isEditing && <Button variant="contained" onClick={handleSave}>Save</Button>}
+                <ToastContainer />
+            </Box>
+        </Container>
     );
-};
+}
 
 export default Personal;
