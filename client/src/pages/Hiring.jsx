@@ -7,8 +7,6 @@ import { useNavigate } from 'react-router-dom';
 const Hiring = () => {
 
     // const navigate = useNavigate()
-    // const frontendURL = process.env.FRONTEND_URL ? process.env.FRONTEND_URL : 'http://localhost:5173';
-    // const registrationLink = `${frontendURL}/register?token=${token}`;
 
     const [selectedTab, setSelectedTab] = useState(0);
     const [email, setEmail] = useState('');
@@ -94,6 +92,7 @@ const Hiring = () => {
                                         primary={`Name: ${entry.firstName} ${entry.lastName} | Email: ${entry.email}`}
                                         secondary={`Registration Status: ${entry.registrationHistory.status }`}
                                     />
+                                    <ListItemText secondary={`Link: ${entry.registrationHistory.link.slice(0, 20)}...`} />
                                     {entry.registrationHistory.status === 'Pending' && <Button onClick={() => handleResendRegistration(entry)}>Resend Link</Button>}
                                 </ListItem>
                             ))}

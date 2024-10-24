@@ -70,7 +70,7 @@ export const loginUserThunk = createAsyncThunk(
                 console.log('response:', response)
                 const { onboardingStatus } = response.data
                 if (onboardingStatus === 'Approved') {
-                    navigate('/')
+                    navigate('/employee/profile')
                 }
                 else {
                     navigate('/employee/onboarding')
@@ -93,7 +93,7 @@ export const sendRegistrationLinkThunk = createAsyncThunk(
         try {
             const response = await axios.post(
                 "http://localhost:3000/api/users/send-registration-link",
-                { email ,name}
+                { email, name }
             ); // change api
             return response.data;
         } catch (error) {

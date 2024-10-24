@@ -126,7 +126,7 @@ const sendRegistrationLink = async (req,res) =>{
                         email: sanitizedEmail,
                         lastName: sanitizedLastName,
                         registrationHistory: {
-                            // status: 'Pending',
+                            status: 'Pending',
                             expiresAt: Date.now() + 3 * 60 * 60 * 1000,
                             token: token,
                             link: registrationLink,
