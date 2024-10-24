@@ -15,7 +15,7 @@ userRouter.post('/register', userController.register)
     .get('/register/:token', userController.checkRegister)
     .post('/send-registration-link', userController.sendRegistrationLink)
     .post('/login', userController.login)
-    // .post('/login', userValidator.employeeLoginValidation, userController.login)  // added middleware    
+    // .post('/login', userValidator.employeeLoginValidation, userController.)  // added middleware    
     .get('/onboardstatus', userController.getOnboardingStatus)
     .post('/onboardstatus', userController.setOnboardingStatus)
     .get('/email', userController.getEmail)

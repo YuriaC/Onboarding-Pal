@@ -75,7 +75,6 @@ export const loginUserThunk = createAsyncThunk(
                 else {
                     navigate('/employee/onboarding')
                 }
-                // navigate('/employee/profile'); // Redirect employee to the personal page
             }
 
             return response.data; // Return user data on successful login

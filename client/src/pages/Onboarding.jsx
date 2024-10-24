@@ -93,7 +93,7 @@ const Onboarding = () => {
                 return navigate('/employee/profile')
             }
             setAppStatus(status)
-            console.log('appStatus:', status)
+            // console.log('appStatus:', status)
             if (status === 'Pending') {
                 getDocs()
             }
