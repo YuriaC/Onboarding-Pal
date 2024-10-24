@@ -1,4 +1,4 @@
-const port = 5500;
+// const port = 5500;
 
 const PORT = 3000;  // need to find better way to set port value dynamically
 
@@ -11,6 +11,7 @@ export const COMMENT_ENDPOINT = `${API_BASE_URL}/comments`
 
 export const phoneRegex = /^(\([0-9]{3}\)|[0-9]{3})[-.\s]?[0-9]{3}[-.\s]?[0-9]{4}$/
 export const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+export const alphanumRegex = /^[a-z0-9]+$/i
 
 export const TEST_ENDPOINT = `${API_BASE_URL}/tests`  // for unit test
 

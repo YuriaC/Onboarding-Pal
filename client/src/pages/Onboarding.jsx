@@ -1,11 +1,16 @@
 import { useState, useEffect } from 'react'
 import { ToastContainer, toast } from 'material-react-toastify'
-import { USER_ENDPOINT, username } from '../constants'
+import { alphanumRegex, USER_ENDPOINT, username } from '../constants'
 import axios from 'axios'
-import { Box, Button, Card, CardActions, CardContent, Typography, CardHeader } from '@mui/material'
+import { Box, Button, Radio, RadioGroup, Card, CardActions, CardContent, Typography, CardHeader, TextField, FormControlLabel, FormControl, FormLabel } from '@mui/material'
 import 'material-react-toastify/dist/ReactToastify.css'
+import ErrorHelperText from '../components/ErrorHelperText';
+import { useNavigate } from 'react-router-dom'
+import { checkZIP } from '../helpers/HelperFunctions'
 
 const Onboarding = () => {
+
+    const navigate = useNavigate()
 
     const [formData, setFormData] = useState({
         firstName: '',
@@ -19,9 +24,9 @@ const Onboarding = () => {
         street: '',
         city: '',
         state: '',
-        zip: null,
-        ssn: null,
-        dob: null,
+        zip: '',
+        ssn: '',
+        dob: '',
         gender: '',
         carMake: '',
         carModel: '',
@@ -34,15 +39,15 @@ const Onboarding = () => {
         hasDriversLicense: '',
         isReferred: '',
         dlNum: '',
-        dlExpDate: null,
+        dlExpDate: '',
         refFirstName: '',
         refLastName: '',
         refMiddleName: '',
         refPhone: '',
         refEmail: '',
         refRelationship: '',
-        visaStartDate: null,
-        visaEndDate: null,
+        visaStartDate: '',
+        visaEndDate: '',
         visaTitle: '',
         emergencyContacts: [
             {
@@ -64,6 +69,19 @@ const Onboarding = () => {
     const [docs, setDocs] = useState([])
     const [submitted, setSubmitted] = useState(false)
 
+    const [errors, setErrors] = useState({
+        dlNum: false,
+        zip: false,
+        dob: false,
+        visaEndDate: false,
+    })
+    const helperTexts = {
+        dlNum: "Driver's license number must be alphanumeric!",
+        zip: 'ZIP code must have 5 digits!',
+        dob: 'Birthday must be in the past!',
+        visaEndDate: 'Visa end date must be in the future!',
+    }
+
     useEffect(() => {
         axios.get(`${USER_ENDPOINT}/userinfo`, {
             withCredentials: true,
@@ -71,6 +89,9 @@ const Onboarding = () => {
         .then(response => {
             setUserEmail(response.data.email)
             const status = response.data.onboardingStatus
+            if (status === 'Approved') {
+                return navigate('/employee/profile')
+            }
             setAppStatus(status)
             console.log('appStatus:', status)
             if (status === 'Pending') {
@@ -102,6 +123,7 @@ const Onboarding = () => {
             birthday,
             gender,
             permResStatus,
+            isPermRes,
             driversLicenseNumber,
             driversLicenseExpDate,
             referer,
@@ -148,10 +170,10 @@ const Onboarding = () => {
             dob: birthday.split('T')[0],
             gender,
             permResStatus,
-            isPermRes: ['Citizen', 'Green Card'].includes(permResStatus) ? 'Yes' : 'No',
-            hasDriversLicense: Object.keys(data).includes('driversLicenseNumber') ? 'Yes' : 'No',
+            isPermRes,
+            hasDriversLicense: data.driversLicenseNumber ? 'Yes' : 'No',
             dlNum: driversLicenseNumber,
-            dlExpDate: driversLicenseExpDate.split('T')[0],
+            dlExpDate: driversLicenseExpDate ? driversLicenseExpDate.split('T')[0] : '',
             isReferred: referer ? 'Yes' : 'No',
             emergencyContacts: newEmContacts,
             building,
@@ -160,12 +182,12 @@ const Onboarding = () => {
             state,
             zip,
             hrFeedback: onboardingStatus === 'Rejected' ? hrFeedback : '',
-            refFirstName: referer.firstName,
-            refLastName: referer.lastName,
-            refPhone: referer.cellPhone,
-            refEmail: referer.email,
-            refMiddleName: referer.middleName,
-            refRelationship: referer.relationship,
+            refFirstName: referer ? referer.firstName : '',
+            refLastName: referer ? referer.lastName : '',
+            refPhone: referer ? referer.cellPhone : '',
+            refEmail: referer ? referer.email : '',
+            refMiddleName: referer ? referer.middleName : '',
+            refRelationship: referer ? referer.relationship : '',
             nonPermWorkAuth: workAuth,
             visaStartDate: visaStartDate ? visaStartDate.split('T')[0] : '',
             visaEndDate: visaEndDate ? visaEndDate.split('T')[0] : '',
@@ -178,7 +200,6 @@ const Onboarding = () => {
             withCredentials: true,
         })
         setDocs(response.data)
-        console.log('response:', response)
     }
 
     const handleChange = (e) => {
@@ -216,6 +237,34 @@ const Onboarding = () => {
 
     const handleSubmit = async (e) => {
         e.preventDefault()
+
+
+        const newErrorObject = {}
+        for (const key in errors) {
+            newErrorObject[key] = false
+        }
+        if (!checkZIP(formData.zip)) {
+            newErrorObject['zip'] = true
+        }
+        if (new Date(formData.dob) > new Date()) {
+            newErrorObject['dob'] = true
+        }
+        if (new Date(formData.visaEndDate) < new Date()) {
+            newErrorObject['visaEndDate'] = true
+        }
+        if (!alphanumRegex.test(formData.dlNum)) {
+            newErrorObject['dlNum'] = true
+        }
+        for (const key in newErrorObject) {
+            if (newErrorObject[key]) {
+                toast.error('Please fix input errors!')
+                return setErrors(newErrorObject)
+            }
+        }
+
+        setErrors(newErrorObject)
+
+
         const data = createFormData(formData)
 
         try {
@@ -265,11 +314,11 @@ const Onboarding = () => {
     }
 
     return (
-        <div>
+        <div style={{ width: '50vw' }}>
             <h2 style={{ color: appStatus === 'Rejected' ? 'red' : 'black' }}>Status: {appStatus}</h2>
             {appStatus === 'Pending' && <h3>Please wait for HR to review your application.</h3>}
-            {formData.hrFeedback &&
-                <Box sx={{ maxWidth: 400, margin: 'auto', mt: 2, mb: 2 }}>
+            {appStatus === 'Rejected' && (formData.hrFeedback ?
+                <Box sx={{ mt: 2, mb: 4 }}>
                     <Card sx={{ backgroundColor: '#f8d7da', color: '#721c24' }}>
                         <CardHeader title='Feedback from HR:' sx={{ paddingBottom: 0 }} />
                         <CardContent>
@@ -279,38 +328,41 @@ const Onboarding = () => {
                         </CardContent>
                     </Card>
                 </Box>
+                : (
+                    <Box sx={{ mt: 2, mb: 4 }}>
+                        <Card sx={{ backgroundColor: '#f8d7da', color: '#721c24' }}>
+                            <CardContent>
+                                <Typography variant='body1'>
+                                    No feedback provided
+                                </Typography>
+                            </CardContent>
+                        </Card>
+                    </Box>
+                ))
             }
             <form onSubmit={handleSubmit}>
-                <label>First Name: </label>
-                <input type='text' name='firstName' value={formData.firstName} onChange={handleChange} disabled={appStatus === 'Pending'} required />
-                <label>Last Name: </label>
-                <input type='text' name='lastName' value={formData.lastName} onChange={handleChange} disabled={appStatus === 'Pending'} required />
-                <label>Middle Name: </label>
-                <input type='text' name='middleName' value={formData.middleName} onChange={handleChange} disabled={appStatus === 'Pending'} />
-                <label>Preferred Name: </label>
-                <input type='text' name='preferredName' value={formData.preferredName} onChange={handleChange} disabled={appStatus === 'Pending'} />
+                <TextField label='First Name' name='firstName' value={formData.firstName} onChange={handleChange} disabled={appStatus === 'Pending'} variant='outlined' fullWidth required sx={{ mb: 2 }} />
+                <TextField label='Last Name' name='lastName' value={formData.lastName} onChange={handleChange} disabled={appStatus === 'Pending'} variant='outlined' fullWidth required sx={{ mb: 2 }} />
+                <TextField label='Middle Name' name='middleName' value={formData.middleName} onChange={handleChange} disabled={appStatus === 'Pending'} variant='outlined' fullWidth sx={{ mb: 2 }} />
+                <TextField label='Preferred Name' name='preferredName' value={formData.preferredName} onChange={handleChange} disabled={appStatus === 'Pending'} variant='outlined' fullWidth sx={{ mb: 2 }} />
                 <label>Profile Picture: </label>
-                <input type='file' name='profilePicture' onChange={handleChange} disabled={appStatus === 'Pending'} /> {/* Default placeholder??? */}
+                <TextField type='file' name='profilePicture' onChange={handleChange} disabled={appStatus === 'Pending'} accept='image/*' variant='outlined' fullWidth sx={{ mb: 2 }} />
                 <fieldset>
                     <legend>Address</legend>
-                    <label>Building/Apartment #: </label>
-                    <input type='text' name='building' value={formData.building} onChange={handleChange} disabled={appStatus === 'Pending'} required />
-                    <label>Street Name: </label>
-                    <input type='text' name='street' value={formData.street} onChange={handleChange} disabled={appStatus === 'Pending'} required />
-                    <label>City: </label>
-                    <input type='text' name='city' value={formData.city} onChange={handleChange} disabled={appStatus === 'Pending'} required />
-                    <label>State: </label>
-                    <input type='text' name='state' value={formData.state} onChange={handleChange} disabled={appStatus === 'Pending'} required />
-                    <label>ZIP: </label>
-                    <input type='number' name='zip' value={formData.zip} min={10000} max={99999} onChange={handleChange} disabled={appStatus === 'Pending'} required />
+                    <TextField label='Building/Apartment Number' type='number' name='building' value={formData.building} onChange={handleChange} disabled={appStatus === 'Pending'} required fullWidth sx={{ mb: 2 }} />
+                    <TextField label='Street' name='street' value={formData.street} onChange={handleChange} disabled={appStatus === 'Pending'} required fullWidth sx={{ mb: 2 }} />
+                    <TextField label='City' name='city' value={formData.city} onChange={handleChange} disabled={appStatus === 'Pending'} required fullWidth sx={{ mb: 2 }} />
+                    <TextField label='State' name='state' value={formData.state} onChange={handleChange} disabled={appStatus === 'Pending'} required fullWidth sx={{ mb: 2 }} />
+                    <TextField label='ZIP' name='zip' type='number' value={formData.zip} variant='outlined' onChange={handleChange} fullWidth error={errors.zip} disabled={appStatus === 'Pending'} required sx={{ mb: 2 }} />
+                    <ErrorHelperText hasError={errors.zip} message={helperTexts.zip} />
                 </fieldset>
                 <br />
                 <fieldset>
                     <legend>Phone Numbers</legend>
-                    <label>Cell Phone Number: </label>
-                    <input type='tel' name='cellPhone' value={formData.cellPhone} onChange={handleChange} disabled={appStatus === 'Pending'} required />
-                    <label>Work Phone Number: </label>
-                    <input type='tel' name='workPhone' value={formData.workPhone} onChange={handleChange} disabled={appStatus === 'Pending'} />
+                    <TextField label='Cell Phone Number' name='cellPhone' value={formData.cellPhone} onChange={handleChange} disabled={appStatus === 'Pending'} variant='outlined' required fullWidth error={errors.landlordPhone} sx={{ mb: 2 }} />
+                    <ErrorHelperText hasError={errors.cellPhone} message={helperTexts.cellPhone} />
+                    <TextField label='Cell Phone Number' name='workPhone' value={formData.workPhone} onChange={handleChange} disabled={appStatus === 'Pending'} variant='outlined' fullWidth error={errors.landlordPhone} sx={{ mb: 1 }} />
+                    <ErrorHelperText hasError={errors.workPhone} message={helperTexts.workPhone} />
                 </fieldset>
                 <br />
                 <fieldset>
@@ -323,12 +375,11 @@ const Onboarding = () => {
                     <input type='text' name='carColor' value={formData.carColor} onChange={handleChange} disabled={appStatus === 'Pending'} />
                 </fieldset>
                 <br />
-                <label>Email: </label>
-                <input type='text' value={userEmail} disabled />
-                <label>SSN: </label>
-                <input type='password' name='ssn' value={formData.ssn} onChange={handleChange} disabled={appStatus === 'Pending'} required />
+                <TextField label='Email' value={userEmail} variant='outlined' fullWidth sx={{ mb: 2 }} disabled />
+                <TextField label='SSN' type='password' name='ssn' value={formData.ssn} onChange={handleChange} disabled={appStatus === 'Pending'} required variant='outlined' fullWidth sx={{ mb: 1 }} />
                 <label>Date of Birth: </label>
                 <input type='date' name='dob' value={formData.dob} onChange={handleChange} disabled={appStatus === 'Pending'} required />
+                <ErrorHelperText hasError={errors.dob} message={helperTexts.dob} />
                 <label>Gender: </label>
                 <select name='gender' value={formData.gender} onChange={handleChange} disabled={appStatus === 'Pending'}>
                     <option value='' selected>Select gender</option>
@@ -339,19 +390,23 @@ const Onboarding = () => {
                 <br />
                 <fieldset>
                     <legend>Work Authorization</legend>
-                    <label>Are you a citizen or permanent resident of the US?</label>
-                    <input type='radio' name='isPermRes' checked={formData.isPermRes === 'Yes'} value='Yes' onChange={handleChange} disabled={appStatus === 'Pending'} required />
-                    <label>Yes</label>
-                    <input type='radio' name='isPermRes' checked={formData.isPermRes === 'No'} value='No' onChange={handleChange} disabled={appStatus === 'Pending'} />
-                    <label>No</label>
+                    <FormControl component='fieldset' disabled={appStatus === 'Pending'} required>
+                        <FormLabel component='legend'>Are you a citizen or permanent resident of the US?</FormLabel>
+                        <RadioGroup value={formData.isPermRes} name='isPermRes' onChange={handleChange} disabled={appStatus === 'Pending'} required>
+                            <FormControlLabel value='Yes' control={<Radio />} label='Yes' />
+                            <FormControlLabel value='No' control={<Radio />} label='No' />
+                        </RadioGroup>
+                    </FormControl>
                     {formData.isPermRes === 'Yes' &&
                         <>
                             <br />
-                            <label>What kind of permanent residence?</label>
-                            <input type='radio' name='permResStatus' checked={formData.permResStatus === 'Citizen'} value='Citizen' onChange={handleChange} disabled={appStatus === 'Pending'} required />
-                            <label>Citizen</label>
-                            <input type='radio' name='permResStatus' checked={formData.permResStatus === 'Green Card'} value='Green Card' onChange={handleChange} disabled={appStatus === 'Pending'} />
-                            <label>Green Card</label>
+                            <FormControl component='fieldset' disabled={appStatus === 'Pending'} required>
+                                <FormLabel component='legend'>What kind of permanent residence?</FormLabel>
+                                <RadioGroup value={formData.permResStatus} name='permResStatus' onChange={handleChange} disabled={appStatus === 'Pending'} required>
+                                    <FormControlLabel value='Citizen' control={<Radio />} label='Citizen' />
+                                    <FormControlLabel value='Green Card' control={<Radio />} label='Green Card' />
+                                </RadioGroup>
+                            </FormControl>
                         </>
                     }
                     {formData.isPermRes === 'No' &&
@@ -370,7 +425,7 @@ const Onboarding = () => {
                                 <>
                                     <br />
                                     <label>Upload your OPT Receipt: </label>
-                                    <input type='file' name='optReceipt' onChange={handleChange} disabled={appStatus === 'Pending'} required />
+                                    <TextField type='file' name='optReceipt' onChange={handleChange} disabled={appStatus === 'Pending'} required variant='outlined' fullWidth sx={{ mb: 2 }} />
                                 </>
                             }
                             {formData.nonPermWorkAuth === 'Other' &&
@@ -386,39 +441,45 @@ const Onboarding = () => {
                             <br />
                             <label>Work authorization end date: </label>
                             <input type='date' name='visaEndDate' value={formData.visaEndDate} onChange={handleChange} disabled={appStatus === 'Pending'} />
+                            <ErrorHelperText hasError={errors.visaEndDate} message={helperTexts.visaEndDate} />
                         </>
                     }
                 </fieldset>
                 <br />
                 <fieldset>
                     <legend>Driver&#39;s License</legend>
-                    <label>Do you have a driver&#39;s license?</label>
-                    <input type='radio' name='hasDriversLicense' checked={formData.hasDriversLicense === 'Yes'} value='Yes' onChange={handleChange} disabled={appStatus === 'Pending'} required />
-                    <label>Yes</label>
-                    <input type='radio' name='hasDriversLicense' checked={formData.hasDriversLicense === 'No'} value='No' onChange={handleChange} disabled={appStatus === 'Pending'} />
-                    <label>No</label>
+                    <FormControl component='fieldset' disabled={appStatus === 'Pending'} required>
+                        <FormLabel component='legend'>Do you have a driver&#39;s license?</FormLabel>
+                        <RadioGroup value={formData.hasDriversLicense} name='hasDriversLicense' onChange={handleChange} disabled={appStatus === 'Pending'} required>
+                            <FormControlLabel value='Yes' control={<Radio />} label='Yes' />
+                            <FormControlLabel value='No' control={<Radio />} label='No' />
+                        </RadioGroup>
+                    </FormControl>
                     {formData.hasDriversLicense === 'Yes' &&
                         <>
                             <br />
                             <label>Driver&#39;s License Number: </label>
-                            <input type='number' name='dlNum' value={formData.dlNum} onChange={handleChange} disabled={appStatus === 'Pending'} required />
+                            <input type='text' name='dlNum' value={formData.dlNum} onChange={handleChange} disabled={appStatus === 'Pending'} required />
+                            <ErrorHelperText hasError={errors.dlNum} message={helperTexts.dlNum} />
                             <br />
                             <label>Driver&#39;s License Expiration: </label>
                             <input type='date' name='dlExpDate' value={formData.dlExpDate} onChange={handleChange} disabled={appStatus === 'Pending'} required />
                             <br />
                             <label>Driver&#39;s License Copy: </label>
-                            <input type='file' name='dlCopy' onChange={handleChange} disabled={appStatus === 'Pending'} required />
+                            <TextField type='file' name='dlCopy' onChange={handleChange} disabled={appStatus === 'Pending'} required variant='outlined' fullWidth sx={{ mb: 2 }} />
                         </>
                     }
                 </fieldset>
                 <br />
                 <fieldset>
                     <legend>Reference</legend>
-                    <label>Did someone refer you to this company?</label>
-                    <input type='radio' name='isReferred' checked={formData.isReferred === 'Yes'} value='Yes' onChange={handleChange} disabled={appStatus === 'Pending'} required />
-                    <label>Yes</label>
-                    <input type='radio' name='isReferred' checked={formData.isReferred === 'No'} value='No' onChange={handleChange} disabled={appStatus === 'Pending'} />
-                    <label>No</label>
+                    <FormControl component='fieldset' disabled={appStatus === 'Pending'} required>
+                        <FormLabel component='legend'>Did someone refer you to this company?</FormLabel>
+                        <RadioGroup value={formData.isReferred} name='isReferred' onChange={handleChange} disabled={appStatus === 'Pending'} required>
+                            <FormControlLabel value='Yes' control={<Radio />} label='Yes' />
+                            <FormControlLabel value='No' control={<Radio />} label='No' />
+                        </RadioGroup>
+                    </FormControl>
                     {formData.isReferred === 'Yes' &&
                         <>
                             <br />
@@ -455,12 +516,12 @@ const Onboarding = () => {
                             <label>Relationship</label>
                             <input type='text' name='relationship' value={contact.relationship} onChange={(e) => handleEmContactChange(e, index)} disabled={appStatus === 'Pending'} required />
                             {formData.emergencyContacts.length !== 1 && appStatus !== 'Pending' &&
-                                <button onClick={(e) => removeEmergencyContact(e, index)} disabled={appStatus === 'Pending'}>Remove Contact</button>
+                                <Button onClick={(e) => removeEmergencyContact(e, index)} disabled={appStatus === 'Pending'}>Remove Contact</Button>
                             }
                             <br />
                         </div>
                     ))}
-                    {appStatus !== 'Pending' && <button onClick={addEmergencyContact} disabled={appStatus === 'Pending'}>Add Contact</button>}
+                    {appStatus !== 'Pending' && <Button onClick={addEmergencyContact} disabled={appStatus === 'Pending'}>Add Contact</Button>}
                 </fieldset>
                 <input type='submit' value='Submit' disabled={appStatus === 'Pending'} />
             </form>

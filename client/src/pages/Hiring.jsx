@@ -6,7 +6,9 @@ import { useNavigate } from 'react-router-dom';
 
 const Hiring = () => {
 
-    const navigate = useNavigate()
+    // const navigate = useNavigate()
+    // const frontendURL = process.env.FRONTEND_URL ? process.env.FRONTEND_URL : 'http://localhost:5173';
+    // const registrationLink = `${frontendURL}/register?token=${token}`;
 
     const [selectedTab, setSelectedTab] = useState(0);
     const [email, setEmail] = useState('');
@@ -45,8 +47,8 @@ const Hiring = () => {
 
     const handleViewApplication = (employeeId) => {
         // Logic to open the application in a new tab
-        // window.open(`/hr/application/${employeeId}`, '_blank');
-        navigate(`/hr/application/${employeeId}`)
+        window.open(`/hr/application/${employeeId}`, '_blank');
+
     };
 
     return (
@@ -80,7 +82,7 @@ const Hiring = () => {
                         color="primary"
                         onClick={handleSendRegistration}
                     >
-                        Send Registration Link
+                        Generate token and send email
                     </Button>
 
                     <Box sx={{ marginTop: 4 }}>
@@ -92,7 +94,7 @@ const Hiring = () => {
                                         primary={`Name: ${entry.firstName} ${entry.lastName} | Email: ${entry.email}`}
                                         secondary={`Registration Status: ${entry.registrationHistory.status }`}
                                     />
-                                    <Button onClick={() => handleResendRegistration(entry)}>Resend Link</Button>
+                                    {entry.registrationHistory.status === 'Pending' && <Button onClick={() => handleResendRegistration(entry)}>Resend Link</Button>}
                                 </ListItem>
                             ))}
                         </List>
@@ -150,11 +152,11 @@ const Hiring = () => {
                     ) : (
                         <List>
                             {approvedApplications.map(application => (
-                                <ListItem key={application.id}>
+                                <ListItem key={application._id}>
                                     <ListItemText
                                         primary={`Name: ${application.firstName} ${application.lastName} | Email: ${application.email}`}
                                     />
-                                    <Button onClick={() => handleViewApplication(application.id)}>
+                                    <Button onClick={() => handleViewApplication(application._id)}>
                                         View Application
                                     </Button>
                                 </ListItem>

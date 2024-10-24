@@ -126,9 +126,10 @@ const sendRegistrationLink = async (req,res) =>{
                         email: sanitizedEmail,
                         lastName: sanitizedLastName,
                         registrationHistory: {
-                            status: 'Pending',
+                            // status: 'Pending',
                             expiresAt: Date.now() + 3 * 60 * 60 * 1000,
-                            token: token
+                            token: token,
+                            link: registrationLink,
                         }
                     }
                 });
@@ -143,12 +144,13 @@ const sendRegistrationLink = async (req,res) =>{
                 lastName: sanitizedLastName,
                 password: '',
                 role: 'employee',
-                onboardingStatus: 'Pending',
+                // onboardingStatus: 'Not Started',
                 registrationHistory: {
                   email: sanitizedEmail,
-                  status: 'Pending',
+                //   status: 'Pending',
                   expiresAt: Date.now() + 3 * 60 * 60 * 1000,
-                  token: token
+                  token: token,
+                  link: registrationLink,
                 },
               });
               if(!newUser){
@@ -336,7 +338,8 @@ const getHouse= async(req,res) =>{
 
 const setApplicationInput = async(req,res) =>{
     // tested working
-    const username = req.body.username;
+    const { userId } = req.user
+    // const username = req.body.username;
     const firstname = req.body.firstName;
     const lastname = req.body.lastName;
     const middlename = req.body.middleName;
@@ -348,7 +351,7 @@ const setApplicationInput = async(req,res) =>{
     const { AccessKeyId, SecretAccessKey, SessionToken } = req.credentials
     const { building, street, city, state, zip } = req.body
     const address = `${building} ${street}, ${city}, ${state} ${zip}`
-    const { permResStatus } = req.body
+    const { isPermRes, permResStatus } = req.body
     const cellPhone = req.body.cellPhone;
     const workPhone = req.body.workPhone
     const { carMake, carModel, carColor } = req.body
@@ -401,7 +404,7 @@ const setApplicationInput = async(req,res) =>{
 
         const uploadedFiles = await Promise.all(filePromises)
 
-        const user = await User.findOne({ username }).lean().exec();
+        const user = await User.findById(userId).lean().exec();
         if (!user) {
             return res.status(404).json('User not Found!');
         }
@@ -468,11 +471,12 @@ const setApplicationInput = async(req,res) =>{
                 "driversLicenseExpDate": dldate,
                 "driversLicenseCopy_url": dlCopyURL,
                 "permResStatus": permResStatus,
+                "isPermRes": isPermRes,
                 "referer": isReferred === 'Yes' ? reference._id : null,
                 "optUrl": optReceiptURL,
                 "emergencyContacts": emergencyContactIds,
-                "visaStartDate": visaStartDate,
-                "visaEndDate": visaEndDate,
+                "visaStartDate": visaStartDate || undefined,
+                "visaEndDate": visaEndDate || undefined,
                 "visaTitle": visaTitle,
             }
         }
@@ -703,7 +707,6 @@ const getApplications = async(req,res) =>{
     try{
         const users = await User.find({ role: "employee",  "registrationHistory.status": { $ne: "Pending" } }).select('-password').lean().exec();
 
-        console.log(users)
         if (!users) {
             return res.status(401).json({ message: 'User not Found!' });
         } 
@@ -714,14 +717,13 @@ const getApplications = async(req,res) =>{
     }catch (error) {
         console.error(error);
         return res.status(500).json({ message: error.message });    
-
     }
 }
 
 const getUserInfo = async (req, res) =>{
-    const { username } = req.user
-    try{
-        const user = await User.findOne({ username }).populate('referer').populate({
+    const { userId } = req.user
+    try {
+        const user = await User.findById(userId).populate('referer').populate({
             path: 'house',
             populate: [
                 { path: 'employees' },
@@ -741,6 +743,7 @@ const getUserInfo = async (req, res) =>{
 };
 const getUserInfoById = async (req, res) =>{
     const { userId } = req.params
+    console.log('userId:', userId)
     try{
         const user = await User.findById(userId)
             .populate('referer')
@@ -894,9 +897,9 @@ const updateWorkauthStatus = async(req,res) => {
 const getEmpolyeesProfileForHR = async(req, res)=>{
     const {searchTerm} = req.query;
     const regexSearchTerm = new RegExp(searchTerm, 'i');
-
     try{
         const filterUser = await User.find({
+            role: { $ne: 'hr' },
             $or: [
                 {username: regexSearchTerm},
                 {firstName: regexSearchTerm},

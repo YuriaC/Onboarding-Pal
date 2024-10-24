@@ -59,6 +59,7 @@ const AddHouse = () => {
         }
         for (const key in newErrorObject) {
             if (newErrorObject[key]) {
+                toast.error('Please fix input errors!')
                 return setErrors(newErrorObject)
             }
         }

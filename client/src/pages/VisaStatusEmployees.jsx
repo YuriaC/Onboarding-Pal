@@ -306,7 +306,7 @@ const VisaStatusEmployees = () => {
 
                     {visaInfo.i983Status === 'Rejected' && 
                         <>
-                            <p>Your form I-983 is rejected. Below is your HR's feedback</p>
+                            <p>Your form I-983 is rejected. Below is your feedback from HR</p>
                             {visaInfo.hrVisaFeedBack &&
                                 <div>
                                     <h3>Feedback from HR:</h3>

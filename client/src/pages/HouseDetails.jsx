@@ -253,9 +253,7 @@ const HouseDetails = () => {
                                                         ? <Typography>No car info</Typography>
                                                         :
                                                         <>
-                                                            <ListItemIcon>
-                                                                <DirectionsCarIcon />
-                                                            </ListItemIcon>
+                                                            <DirectionsCarIcon />
                                                             <ListItemText secondary={`${[roommate.carColor, roommate.carMake, roommate.carModel].filter(Boolean).join(' ')}`} />
                                                         </>
                                                     }
