@@ -2,7 +2,7 @@
 import { Link, Navigate } from 'react-router-dom';
 import { getUserRoleFromCookie,getCookieValue  } from '../helpers/HelperFunctions';
 const NotFound = () => {
-    const {userRole} = getUserRoleFromCookie();
+    const {userRole, status} = getUserRoleFromCookie();
     const token = getCookieValue('auth_token');
 
 
@@ -19,7 +19,7 @@ const NotFound = () => {
                     </div>
                 ) : (
                     <div>
-                        You are logged in as an Employee. You can go to <Link style={{ color: 'black' }} to="/employee/profile">Employee Profile</Link>
+                        You are logged in as an Employee. You can go to {status === 'Approved' ? <Link style={{ color: 'black' }} to="/employee/visa-status">Visa Status</Link> : <Link style={{ color: 'black' }} to="/employee/onboarding">Onboarding Page</Link>}
                     </div>
                 )
             ) : (

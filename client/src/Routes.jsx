@@ -15,6 +15,7 @@ import HousingMgmt from './pages/HousingMgmt';
 import NotFound from './pages/NotFound';
 import LoginGuard from './components/guards/LoginGuard';
 import RoleGuard from './components/guards/RoleGuard';
+import StatusGuard from './components/guards/StatusGuard';
 import HouseDetails from './pages/HouseDetails';
 import AddHouse from './pages/AddHouse';
 import Application from './pages/Application';
@@ -35,10 +36,13 @@ const RoutesComponent = () => {
           <Route element={<Navbar />}>
             {/* Employee Routes */}
             <Route path="/employee/*" element={<RoleGuard role="employee" />}>
+            <Route path="visa-status" element={<VisaStatusEmployees />} />
+            <Route path="/employee/*" element={<StatusGuard  />}>
               <Route path="profile" element={<Personal />} />
               <Route path="housing" element={<Housing />} />
+            </Route>
+
               <Route path="onboarding" element={<Onboarding />} />
-              <Route path="visa-status" element={<VisaStatusEmployees />} />
             </Route>
 
             {/* HR Routes */}
@@ -53,12 +57,8 @@ const RoutesComponent = () => {
               <Route path="application/:employeeId" element={<Application />} />
             </Route>
           </Route>
-        
         </Route>
         <Route path="*" element={<NotFound />} />
-
-
-
       </Routes>
     </BrowserRouter>
   );

@@ -37,7 +37,10 @@ export const getUserRoleFromCookie = () => {
     const token = getCookieValue('auth_token');
     
     if (!token) {
-        return null;
+        return { 
+            userRole: null,
+            status: null
+        };
     }
 
     try {
