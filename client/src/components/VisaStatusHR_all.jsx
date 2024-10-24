@@ -329,7 +329,8 @@ const VisaStatusHR_all = ()=>{
                                         <>
                                             <Box>
                                                 <Button href={user.docs[docUrl].preview} target='_blank'>Preview {urlToName(docUrl)}</Button>
-                                                <Button href={user.docs[docUrl] .download}>Download {urlToName(docUrl)}</Button>
+
+                                                <Button href={user.docs[docUrl].download}>Download {urlToName(docUrl)}</Button>
                                             </Box>
                                         </>
                                     )
