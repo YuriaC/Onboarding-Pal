@@ -1,6 +1,6 @@
 import {useState} from 'react'
-import VisaStatusHR_inprogress from './VisaStatusHR_Inprogress';
-import VisaStatusHR_all from './VisaStatusHR_all';
+import VisaStatusHR_inprogress from '../components/VisaStatusHR_Inprogress';
+import VisaStatusHR_all from '../components/VisaStatusHR_all';
 
 const VisaStatusHR = () => {
     const [visibleDiv, setVisibleDiv] = useState('inprogress'); // State to track visible div

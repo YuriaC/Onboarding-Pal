@@ -41,5 +41,6 @@ userRouter.post('/register', userController.register)
     // .get('/checkuserisemployeeorhr', userController.checkUserIsEmployeeOrHr)
     .get('/alluser',userController.getAllUser)
     .post('/emailNotify',userController.sendEmailNotification)
+    .post('/postVisaDecision',userController.postVisaDecision)
     
 module.exports = userRouter;
