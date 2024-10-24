@@ -225,14 +225,15 @@ const Application = () => {
                                 <CardHeader title='Feedback given:' sx={{ paddingBottom: 0 }} />
                                 <CardContent>
                                     <Typography variant='body1'>
-                                        {formData.hrFeedback}
+                                        {formData.hrFeedback.length > 0 ? formData.hrFeedback : 'No feedback given.'}
                                     </Typography>
                                 </CardContent>
                             </Card>
                         </Box>
                     }
+
                     {formData.profilePicture ? null : (
-                        <Avatar sx={{ width: 56, height: 56 }}>
+                        <Avatar sx={{ width: 60, margin: 'auto',     height: 60 }}>
                             <FontAwesomeIcon icon={faUser} />
                         </Avatar>
                     )}
@@ -376,7 +377,7 @@ const Application = () => {
                             label="Date of Birth"
                             value={formData.dob}
                             disabled
-                            type="date"
+                            type={formData.dob ? 'date' : 'text'}
                             margin="normal"
                         />
                         <TextField
@@ -417,17 +418,17 @@ const Application = () => {
                                 <TextField
                                     fullWidth
                                     label="Visa Start Date"
-                                    value={formData.visaStartDate}
+                                    value={formData.visaStartDate ? formData.visaStartDate : ''}
                                     disabled
-                                    type="date"
+                                    type={formData.visaStartDate ? "date" : "text"}
                                     margin="normal"
                                 />
                                 <TextField
                                     fullWidth
                                     label="Visa End Date"
-                                    value={formData.visaEndDate}
+                                    value={formData.visaEndDate ? formData.visaEndDate : ''}
                                     disabled
-                                    type="date"
+                                    type={formData.visaEndDate ? "date" : "text"}
                                     margin="normal"
                                 />
                             </>
@@ -465,7 +466,7 @@ const Application = () => {
                                     label="Driver's License Expiration"
                                     value={formData.dlExpDate}
                                     disabled
-                                    type="date"
+                                    type= {formData.dlExpDate ? "date" : "text"}
                                     margin="normal"
                                 />
                             </>
@@ -631,3 +632,4 @@ const Application = () => {
 }
 
 export default Application
+
