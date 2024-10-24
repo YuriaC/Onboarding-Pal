@@ -1,6 +1,6 @@
 import {useState, useEffect} from 'react';
 import axios from 'axios';
-import MyDocument from './PdfViewer';
+import MyDocument from '../helpers/PdfViewer';
 import { pdfjs } from "react-pdf";
 
 
@@ -25,10 +25,8 @@ const VisaStatusHR_all = ()=>{
     // OPT Receipt should be submitted during onboarding stage
     // OPT EAD, I-983, I-20 should be submitted subsequently.
 
-    //const startdate = new Date(2023, 9, 12);
-    //const enddate = new Date(2025, 9, 12);
     //const pdfUrl = 'https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf';
-    //const pdfFile="http://localhost:3000/pdfs/dummy.pdf";
+    //const pdfFile="http://localhost:3000/workers/dummy.pdf";
 
     const [employees,setEmployees] = useState([]); // Static employee data
     // Fetch all users from the backend API
