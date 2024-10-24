@@ -32,7 +32,6 @@ export const getCookieValue = (name) => {
     }
     return null;
 };
-
 // Extract the role from the token (assuming the role is stored in a JWT or the cookie itself)
 export const getUserRoleFromCookie = () => {
     const token = getCookieValue('auth_token');
@@ -45,7 +44,17 @@ export const getUserRoleFromCookie = () => {
         // Decode the token to get user information (if it's a JWT, use a library like jwt-decode)
         // Assume the token contains a "role" field
         const payload = JSON.parse(atob(token.split('.')[1])); // Decode JWT payload (example)
-        return payload.role;
+
+        if (payload.role === 'hr') {
+            return {
+                userRole: 'hr',
+                status: 'success'
+            }
+        }
+        return {
+            userRole: 'employee',
+            status: payload.onboardingStatus
+        }
     } catch (error) {
         console.error("Error decoding token", error);
         return null;

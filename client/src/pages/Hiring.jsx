@@ -1,6 +1,6 @@
 import  { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { Box, Tabs, Tab, TextField, Button, Typography, List, ListItem, ListItemText } from '@mui/material';
+import {TableContainer,TableHead, Table, TableBody, TableRow, TableCell, Box, Tabs, Tab, TextField, Button, Typography, List, ListItem, ListItemText } from '@mui/material';
 import { sendRegistrationLinkThunk, fetchRegistrationHistoryThunk, fetchApplicationsThunk } from '../store/user/userSlice';
 import { toast, ToastContainer } from 'react-toastify';
 
@@ -91,18 +91,47 @@ const Hiring = () => {
 
                     <Box sx={{ marginTop: 4 }}>
                         <Typography variant="h6">Registration History</Typography>
-                        <List>
-                             {registrationHistory.map((entry) => (
-                                <ListItem key={entry.email}>
-                                    <ListItemText
-                                        primary={`Name: ${entry.firstName} ${entry.lastName} | Email: ${entry.email}`}
-                                        secondary={`Registration Status: ${entry.registrationHistory.status }`}
-                                    />
-                                    <ListItemText secondary={`Link: ${entry.registrationHistory.link.slice(0, 20)}...`} />
-                                    {entry.registrationHistory.status === 'Pending' && <Button onClick={() => handleResendRegistration(entry)}>Resend Link</Button>}
-                                </ListItem>
-                            ))}
-                        </List>
+                        <TableContainer >
+                            <Table sx={{ minWidth: 650, textAlign: 'center' }} aria-label="simple table">
+                                <TableHead>
+                                    <TableRow sx= {{ textAlign: 'center'  , '&:last-child td, &:last-child th': { border: 0 } }}>
+                                        <TableCell>Full Name</TableCell>
+                                        <TableCell align="center">Email</TableCell>
+                                        <TableCell align="center">Registration Status</TableCell>
+                                        <TableCell align="center">Link</TableCell>
+                                        <TableCell align="center">Actions</TableCell>
+                                    </TableRow>
+                                </TableHead>
+                                <TableBody >
+                                    {registrationHistory.map((entry) => (
+                                        <TableRow
+                                            key={entry.email}
+                                            sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
+                                        >
+                                            <TableCell component="th" scope="row">
+                                                {`${entry.firstName} ${entry.lastName}`}
+                                            </TableCell>
+                                            <TableCell align="right">{entry.email}</TableCell>
+                                            <TableCell align="right">{entry.registrationHistory.status}</TableCell>
+                                            <TableCell align="right" sx ={{ cursor: 'pointer', color    : 'blue' }}>
+                                                <Button
+                                                    size="small"
+                                                    onClick={() => {
+                                                        navigator.clipboard.writeText(entry.registrationHistory.link);
+                                                        toast.success('Link copied to clipboard!');
+                                                    }}
+                                                >
+                                                    Copy Link
+                                                </Button>
+                                            </TableCell>
+                                                <TableCell align="right">
+                                                {entry.registrationHistory.status === 'Pending' && <Button onClick={() => handleResendRegistration(entry)}>Resend Link</Button>}
+                                            </TableCell>
+                                        </TableRow>
+                                    ))}
+                                </TableBody>
+                            </Table>
+                        </TableContainer>
                     </Box>
                 </Box>
             )}

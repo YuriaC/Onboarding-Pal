@@ -69,9 +69,7 @@ button {
     transition: background-color 0.3s ease-in-out;
 }
 
-button:hover {
-    background-color: #2980b9;
-}
+
 
 .registerButtonAndLink{
     display:flex;

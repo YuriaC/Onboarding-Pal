@@ -6,7 +6,6 @@ import { toast, ToastContainer } from 'react-toastify'
 import {
     Avatar,
     Box,
-    Button,
     TextField,
     RadioGroup,
     FormControl,
@@ -21,9 +20,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faUser } from '@fortawesome/free-solid-svg-icons'
 
 const EmployeeDetail = () => {
-    const navigate = useNavigate()
     const { employeeId } = useParams()
-    const [isRejecting, setIsRejecting] = useState(false)
     const [isLoading, setIsLoading] = useState(true)
     const [formData, setFormData] = useState({
         firstName: '',
@@ -179,18 +176,6 @@ const EmployeeDetail = () => {
         })
     }
 
-    const handleApproval = async () => {
-        axios.put(`${USER_ENDPOINT}/updateappstatus/${employeeId}`, { newStatus: 'Approved' }, {
-            withCredentials: true,
-        })
-            .then(() => {
-                // window.close()
-                navigate('/hr/hiring')
-            })
-            .catch(error => {
-                toast.error(`Error approving application! Error: ${error.message}`)
-            })
-    }
 
     return (
         <>
@@ -200,7 +185,7 @@ const EmployeeDetail = () => {
                         {formData.firstName} {formData.lastName} ({formData.username})
                     </Typography>
                     {formData.profilePicture ? null : (
-                        <Avatar sx={{ width: 56, height: 56 }}>
+                        <Avatar sx={{ width: 60, height: 60, margin:'auto'}}>
                             <FontAwesomeIcon icon={faUser} />
                         </Avatar>
                     )}
@@ -344,7 +329,7 @@ const EmployeeDetail = () => {
                             label="Date of Birth"
                             value={formData.dob}
                             disabled
-                            type="date"
+                            type = {formData.dob? 'date' : 'text'}
                             margin="normal"
                         />
                         <TextField
@@ -387,7 +372,7 @@ const EmployeeDetail = () => {
                                     label="Visa Start Date"
                                     value={formData.visaStartDate}
                                     disabled
-                                    type="date"
+                                    type={formData.visaStartDate? 'date' : 'text'}
                                     margin="normal"
                                 />
                                 <TextField
@@ -395,7 +380,7 @@ const EmployeeDetail = () => {
                                     label="Visa End Date"
                                     value={formData.visaEndDate}
                                     disabled
-                                    type="date"
+                                    type={formData.visaEndDate? 'date' : 'text'}
                                     margin="normal"
                                 />
                             </>
@@ -433,7 +418,7 @@ const EmployeeDetail = () => {
                                     label="Driver's License Expiration"
                                     value={formData.dlExpDate}
                                     disabled
-                                    type="date"
+                                    type={formData.dlExpDate? 'date' : 'text'}
                                     margin="normal"
                                 />
                             </>
@@ -552,24 +537,6 @@ const EmployeeDetail = () => {
                             </Box>
                         ))}
 
-                        {formData.onboardingStatus == 'Pending' && (
-                            <Box sx={{ display: 'flex', justifyContent: 'center', gap: 2, mt: 4 }}>
-                                <Button
-                                    variant='contained'
-                                    sx={{ backgroundColor: 'green', color: 'white', '&:hover': { backgroundColor: 'darkgreen' } }}
-                                    onClick={handleApproval}
-                                >
-                                    Approve
-                                </Button>
-                                <Button
-                                    variant='contained'
-                                    sx={{ backgroundColor: 'red', color: 'white', '&:hover': { backgroundColor: 'darkred' } }}
-                                    onClick={() => setIsRejecting(!isRejecting)}
-                                >
-                                    Reject
-                                </Button>
-                            </Box>
-                        )}
                         <ToastContainer />
                     </form>
                 </Paper>

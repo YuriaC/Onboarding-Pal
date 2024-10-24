@@ -47,13 +47,17 @@ mongoose.connect(MONGO_URI)
                     role: "employee",
                     birthday: new Date(),
                     house: house._id,
-                    firstName: 'Test',
-                    lastName: 'Employee',
+                    firstName: 'John',
+                    lastName: 'Doe',
                     onboardingStatus: 'Not Started',
                     visaStartDate: startdate,
                     visaEndDate:enddate,
                     workAuth:"OPT",
                     optUrl:pdfUrl,
+                    registrationHistory: {
+                      email: "test1@gmail.com",
+                      status: 'Registered'
+                  },
                   },
                   {
                     username: 'EmployeeTest2',
@@ -62,13 +66,14 @@ mongoose.connect(MONGO_URI)
                     role: "employee",
                     birthday: new Date(),
                     house: house._id,
-                    firstName: 'Test2',
-                    lastName: 'Employee2',
+                    firstName: 'Mike',
+                    lastName: 'Island',
                     onboardingStatus: 'Not Started',
                     visaStartDate: startdate,
                     visaEndDate:enddate,
                     workAuth:"OPT",
                     optUrl:pdfUrl,
+              
                   },
                   {
                     username: 'EmployeeTest3',
@@ -77,13 +82,17 @@ mongoose.connect(MONGO_URI)
                     role: "employee",
                     birthday: new Date(),
                     house: house._id,
-                    firstName: 'Test3',
-                    lastName: 'Employee3',
+                    firstName: 'Lisa',
+                    lastName: 'Ashton',
                     onboardingStatus: 'Not Started',
                     visaStartDate: startdate,
                     visaEndDate:enddate,
                     workAuth:"OPT",
                     optUrl:pdfUrl,
+                    registrationHistory: {
+                      email: "test3@gmail.com",
+                      status: 'Registered'
+                  },
                   },
                   {
                     username: 'EmployeeTest4',
@@ -92,8 +101,8 @@ mongoose.connect(MONGO_URI)
                     role: "employee",
                     house: house._id,
                     birthday: new Date(),
-                    firstName: 'Test4',
-                    lastName: 'Employee 4',
+                    firstName: 'Luke',
+                    lastName: 'Evans',
                     onboardingStatus: 'Rejected',
                     registrationHistory: {
                         email: "test2@gmail.com",

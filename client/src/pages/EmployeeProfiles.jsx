@@ -54,13 +54,18 @@ const EmployeeProfiles = () => {
                                     to={`/hr/employee-profiles/${employee._id}`}
                                     rel="noopener noreferrer"
                                 >
-                                    {`${employee.firstName} ${employee.lastName} (${employee.username})`.trim() || 'Undefined Name'}
+                                    {`${employee.firstName} ${employee.lastName}`.trim() || 'Undefined Name'}
                                 </Link>
                             </h4>
-                            <p>SSN: {employee.ssn || 'Undefined SSN'}</p>
-                            <p>Work Authorization: {employee.workAuth || 'Undefined Work Authorization'}</p>
-                            <p>Phone: {employee.workPhone || 'Undefined Phone'}</p>
-                            <p>Email: {employee.email || 'Undefined Email'}</p>
+                            <h5>{employee.username}</h5>
+                            {employee.ssn && <p>SSN: {employee.ssn}</p>}
+                            {employee.isPermRes === 'Yes' ? (
+                                <p>Work Authorization: {employee.permResStatus}</p>
+                            ) : (
+                                <p>Work Authorization: {employee.workAuth}</p>
+                            )}
+                            {employee.cellPhone && <p>Phone: {employee.cellPhone}</p>}
+                            {employee.email && <p>Email: {employee.email}</p>}
                         </div>
                     ))
                 ) : (

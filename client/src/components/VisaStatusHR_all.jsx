@@ -277,6 +277,12 @@ const VisaStatusHR_all = ()=>{
                     style={{ marginLeft: '10px' }}
                 />
              </div>
+            <Box sx={{ 
+                width: '120%', 
+                height: '400px', 
+                margin: 'auto', 
+                padding: '20px', 
+            }}>
             <TableContainer component={Paper}>
             <Table sx={{
                     maxWidth: 'none', // Disable height constraints
@@ -287,6 +293,7 @@ const VisaStatusHR_all = ()=>{
                         <TableCell colSpan="3">Legal Name</TableCell>
                         <TableCell colSpan="4" >Work Authorization</TableCell>
                         <TableCell rowSpan="2">Next Steps</TableCell>
+                        <TableCell rowSpan="2">Submitted Documents</TableCell>
                     </TableRow>
                     <TableRow>
                         <TableCell sx={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>First Name</TableCell>
@@ -303,6 +310,7 @@ const VisaStatusHR_all = ()=>{
                     filteredEmployees.map((user) => (
                         <TableRow key={user._id}>
                             <TableCell>{user.firstName}</TableCell>
+                            <TableCell>{user.middleName}</TableCell>
                             <TableCell>{user.lastName}</TableCell>
                             <TableCell>{user.workAuth}</TableCell>
                             <TableCell>{formatDateToMDY(user.visaStartDate)}</TableCell> 
@@ -320,8 +328,9 @@ const VisaStatusHR_all = ()=>{
                                     return (
                                         <>
                                             <Box>
-                                                <Button href={docUrl.preview} target='_blank'>Preview {urlToName(docUrl)}</Button>
-                                                <Button href={docUrl.download}>Download {urlToName(docUrl)}</Button>
+                                                <Button href={user.docs[docUrl].preview} target='_blank'>Preview {urlToName(docUrl)}</Button>
+
+                                                <Button href={user.docs[docUrl].download}>Download {urlToName(docUrl)}</Button>
                                             </Box>
                                         </>
                                     )
@@ -351,6 +360,7 @@ const VisaStatusHR_all = ()=>{
 
             </Table>
             </TableContainer>
+            </Box>
             
         </>
         

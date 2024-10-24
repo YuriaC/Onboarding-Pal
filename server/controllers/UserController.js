@@ -80,9 +80,7 @@ const register = async (req,res) =>{
         // generate JWT token
         const token = generateToken(existingUser._id.toString(), username, existingUser.role);
         
-        console.log(existingUser)
         // assign cookies
-        res.cookie('auth_token', token);
         return res.status(200).json('Register Successfully');
         /* End section */
     }catch(error){
@@ -222,14 +220,14 @@ const login = async (req, res) => {
 
     try {
         let user = await User.findOne({email: username})
-            .select(['username','password','role'])
+            .select(['username','password','role','onboardingStatus'])
             .lean()
             .exec();
 
         if (!user) {
             // console.log('no matching email found, searching username');  // debug
             user = await User.findOne({username: username})
-                .select(['username','password', 'role'])
+                .select(['username','password', 'role', 'onboardingStatus'])
                 .lean()
                 .exec();
 
@@ -246,7 +244,8 @@ const login = async (req, res) => {
         }
 
         //generate JWT TOKEN
-        const token = generateToken(user._id, user.username, user.role);
+
+        const token = generateToken(user._id, user.username, user.role, user.onboardingStatus);
         // console.log(`JWT token, ${token}, generated. \n`);  // debug
         res.cookie('auth_token', token, {
             maxAge: 3600000,
@@ -270,6 +269,11 @@ const getOnboardingStatus = async(req,res) =>{
         if (!user) {
             return res.status(401).json({ message: 'User not Found!' });
         }
+        const token = generateToken(user._id, user.username, user.role, user.onboardingStatus);
+        res.cookie('auth_token', token, {
+            maxAge: 3600000,
+            sameSite: 'strict',
+                    }); 
         return res.status(200).json({status: user.onboardingStatus});
     }catch (error) {
         console.error(error);
@@ -461,7 +465,7 @@ const setApplicationInput = async (req, res) => {
                 "middleName": middlename,
                 "preferredName": preferredname,
                 "profilePictureURL": profilePictureURL,
-                "onboardingStatus": onboardingStatus,
+                "onboardingStatus": "Pending",
                 "address": address,
                 "cellPhone": cellPhone,
                 "workPhone": workPhone,
@@ -488,6 +492,8 @@ const setApplicationInput = async (req, res) => {
         }
         );
         if(result.acknowledged){
+            const newCookie = generateToken(user._id, user.username, user.role, user.onboardingStatus);
+            res.cookie('auth_token', newCookie);
             return res.status(200).json(`updated status ${result.acknowledged?"success":"failed"}`);
         }
         return res.status(401).json(`updated status ${result.acknowledged?"success":"failed"}`);
@@ -806,6 +812,11 @@ const getPersonalinfo = async(req,res) =>{
         //     i983Url: user.i983Url,
         //     i20Url: user.i20Url,
         // });
+        const token = generateToken(user._id, user.username, user.role, user.onboardingStatus);
+        res.cookie('auth_token', token, {
+            maxAge: 3600000,
+            sameSite: 'strict',
+                    }); 
 
         return res.status(200).json(user)
     }catch (error) {
@@ -827,6 +838,7 @@ const getRegistrationHistory = async(req,res) =>{
 const getApplications = async(req,res) =>{
     try{
         const users = await User.find({ role: "employee",  "registrationHistory.status": { $ne: "Pending" } }).select('-password').lean().exec();
+        console.log('users:', users)
 
         if (!users) {
             return res.status(401).json({ message: 'User not Found!' });
@@ -856,6 +868,12 @@ const getUserInfo = async (req, res) =>{
         if (!user) {
             return res.status(401).json({ message: 'User not Found!' });
         }
+        const token = generateToken(user._id, user.username, user.role, user.onboardingStatus);
+        // console.log(`JWT token, ${token}, generated. \n`);  // debug
+        res.cookie('auth_token', token, {
+            maxAge: 3600000,
+            sameSite: 'strict',
+                    }); 
         return res.status(200).json(user)
     } catch (error) {
         console.error(error);
