@@ -4,27 +4,8 @@ import axios from 'axios';
 import { pdfjs } from "react-pdf";
 
 
-//pdfjs.GlobalWorkerOptions.workerSrc = `//unpkg.com/pdfjs-dist@${pdfjs.version}/build/pdf.worker.min.mjs`;
-//Setup woker for pdf loadings
-// the original url will cause MMIE issue so use the downloaded version of mjs file
-//pdfjs.GlobalWorkerOptions.workerSrc = '/pdf.worker.min.mjs';
-
 pdfjs.GlobalWorkerOptions.workerSrc = `http://localhost:3000/workers/pdf.worker.min.mjs`;
-//  pdfjs.GlobalWorkerOptions.workerSrc = new URL(
-//     'pdfjs-dist/build/pdf.worker.min.mjs',
-//     import.meta.url,
-//   ).toString();
-// import pdfWorker from 'pdfjs-dist/build/pdf.worker.min.js?url';
 
-// // Set the worker source
-// pdfjs.GlobalWorkerOptions.workerSrc = pdfWorker;
-
-// fetch('/pdf.worker.min.js')
-//   .then((res) => {
-//     if (!res.ok) throw new Error('Failed to load worker');
-//     console.log('Worker loaded successfully');
-//   })
-//   .catch((err) => console.error(err));
 
 const VisaStatusHR_inprogress = ()=>{
     
@@ -70,9 +51,6 @@ const VisaStatusHR_inprogress = ()=>{
         return dayDiff;
     }
 
-    const haveFileToReview = (user_to_check) =>{
-        return user_to_check.optStatus === "Pending" || user_to_check.eadStatus === "Pending" || user_to_check.i983Status === "Pending" || user_to_check.i20Status === "Pending";
-    }
     const allFileApproved = (user_to_check) =>{
         return user_to_check.optStatus === "Approved" && user_to_check.eadStatus === "Approved" && user_to_check.i983Status === "Approved" && user_to_check.i20Status === "Approved";
     }
@@ -82,22 +60,37 @@ const VisaStatusHR_inprogress = ()=>{
         const ead = user_tocheck.eadStatus;
         const i983 = user_tocheck.i983Status;
         const i20 = user_tocheck.i20Status;
-        if(opt==="Pending" || opt === "rejected"){
+        if(opt==="Pending" || opt === "Rejected" || opt === "Not Started"){
             return "opt";
         }
-        if(opt==="Approved" && (ead === "Pending" || ead ==="rejected")){
+        if(opt==="Approved" && (ead === "Pending" || ead ==="Rejected" || ead  === "Not Started")){
             return "ead";
         }
-        if(opt==="Approved" && ead === "Approved" &&(i983 === "Pending" || i983 ==="rejected")){
+        if(opt==="Approved" && ead === "Approved" &&(i983 === "Pending" || i983 ==="Rejected" || i983  === "Not Started")){
             return "i983";
         }
-        if(opt==="Approved" && ead === "Approved" && i983 === "Approved" &&(i20 === "Pending" || i20 ==="rejected")){
+        if(opt==="Approved" && ead === "Approved" && i983 === "Approved" &&(i20 === "Pending" || i20 ==="Rejected" || i20  === "Not Started")){
             return "i20";
         }
         if(allFileApproved(user_tocheck)){
             return "alldone";
         }
 
+    }
+
+    const haveFileToReview = (user_to_check) =>{
+        if(stepStatusChecker(user_to_check)==="opt"){
+            return user_to_check.optUrl !== "";
+        }
+        if(stepStatusChecker(user_to_check)==="ead"){
+            return user_to_check.eadUrl !== "";
+        }
+        if(stepStatusChecker(user_to_check)==="i983"){
+            return user_to_check.i983Url !== "";
+        }
+        if(stepStatusChecker(user_to_check)==="i20"){
+            return user_to_check.i20Url !== "";
+        }
     }
 
     const nextstepsHandler = (user)=>{
@@ -165,6 +158,18 @@ const VisaStatusHR_inprogress = ()=>{
                         user_itr._id === user._id ? { ...user_itr, optStatus: decision } : user_itr
                     )
                 )
+                //modify the changed visa document status for user
+                try {
+                    const response = await axios.post(`http://localhost:3000/api/users/updateworkauthStatus`, {
+                        id: user._id,
+                        optStatus: decision
+                    });
+                    console.log('User updated:', response.data);
+                    //alert('User updated successfully!');
+                    } catch (error) {
+                    console.error('Error updating user:', error);
+                    alert('Failed to update user.');
+                    }
             };
             
             if(step_status === "ead"){
@@ -173,6 +178,17 @@ const VisaStatusHR_inprogress = ()=>{
                         user_itr._id === user._id ? { ...user_itr, eadStatus: decision } : user_itr
                     )
                 )
+                try {
+                    const response = await axios.post(`http://localhost:3000/api/users/updateworkauthStatus`, {
+                        id: user._id,
+                        eadStatus: decision
+                    });
+                    console.log('User updated:', response.data);
+                    //alert('User updated successfully!');
+                    } catch (error) {
+                    console.error('Error updating user:', error);
+                    alert('Failed to update user.');
+                    }
             }
             if(step_status === "i983"){
                 setEmployees((prevUsers) =>
@@ -180,6 +196,17 @@ const VisaStatusHR_inprogress = ()=>{
                         user_itr._id === user._id ? { ...user_itr, i983Status: decision } : user_itr
                     )
                 )
+                try {
+                    const response = await axios.post(`http://localhost:3000/api/users/updateworkauthStatus`, {
+                        id: user._id,
+                        i983Status: decision
+                    });
+                    console.log('User updated:', response.data);
+                    //alert('User updated successfully!');
+                    } catch (error) {
+                    console.error('Error updating user:', error);
+                    alert('Failed to update user.');
+                    }
             }
             if(step_status === "i20"){
                 setEmployees((prevUsers) =>
@@ -187,6 +214,17 @@ const VisaStatusHR_inprogress = ()=>{
                         user_itr._id === user._id ? { ...user_itr, i20Status: decision } : user_itr
                     )
                 )
+                try {
+                    const response = await axios.post(`http://localhost:3000/api/users/updateworkauthStatus`, {
+                        id: user._id,
+                        i20Status: decision
+                    });
+                    console.log('User updated:', response.data);
+                    //alert('User updated successfully!');
+                    } catch (error) {
+                    console.error('Error updating user:', error);
+                    alert('Failed to update user.');
+                    }
             }
         if(decision === "rejected"){
             //if rejected, send this message to the employee side to remind resubmission.
@@ -206,18 +244,7 @@ const VisaStatusHR_inprogress = ()=>{
               }
         }
 
-        //modify the changed visa document status for user
-        try {
-            const response = await axios.post(`http://localhost:3000/api/users/updateworkauthStatus`, {
-              id: user._id,
-              optStatus: decision
-            });
-            console.log('User updated:', response.data);
-            alert('User updated successfully!');
-          } catch (error) {
-            console.error('Error updating user:', error);
-            alert('Failed to update user.');
-          }
+        
 
     }
     const notificationHandler = async(user) =>{
@@ -234,7 +261,7 @@ const VisaStatusHR_inprogress = ()=>{
         try {
             const response = await axios.post(`http://localhost:3000/api/users/emailNotify`, {
               id: user._id,
-              firstName: "balala",
+              firstName: user.firstName,
               lastName: user.lastName,
               useremail: user.email,
               notification:message_to_employee
@@ -306,7 +333,7 @@ const VisaStatusHR_inprogress = ()=>{
                             {!allFileApproved(user) &&
                             (<div>
                                 <button onClick={() => actionHandler(user,'Approved')}>Approve</button>
-                                <button onClick={() => actionHandler(user,'rejected')}>Reject</button>
+                                <button onClick={() => actionHandler(user,'Rejected')}>Reject</button>
                             </div>)
                             }
                             {allFileApproved(user) &&
