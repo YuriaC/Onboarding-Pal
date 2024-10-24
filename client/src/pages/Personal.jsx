@@ -52,16 +52,16 @@ const Personal = () => {
 
     const [formDataClone, setFormDataClone] = useState({});
 
-    useEffect(() => {
-        axios.get(`${USER_ENDPOINT}/userinfo`, { withCredentials: true })
-            .then(response => {
-                const { onboardingStatus } = response.data
-                if (onboardingStatus !== 'Approved') {
-                    return navigate('/employee/onboarding')
-                }
-            }
-        )
-    }, [])
+    // useEffect(() => {
+    //     axios.get(`${USER_ENDPOINT}/userinfo`, { withCredentials: true })
+    //         .then(response => {
+    //             const { onboardingStatus } = response.data
+    //             if (onboardingStatus !== 'Approved') {
+    //                 return navigate('/employee/onboarding')
+    //             }
+    //         }
+    //     )
+    // }, [])
 
     useEffect(() => {
         setFormDataClone(JSON.parse(JSON.stringify(formData)))

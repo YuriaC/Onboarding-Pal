@@ -41,10 +41,6 @@ const Housing = () => {
     useEffect(() => {
         axios.get(`${USER_ENDPOINT}/userinfo`, { withCredentials: true })
             .then(response => {
-                const { onboardingStatus } = response.data
-                if (onboardingStatus !== 'Approved') {
-                    return navigate('/employee/onboarding')
-                }
                 const { house } = response.data
                 console.log('response.data:', response.data)
                 setUserInfo({
