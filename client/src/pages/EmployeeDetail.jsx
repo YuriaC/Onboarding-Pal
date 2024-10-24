@@ -196,7 +196,7 @@ const EmployeeDetail = () => {
         <>
             {!isLoading ? (
                 <Paper sx={{ p: 3 }}>
-                    <Typography variant='h4'>
+                    <Typography variant='h4' sx={{ mb: 1 }}>
                         {formData.firstName} {formData.lastName} ({formData.username})
                     </Typography>
                     {formData.profilePicture ? null : (

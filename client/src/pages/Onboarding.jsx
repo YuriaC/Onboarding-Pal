@@ -376,13 +376,6 @@ const Onboarding = () => {
                 <TextField label='SSN' type='password' name='ssn' value={formData.ssn} onChange={handleChange} disabled={appStatus === 'Pending'} required variant='outlined' fullWidth sx={{ mb: 2 }} />
                 <TextField label='Date of Birth' type='date' name='dob' value={formData.dob} onChange={handleChange} disabled={appStatus === 'Pending'} required variant='outlined' error={errors.dob} fullWidth sx={{ mb: 2 }} />
                 <ErrorHelperText hasError={errors.dob} message={helperTexts.dob} />
-                {/* <label>Gender: </label>
-                <select name='gender' value={formData.gender} onChange={handleChange} disabled={appStatus === 'Pending'}>
-                    <option value='' selected>Select gender</option>
-                    <option value='Male'>Male</option>
-                    <option value='Female'>Female</option>
-                    <option value='I do not wish to answer'>I do not wish to answer</option>
-                </select> */}
                 <InputLabel>Gender</InputLabel>
                 <Select name='gender' label='Gender' value={formData.gender} onChange={handleChange} disabled={appStatus === 'Pending'} fullWidth sx={{ mb: 2 }}>
                     <MenuItem value='Male'>Male</MenuItem>

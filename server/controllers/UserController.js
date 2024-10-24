@@ -478,6 +478,7 @@ const setApplicationInput = async(req,res) =>{
                 "visaStartDate": visaStartDate || undefined,
                 "visaEndDate": visaEndDate || undefined,
                 "visaTitle": visaTitle,
+                "optStatus": workauth === 'F1(CPT/OPT)' ? 'Pending' : 'Not Started',
             }
         }
         );
