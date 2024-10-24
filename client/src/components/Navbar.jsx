@@ -5,7 +5,9 @@ import { logoutUserThunk } from '../store/user/userSlice';
 import { getUserRoleFromCookie } from '../helpers/HelperFunctions';
 
 const Navbar = () => {
-    const userRole = getUserRoleFromCookie();
+    const {userRole, status} = getUserRoleFromCookie();
+
+
     const dispatch = useDispatch();
     const navigate = useNavigate();
     const handleLogout = () => {
@@ -13,7 +15,6 @@ const Navbar = () => {
 
         document.cookie = '';
         navigate('/login'); // Redirect to login page after logout
-
         dispatch(logoutUserThunk());  // Dispatch the logout action
 
 
@@ -36,13 +37,18 @@ const Navbar = () => {
                         <Stack direction="row" spacing={2}>
                             {userRole === 'employee' && (
                                 <>
-                                    <NavLink
-                                        to="/employee/onboarding"
-                                        className={({ isActive }) => (isActive ? 'active-link' : 'nav-link')}
-                                    >
-                                        Onboarding
-                                    </NavLink>
-                                    <NavLink
+                                    {(status !== 'Approved') && (
+                                        <NavLink
+                                            to="/employee/onboarding"
+                                            className={({ isActive }) => (isActive ? 'active-link' : 'nav-link')}
+                                        >
+                                            Onboarding
+                                        </NavLink>
+                                    )}
+                                    {
+                                        (status == 'Approved') ? (
+                                        <>
+                                              <NavLink
                                         to="/employee/profile"
                                         className={({ isActive }) => (isActive ? 'active-link' : 'nav-link')}
                                     >
@@ -60,6 +66,10 @@ const Navbar = () => {
                                     >
                                         Housing
                                     </NavLink>
+                                        </>
+                                        ): null
+                                    }
+                              
                                 </>
                             )}
                             {userRole === 'hr' && (

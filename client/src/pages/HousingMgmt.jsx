@@ -56,7 +56,8 @@ const HousingMgmt = () => {
     return (
         <div>
             <h1>Housing Management</h1>
-            <button onClick={() => navigate('/hr/addhouse')}>Add House</button>
+            <Button onClick={() => navigate('/hr/addhouse')}>Add House</Button>
+
             <Box sx={{ justifyContent: 'center', width: '100%' }}>
             {houses.map((house) => {
                 return (

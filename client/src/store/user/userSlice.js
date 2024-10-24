@@ -67,7 +67,6 @@ export const loginUserThunk = createAsyncThunk(
                 navigate('/hr/home'); // Redirect HR to the appropriate page
             } else if (userRole === 'employee') {
                 const response = await axios.get(`${USER_ENDPOINT}/userinfo`, { withCredentials: true })
-                console.log('response:', response)
                 const { onboardingStatus } = response.data
                 if (onboardingStatus === 'Approved') {
                     navigate('/employee/profile')
@@ -75,7 +74,6 @@ export const loginUserThunk = createAsyncThunk(
                 else {
                     navigate('/employee/onboarding')
                 }
-                // navigate('/employee/profile'); // Redirect employee to the personal page
             }
 
             return response.data; // Return user data on successful login
