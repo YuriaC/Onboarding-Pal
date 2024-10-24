@@ -3,6 +3,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { Box, Tabs, Tab, TextField, Button, Typography, List, ListItem, ListItemText } from '@mui/material';
 import { sendRegistrationLinkThunk, fetchRegistrationHistoryThunk, fetchApplicationsThunk } from '../store/user/userSlice';
 import { useNavigate } from 'react-router-dom';
+import { toast, ToastContainer } from 'react-toastify';
 
 const Hiring = () => {
 
@@ -29,8 +30,12 @@ const Hiring = () => {
             .unwrap()
             .then(() => {
                 // Fetch the updated registration history only after successfully sending
+                toast.success('Successfully sent registration token!')
                 dispatch(fetchRegistrationHistoryThunk());
-            });
+            })
+            .catch(error => {
+                toast.error(`Error sending registration token! Error: ${error.message}`)
+            })
         setEmail(''); // Clear the input after sending
         setName(''); // Clear the name input after sending
     };
@@ -39,8 +44,12 @@ const Hiring = () => {
         dispatch(sendRegistrationLinkThunk({ email: entry.email, name: `${entry.firstName} ${entry.lastName}` }))
             .unwrap()
             .then(() => {
+                toast.success('Successfully resent registration token!')
                 dispatch(fetchRegistrationHistoryThunk());
-            });
+            })
+            .catch(error => {
+                toast.error(`Error resending registration token! Error: ${error.message}`)
+            })
     };
 
     const handleViewApplication = (employeeId) => {
@@ -164,6 +173,7 @@ const Hiring = () => {
                     )}
                 </Box>
             )}
+            <ToastContainer />
         </Box>
     );
 };
