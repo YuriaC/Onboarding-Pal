@@ -2,7 +2,7 @@ import {useState, useEffect} from 'react';
 // import MyDocument from '../helpers/PdfViewer';
 import axios from 'axios';
 import { pdfjs } from "react-pdf";
-import { Button, TextField, Typography } from '@mui/material'
+import { Box, Button, TextField, Typography } from '@mui/material'
 
 import Table from '@mui/material/Table';
 import TableBody from '@mui/material/TableBody';
@@ -237,6 +237,12 @@ const VisaStatusHR_inprogress = () => {
     
     return (
         <>
+            <Box sx={{ 
+                width: '120%', 
+                height: '400px', 
+                margin: 'auto', 
+                padding: '20px', 
+            }}>
             <TableContainer component={Paper}>
             <Table sx={{
                     maxWidth: 'none', // Disable height constraints
@@ -301,7 +307,7 @@ const VisaStatusHR_inprogress = () => {
 
             </Table>
             </TableContainer>
-           
+            </Box>
             
         </>
         
