@@ -20,6 +20,7 @@ const VisaStatusHR_inprogress = () => {
     const [currentFileUrl, setCurrentFileUrl] = useState();
     const [feedbacks, setFeedbacks] = useState([])
     const [changed, setChanged] = useState(false)
+    const [submitted, setSubmitted] = useState(false)
 
     // for users that holds f1-opt option
     // OPT Receipt should be submitted during onboarding stage
@@ -37,6 +38,7 @@ const VisaStatusHR_inprogress = () => {
                 let needSubmitNext = true
                 let docToReview = ''
                 let currDoc = ''
+                let currDocName = ''
                 // let nextDoc = ''
                 let nextDocName = ''
                 initFeedbacks.push('')
@@ -48,15 +50,34 @@ const VisaStatusHR_inprogress = () => {
                 }
                 for (let i = 0; i < docStatuses.length; i++) {
                     const currDocStatus = docStatuses[i]
-                    if (['Pending', 'Rejected'].includes(employee[currDocStatus])) {
+                    if (employee[currDocStatus] === 'Pending') {
                         needSubmitNext = false
-                        docToReview = docUrls[i]
+                    }
+                    if (employee['optStatus'] === 'Not Started') {
                         currDoc = currDocStatus
+                        currDocName = docNames[0]
+                        nextDocName = docNames[1]
+                        docToReview = docUrls[0]
+                        break
                     }
-                    if (employee[currDocStatus] === 'Not Started' && !nextDocName) {
-                        // nextDoc = currDocStatus
+                    if (i > 0 && employee[currDocStatus] === 'Not Started') {
+                        docToReview = docUrls[i - 1]
+                        currDoc = docStatuses[i - 1]
+                        currDocName = docNames[i - 1]
                         nextDocName = docNames[i]
+                        break
                     }
+                    if (i === docStatuses.length - 1) {
+                        docToReview = docUrls[i]
+                        currDoc = docStatuses[i]
+                        currDocName = docNames[i]
+                    }
+                    // if (['Pending', 'Rejected'].includes(employee[currDocStatus])) {
+                    // }
+                    // if (employee[currDocStatus] === 'Not Started' && !nextDocName) {
+                    //     // nextDoc = currDocStatus
+                    //     nextDocName = docNames[i]
+                    // }
                 }
                 const userDocs = await axios.get(`${USER_ENDPOINT}/getuserdocs/${employee._id}`, { withCredentials: true })
                 const newEmployeeData = {
@@ -68,6 +89,7 @@ const VisaStatusHR_inprogress = () => {
                     currDoc,
                     // nextDoc,
                     nextDocName,
+                    currDocName,
                 }
                 newData.push(newEmployeeData)
             }
@@ -80,7 +102,7 @@ const VisaStatusHR_inprogress = () => {
         };
 
         fetchUsers();
-    }, []);
+    }, [submitted]);
 
     const formatDateToMDY = (date) => {
         const dateobj = new Date(date);
@@ -303,14 +325,14 @@ const VisaStatusHR_inprogress = () => {
         // }else{
         //     message_to_employee = `Hello ${user.firstName} ${user.lastName}, all of your submitted visa documents has been reviewed and Approved.`;
         // }
-        if (user.docs[user.docToReview] === 'Rejected') {
-            message_to_employee = `Hello ${user.firstName} ${user.lastName}, your ${user.currDoc} has been rejected. Please submit it again.`
+        console.log('currDoc:', user.currDoc)
+        if (user[user.currDoc] === 'Rejected') {
+            message_to_employee = `Hello ${user.firstName} ${user.lastName}, your ${user.currDocName} has been rejected. Please submit it again.`
         }
         else {
-            message_to_employee = `Hello ${user.firstName} ${user.lastName}, your ${user.currDoc} has been approved!. Please submit your ${user.nextDocName} next.`
+            message_to_employee = `Hello ${user.firstName} ${user.lastName}, your ${user.currDocName} has been approved! Please ${user.currDoc === 'eadStatus' ? 'download and ' : ''}submit your ${user.nextDocName} next.`
         }
         
-        // console.log(message_to_employee);
         try {
             const response = await axios.post(`http://localhost:3000/api/users/emailNotify`, {
               id: user._id,
@@ -368,6 +390,29 @@ const VisaStatusHR_inprogress = () => {
         setFeedbacks(newFeedbacks)
     }
 
+    const handleApprove = async (e, index) => {
+        e.preventDefault()
+        const employeeId = employees[index]._id
+        const data = {
+            newStatus: 'Approved',
+            doc: employees[index].currDoc,
+        }
+        axios.put(`${USER_ENDPOINT}/updateworkauthstatus/${employeeId}`, data, { withCredentials: true })
+        .then(response => {
+            console.log('response:', response)
+            // const newEmployees = employees
+            // newEmployees[index].isRejecting = false
+            // setEmployees(newEmployees)
+            // const newFeedbacks = feedbacks
+            // newFeedbacks[index] = ''
+            // setFeedbacks(newFeedbacks)
+            setSubmitted(!submitted)
+        })
+        .catch(error => {
+            toast.error(`Error rejecting visa status! Error: ${error.message}`)
+        })
+    }
+
     const handleReject = async (e, index) => {
         e.preventDefault()
         const feedback = feedbacks[index]
@@ -386,7 +431,7 @@ const VisaStatusHR_inprogress = () => {
                 const newFeedbacks = feedbacks
                 newFeedbacks[index] = ''
                 setFeedbacks(newFeedbacks)
-                setChanged(!changed)
+                setSubmitted(!submitted)
             })
             .catch(error => {
                 toast.error(`Error rejecting visa status! Error: ${error.message}`)
@@ -427,15 +472,15 @@ const VisaStatusHR_inprogress = () => {
                             {/* {nextstepsHandler(user)} */}
                             {/* { console.log(user.docs[user.docToReview].preview) } */}
                             {/* { haveFileToReview(user) && (<Button onClick={()=>viewFileHandler(user)}>{fileDisplayId === user._id ? 'Hide' : 'Show'} Submitted File</Button>)} */}
-                            { !user.needSubmitNext ? (<Button variant='contained' href={user.docs[user.docToReview].preview} target='_blank'>Review Document</Button>) : (<Typography>{user.nextDocName} waiting to be submitted</Typography>) }
+                            { allFileApproved(user) ? <Typography>All done!</Typography> : !user.needSubmitNext ? (<Button variant='contained' href={user.docs[user.docToReview].preview} target='_blank'>Review Document</Button>) : (<Typography>{user[user.currDoc] !== 'Rejected' ? `${user.nextDocName} waiting to be submitted` : `${user.currDocName} waiting to be resubmitted`}</Typography>) }
                         </td>
                         <td>
                             {!allFileApproved(user) &&
                             (<div>
                                 { user.needSubmitNext ? (<Button onClick={ () => notificationHandler(user) }>Send Notification</Button>) :
                                     <>
-                                        <Button onClick={() => actionHandler(user, 'Approved')} sx={{ backgroundColor: 'green', color: 'white' }}>Approve</Button>
-                                        <Button onClick={(e) => updateReject(e, index)} sx={{ backgroundColor: 'red', color: 'white' }}>Reject</Button>
+                                        <Button onClick={(e) => handleApprove(e, index)} sx={{ backgroundColor: 'green', color: 'white' }} fullWidth>Approve</Button>
+                                        <Button onClick={(e) => updateReject(e, index)} sx={{ backgroundColor: 'red', color: 'white' }} fullWidth>Reject</Button>
                                         {user.isRejecting &&
                                             <form onSubmit={(e) => handleReject(e, index)}>
                                                 <TextField label='Feedback' value={feedbacks[index]} onChange={(e) => updateFeedback(e, index)} fullWidth></TextField>
@@ -448,7 +493,7 @@ const VisaStatusHR_inprogress = () => {
                             }
                             {allFileApproved(user) &&
                             (<div>
-                                no actions for this employee
+                                <Typography>No further action required</Typography>
                             </div>)
                             }
                         </td>

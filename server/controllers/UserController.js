@@ -729,9 +729,11 @@ const getUserDocsById = async (req, res) => {
             eadUrl,
             i983Url,
             i20Url,
+            'Empty Template': 'a/Empty Template.pdf',
+            'Sample Template': 'a/Sample Template.pdf',
         }
         const ret = {}
-        for (const key of ['profilePictureURL', 'optUrl', 'driversLicenseCopy_url', 'eadUrl', 'i983Url', 'i20Url']) {
+        for (const key of ['profilePictureURL', 'optUrl', 'driversLicenseCopy_url', 'eadUrl', 'i983Url', 'i20Url', 'Empty Template', 'Sample Template']) {
             const url = urls[key]
             if (!url) {
                 continue

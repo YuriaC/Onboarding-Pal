@@ -2,6 +2,8 @@ import {useState, useEffect} from 'react';
 import axios from 'axios';
 import MyDocument from '../helpers/PdfViewer';
 import { pdfjs } from "react-pdf";
+import { docUrls, USER_ENDPOINT } from '../constants';
+import { Box, Button } from '@mui/material'
 
 
 //Setup woker for pdf loadings
@@ -34,7 +36,17 @@ const VisaStatusHR_all = ()=>{
         const fetchUsers = async () => {
         try {
             const response = await axios.get('http://localhost:3000/api/users/alluser');
-            setEmployees(response.data); // Store fetched users in state
+            const { data } = response
+            const newEmployees = []
+            for (const employee of data) {
+                const employeeDocs = await axios.get(`${USER_ENDPOINT}/getuserdocs/${employee._id}`, { withCredentials: true })
+                const newEmployee = {
+                    ...employee,
+                    docs: employeeDocs.data,
+                }
+                newEmployees.push(newEmployee)
+            }
+            setEmployees(newEmployees); // Store fetched users in state
         } catch (error) {
             console.error('Error fetching employees:', error);
         }
@@ -202,6 +214,20 @@ const VisaStatusHR_all = ()=>{
             setCurrentFileUrl(user.i20Url);
         }
     }
+
+    const urlToName = (url) => {
+        switch (url) {
+            case 'optUrl':
+                return 'OPT'
+            case 'eadUrl':
+                return 'OPT EAD'
+            case 'i983Url':
+                return 'I-983'
+            case 'i20Url':
+                return 'I-20'
+        }
+        return 'Something'
+    }
     
 
     const downloadPdf = async (pdfUrlDownload) => {
@@ -304,7 +330,20 @@ const VisaStatusHR_all = ()=>{
                                 { !allFileApproved(user) && (<button onClick={()=>notificationHandler(user)}>Send Notification</button>)}
                             </td>
                             <td>
-                                {user.optUrl &&  (<button onClick={()=>viewFileHandler(user)}>{} OPT Receipt</button>)}
+                                {docUrls.map((docUrl) => {
+                                    if (!(docUrl in user.docs)) {
+                                        return (<></>)
+                                    }
+                                    return (
+                                        <>
+                                            <Box>
+                                                <Button href={docUrl.preview} target='_blank'>Preview {urlToName(docUrl)}</Button>
+                                                <Button href={docUrl.download}>Download {urlToName(docUrl)}</Button>
+                                            </Box>
+                                        </>
+                                    )
+                                })}
+                                {/* {user.optUrl &&  (<button onClick={()=>viewFileHandler(user)}>{} OPT Receipt</button>)}
                                 {user.optUrl &&  (<button onClick={()=>downloadPdf(user.optUrl)}>Download OPT PDF</button>)}
 
                                 {user.eadUrl &&  (<button onClick={()=>viewFileHandler(user)}>{} EAD </button>)}
@@ -314,7 +353,7 @@ const VisaStatusHR_all = ()=>{
                                 {user.i983Url &&  (<button onClick={()=>downloadPdf(user.i983Url)}>Download I983 PDF</button>)}
 
                                 {user.i20Url &&  (<button onClick={()=>viewFileHandler(user)}>{} I20</button>)}
-                                {user.i20Url &&  (<button onClick={()=>downloadPdf(user.i20Url)}>Download I20 PDF</button>)}
+                                {user.i20Url &&  (<button onClick={()=>downloadPdf(user.i20Url)}>Download I20 PDF</button>)} */}
                             </td>
                         </tr>
                     ))
