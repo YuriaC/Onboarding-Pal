@@ -315,8 +315,8 @@ const Onboarding = () => {
 
     return (
         <div style={{ width: '50vw' }}>
-            <h2 style={{ color: appStatus === 'Rejected' ? 'red' : 'black' }}>Status: {appStatus}</h2>
-            {appStatus === 'Pending' && <h3>Please wait for HR to review your application.</h3>}
+            <Typography variant='h4' sx={{ color: appStatus === 'Rejected' ? 'red' : 'black', mb: 1 }}>Status: {appStatus}</Typography>
+            {appStatus === 'Pending' && <Typography variant='h5' sx={{ mb: 2 }}>Please wait for HR to review your application.</Typography>}
             {appStatus === 'Rejected' && (formData.hrFeedback ?
                 <Box sx={{ mt: 2, mb: 4 }}>
                     <Card sx={{ backgroundColor: '#f8d7da', color: '#721c24' }}>
