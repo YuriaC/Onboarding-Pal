@@ -1,10 +1,16 @@
 import {useState, useEffect} from 'react';
 import axios from 'axios';
-import MyDocument from '../helpers/PdfViewer';
+// import MyDocument from '../helpers/PdfViewer';
 import { pdfjs } from "react-pdf";
 import { docUrls, USER_ENDPOINT } from '../constants';
-import { Box, Button } from '@mui/material'
-
+import { Box, Button, TextField} from '@mui/material'
+import Table from '@mui/material/Table';
+import TableBody from '@mui/material/TableBody';
+import TableCell from '@mui/material/TableCell';
+import TableContainer from '@mui/material/TableContainer';
+import TableHead from '@mui/material/TableHead';
+import TableRow from '@mui/material/TableRow';
+import Paper from '@mui/material/Paper';
 
 //Setup woker for pdf loadings
 // the original url will cause MMIE issue so use the downloaded version of mjs file
@@ -230,31 +236,6 @@ const VisaStatusHR_all = ()=>{
     }
     
 
-    const downloadPdf = async (pdfUrlDownload) => {
-        try {
-          const response = await fetch(pdfUrlDownload);
-          if (!response.ok) throw new Error('Failed to fetch PDF');
-    
-          const blob = await response.blob(); // Convert response to Blob
-          const url = URL.createObjectURL(blob); // Create URL for the Blob
-    
-          // Create a temporary anchor element
-          const link = document.createElement('a');
-          link.href = url;
-          link.download = 'downloaded-file.pdf'; // Set download attribute
-          document.body.appendChild(link); // Append to body
-    
-          // Trigger the download by simulating a click
-          link.click();
-    
-          // Cleanup
-          document.body.removeChild(link);
-          URL.revokeObjectURL(url); // Free up memory
-        } catch (error) {
-          console.error('Error downloading PDF:', error);
-        }
-    };
-
     const handleInputChange = (e) => {
         const { name, value } = e.target;
         setSearch((prevSearch) => ({
@@ -272,64 +253,66 @@ const VisaStatusHR_all = ()=>{
     return (
         <>
             <div style={{ marginBottom: '10px' }}>
-                <input
+                <TextField
                     type="text"
                     name="firstName"
-                    placeholder="Search by First Name"
+                    placeholder="First Name"
                     value={search.firstName}
                     onChange={handleInputChange}
                 />
-                <input
+                <TextField
                     type="text"
                     name="lastName"
-                    placeholder="Search by Last Name"
+                    placeholder="Last Name"
                     value={search.lastName}
                     onChange={handleInputChange}
                     style={{ marginLeft: '10px' }}
                 />
-                <input
+                <TextField
                     type="text"
                     name="preferredName"
-                    placeholder="Search by Preferred Name"
+                    placeholder="Preferred Name"
                     value={search.preferredName}
                     onChange={handleInputChange}
                     style={{ marginLeft: '10px' }}
                 />
              </div>
-
-            <table border="1">
-                <thead>
-                    <tr>
-                        <th colSpan="2">Legal Name</th>
-                        <th colSpan="4" >Work Authorization</th>
-                        <th rowSpan="2">Next Steps</th>
-                        <th rowSpan="2">Documents Submitted</th>
-                        
-                    </tr>
-                    <tr>
-                        <th>First Name</th>
-                        <th>Last Name</th>
-                        <th>Title</th>
-                        <th>Start Date</th>
-                        <th>End Date</th>
-                        <th>Days Remaining</th>
-                    </tr>
-                </thead>
-                <tbody>
+            <TableContainer component={Paper}>
+            <Table sx={{
+                    maxWidth: 'none', // Disable height constraints
+                    overflow: 'visible', // Ensure no scrollbars
+                    }}  aria-label="simple table">
+                <TableHead>
+                <TableRow>
+                        <TableCell colSpan="3">Legal Name</TableCell>
+                        <TableCell colSpan="4" >Work Authorization</TableCell>
+                        <TableCell rowSpan="2">Next Steps</TableCell>
+                    </TableRow>
+                    <TableRow>
+                        <TableCell sx={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>First Name</TableCell>
+                        <TableCell sx={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>Middle Name</TableCell>
+                        <TableCell sx={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>Last Name</TableCell>
+                        <TableCell>Title</TableCell>
+                        <TableCell sx={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>Start Date</TableCell>
+                        <TableCell sx={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>End Date</TableCell>
+                        <TableCell sx={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>Days Remaining</TableCell>
+                    </TableRow>
+                </TableHead>
+                <TableBody>
                     {filteredEmployees.length > 0 ? (
                     filteredEmployees.map((user) => (
-                        <tr key={user._id}>
-                            <td>{user.firstName}</td>
-                            <td>{user.lastName}</td>
-                            <td>{user.workAuth}</td>
-                            <td>{formatDateToMDY(user.visaStartDate)}</td> 
-                            <td>{formatDateToMDY(user.visaEndDate)}</td>
-                            <td>{calculateDaysDifference(user.visaEndDate,today)}</td>
-                            <td>{nextstepsHandler(user)}
-                                { haveFileToReview(user) && (<button onClick={()=>viewFileHandler(user)}>{} Submitted File</button>)}
+                        <TableRow key={user._id}>
+                            <TableCell>{user.firstName}</TableCell>
+                            <TableCell>{user.lastName}</TableCell>
+                            <TableCell>{user.workAuth}</TableCell>
+                            <TableCell>{formatDateToMDY(user.visaStartDate)}</TableCell> 
+                            <TableCell>{formatDateToMDY(user.visaEndDate)}</TableCell>
+                            <TableCell>{calculateDaysDifference(user.visaEndDate,today)}</TableCell>
+                            <TableCell>{nextstepsHandler(user)}
+                                {/* { haveFileToReview(user) && (<button onClick={()=>viewFileHandler(user)}>{} Submitted File</button>)} */}
                                 { !allFileApproved(user) && (<button onClick={()=>notificationHandler(user)}>Send Notification</button>)}
-                            </td>
-                            <td>
+                            </TableCell>
+                            <TableCell>
                                 {docUrls.map((docUrl) => {
                                     if (!(docUrl in user.docs)) {
                                         return (<></>)
@@ -354,25 +337,20 @@ const VisaStatusHR_all = ()=>{
 
                                 {user.i20Url &&  (<button onClick={()=>viewFileHandler(user)}>{} I20</button>)}
                                 {user.i20Url &&  (<button onClick={()=>downloadPdf(user.i20Url)}>Download I20 PDF</button>)} */}
-                            </td>
-                        </tr>
+                            </TableCell>
+                        </TableRow>
                     ))
                     ) : (
-                    <tr>
-                        <td colSpan="2" style={{ textAlign: 'center' }}>
+                    <TableRow>
+                        <TableCell colSpan="2" style={{ textAlign: 'center' }}>
                         No results found.
-                        </td>
-                    </tr>
+                        </TableCell>
+                    </TableRow>
                     )}
-                </tbody>
+                </TableBody>
 
-            </table>
-            {showFileBtn && (
-                <div >
-                    {<MyDocument pdfFile={currentFileUrl}/>}
-                </div>
-            )}
-           
+            </Table>
+            </TableContainer>
             
         </>
         
