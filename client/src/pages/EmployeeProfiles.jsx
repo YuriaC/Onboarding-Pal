@@ -21,6 +21,7 @@ const EmployeeProfiles = () => {
                 searchTerm : value
             }
         })
+        console.log(filteredEmployees.data)
         setDsiayEmployee(filteredEmployees.data)
     }
 
@@ -58,8 +59,8 @@ const EmployeeProfiles = () => {
                                 </Link>
                             </h4>
                             <p>SSN: {employee.ssn || 'Undefined SSN'}</p>
-                            <p>Work Authorization: {employee.workAuth || 'Undefined Work Authorization'}</p>
-                            <p>Phone: {employee.workPhone || 'Undefined Phone'}</p>
+                            <p>Work Authorization: {employee.isPermRes === 'Yes' ? employee.permResStatus : employee.workAuth}</p>
+                            <p>Phone: {employee.cellPhone || 'Undefined Phone'}</p>
                             <p>Email: {employee.email || 'Undefined Email'}</p>
                         </div>
                     ))
