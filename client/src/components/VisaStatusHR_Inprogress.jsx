@@ -117,20 +117,27 @@ const VisaStatusHR_inprogress = () => {
     }, [submitted]);
 
     const formatDateToMDY = (date) => {
-        const dateobj = new Date(date);
-        const month = String(dateobj.getMonth() + 1).padStart(2, '0'); // Months are 0-indexed
-        const day = String(dateobj.getDate()).padStart(2, '0'); // Ensure 2-digit day
-        const year = dateobj.getFullYear();
-        return `${month}/${day}/${year}`;
+        if(date){
+            const dateobj = new Date(date);
+            const month = String(dateobj.getMonth() + 1).padStart(2, '0'); // Months are 0-indexed
+            const day = String(dateobj.getDate()).padStart(2, '0'); // Ensure 2-digit day
+            const year = dateobj.getFullYear();
+            return `${month}/${day}/${year}`;
+        }
+        return "not applicable"
+        
     }
 
     const calculateDaysDifference = (endDate, currentDate) => {
         // Convert both dates to milliseconds
-        const dateobj = new Date(endDate);
-        const timeDiff = dateobj - currentDate; // Absolute difference to avoid negative values
-        // Convert milliseconds to days (1 day = 24 * 60 * 60 * 1000 ms)
-        const dayDiff = Math.ceil(timeDiff / (1000 * 60 * 60 * 24));
-        return dayDiff;
+        if(endDate && currentDate){
+            const dateobj = new Date(endDate);
+            const timeDiff = dateobj - currentDate; // Absolute difference to avoid negative values
+            // Convert milliseconds to days (1 day = 24 * 60 * 60 * 1000 ms)
+            const dayDiff = Math.ceil(timeDiff / (1000 * 60 * 60 * 24));
+            return dayDiff;
+        }
+        return "not applicable"
     }
 
     const allFileApproved = (user_to_check) =>{
