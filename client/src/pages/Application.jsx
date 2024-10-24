@@ -14,7 +14,10 @@ import {
     FormControlLabel,
     Radio,
     Typography,
-    Paper
+    Paper,
+    Card,
+    CardHeader,
+    CardContent,
 } from '@mui/material'
 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
@@ -213,6 +216,21 @@ const Application = () => {
         <>
             {!isLoading ? (
                 <Paper sx={{ p: 3 }}>
+                    <Typography variant='h4' sx={{ color: formData.onboardingStatus === 'Rejected' ? 'red' : formData.onboardingStatus === 'Approved' ? 'green' : 'black' }}>
+                        Status: {formData.onboardingStatus}
+                    </Typography>
+                    {formData.onboardingStatus === 'Rejected' &&
+                        <Box sx={{ mt: 2, mb: 4 }}>
+                            <Card sx={{ backgroundColor: '#f8d7da', color: '#721c24' }}>
+                                <CardHeader title='Feedback given:' sx={{ paddingBottom: 0 }} />
+                                <CardContent>
+                                    <Typography variant='body1'>
+                                        {formData.hrFeedback}
+                                    </Typography>
+                                </CardContent>
+                            </Card>
+                        </Box>
+                    }
                     {formData.profilePicture ? null : (
                         <Avatar sx={{ width: 56, height: 56 }}>
                             <FontAwesomeIcon icon={faUser} />
@@ -336,6 +354,7 @@ const Application = () => {
                             margin="normal"
                         />
 
+                        <Typography variant="h6" margin="normal">Other Info</Typography>
                         <TextField
                             fullWidth
                             label="Email"
@@ -360,14 +379,13 @@ const Application = () => {
                             type="date"
                             margin="normal"
                         />
-
-                        <FormControl fullWidth margin="normal">
-                            <FormLabel>Gender</FormLabel>
-                            <TextField
-                                value={formData.gender || 'Not specified'}
-                                disabled
-                            />
-                        </FormControl>
+                        <TextField
+                            fullWidth
+                            label="Gender"
+                            value={formData.gender}
+                            disabled
+                            margin="normal"
+                        />
 
                         <Typography variant="h6" margin="normal">Work Authorization</Typography>
                         <FormControl fullWidth margin="normal">
@@ -471,14 +489,67 @@ const Application = () => {
                                 />
                             </RadioGroup>
                         </FormControl>
+                        {formData.isReferred === 'Yes' && (
+                            <>
+                                <TextField
+                                    fullWidth
+                                    label="Referer's First Name"
+                                    value={formData.refFirstName}
+                                    disabled
+                                    margin="normal"
+                                />
+                                <TextField
+                                    fullWidth
+                                    label="Referer's Middle Name"
+                                    value={formData.refMiddleName}
+                                    disabled
+                                    margin="normal"
+                                />
+                                <TextField
+                                    fullWidth
+                                    label="Referer's Last Name"
+                                    value={formData.refLastName}
+                                    disabled
+                                    margin="normal"
+                                />
+                                <TextField
+                                    fullWidth
+                                    label="Referer's Phone"
+                                    value={formData.refPhone}
+                                    disabled
+                                    margin="normal"
+                                />
+                                <TextField
+                                    fullWidth
+                                    label="Referer's Email"
+                                    value={formData.refEmail}
+                                    disabled
+                                    margin="normal"
+                                />
+                                <TextField
+                                    fullWidth
+                                    label={`Referer's Relationship to ${formData.firstName}`}
+                                    value={formData.refRelationship}
+                                    disabled
+                                    margin="normal"
+                                />
+                            </>
+                        )}
 
                         <Typography variant="h6" margin="normal">Emergency Contacts</Typography>
                         {formData.emergencyContacts.map((contact, index) => (
-                            <Box key={index}>
+                            <Box key={index} sx={{ mb: 4 }}>
                                 <TextField
                                     fullWidth
                                     label="First Name"
                                     value={contact.firstName}
+                                    disabled
+                                    margin="normal"
+                                />
+                                <TextField
+                                    fullWidth
+                                    label="Middle Name"
+                                    value={contact.middleName || 'N/A'}
                                     disabled
                                     margin="normal"
                                 />
@@ -505,7 +576,7 @@ const Application = () => {
                                 />
                                 <TextField
                                     fullWidth
-                                    label="Relationship"
+                                    label={`Relationship to ${formData.firstName}`}
                                     value={contact.relationship}
                                     disabled
                                     margin="normal"

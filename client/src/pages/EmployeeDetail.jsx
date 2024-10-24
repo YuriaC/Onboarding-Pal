@@ -1,22 +1,35 @@
 import { useState, useEffect } from 'react'
-import { ToastContainer, toast } from 'material-react-toastify'
-import { alphanumRegex, USER_ENDPOINT, username } from '../constants'
-import axios from 'axios'
-import { Box, Button, Radio, RadioGroup, Card, CardActions, CardContent, Typography, CardHeader, TextField, FormControlLabel, FormControl, FormLabel } from '@mui/material'
-import 'material-react-toastify/dist/ReactToastify.css'
-import ErrorHelperText from '../components/ErrorHelperText';
 import { useNavigate, useParams } from 'react-router-dom'
-import { checkZIP } from '../helpers/HelperFunctions'
+import { USER_ENDPOINT } from '../constants'
+import axios from 'axios'
+import { toast, ToastContainer } from 'react-toastify'
+import {
+    Avatar,
+    Box,
+    Button,
+    TextField,
+    RadioGroup,
+    FormControl,
+    FormLabel,
+    FormControlLabel,
+    Radio,
+    Typography,
+    Paper,
+} from '@mui/material'
+
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import { faUser } from '@fortawesome/free-solid-svg-icons'
 
 const EmployeeDetail = () => {
-
     const navigate = useNavigate()
     const { employeeId } = useParams()
-
+    const [isRejecting, setIsRejecting] = useState(false)
+    const [isLoading, setIsLoading] = useState(true)
     const [formData, setFormData] = useState({
         firstName: '',
         lastName: '',
         middleName: '',
+        username: '',
         preferredName: '',
         profilePicture: null,
         optReceipt: null,
@@ -31,7 +44,7 @@ const EmployeeDetail = () => {
         gender: '',
         carMake: '',
         carModel: '',
-        CarColor: '',
+        carColor: '',
         cellPhone: '',
         workPhone: '',
         isPermRes: '',
@@ -50,69 +63,36 @@ const EmployeeDetail = () => {
         visaStartDate: '',
         visaEndDate: '',
         visaTitle: '',
-        emergencyContacts: [
-            {
-                firstName: '',
-                lastName: '',
-                middleName: '',
-                phone: '',
-                emEmail: '',
-                relationship: '',
-                counter: 0,
-            }
-        ],
+        email: '',
+        emergencyContacts: [],
         hrFeedback: '',
+        onboardingStatus: '',
     })
-
-    const [emCounter, setEmCounter] = useState(1)
-    const [userEmail, setUserEmail] = useState('')
-    const [appStatus, setAppStatus] = useState('')
-    const [docs, setDocs] = useState([])
-    const [submitted, setSubmitted] = useState(false)
-
-    const [errors, setErrors] = useState({
-        dlNum: false,
-        zip: false,
-        dob: false,
-        visaEndDate: false,
-    })
-    const helperTexts = {
-        dlNum: "Driver's license number must be alphanumeric!",
-        zip: 'ZIP code must have 5 digits!',
-        dob: 'Birthday must be in the past!',
-        visaEndDate: 'Visa end date must be in the future!',
-    }
 
     useEffect(() => {
-        axios.get(`${USER_ENDPOINT}/userinfo/${employeeId}`, {
-            withCredentials: true,
-        })
-        .then(response => {
-            setUserEmail(response.data.email)
-            const status = response.data.onboardingStatus
-            if (status === 'Approved') {
-                return navigate('/employee/profile')
-            }
-            setAppStatus(status)
-            console.log('appStatus:', status)
-            if (status === 'Pending') {
-                getDocs()
-            }
-            if (['Pending', 'Rejected'].includes(status)) {
-                setDataToForm(response.data)
-            }
-        })
-        .catch(error => {
-            console.log('error:', error)
-            toast.error(`Error fetching user info! Error: ${error.message}`)
-        })
-    }, [submitted])
+        const fetchData = async () => {
+            await axios.get(`${USER_ENDPOINT}/userinfo/${employeeId}`, {
+                withCredentials: true,
+            })
+                .then(response => {
+                    const { data } = response
+                    setDataToForm(data)
+                })
+                .catch(error => {
+                    toast.error(`Error fetching user info! Error: ${error.message}`)
+                })
+            
+            setIsLoading(false)
+        }
+        fetchData()
+    }, [])
 
     const setDataToForm = (data) => {
         const {
             firstName,
             lastName,
             middleName,
+            username,
             preferredName,
             address,
             cellPhone,
@@ -122,9 +102,9 @@ const EmployeeDetail = () => {
             carColor,
             ssn,
             birthday,
+            email,
             gender,
             permResStatus,
-            isPermRes,
             driversLicenseNumber,
             driversLicenseExpDate,
             referer,
@@ -148,19 +128,20 @@ const EmployeeDetail = () => {
                 relationship,
             })
         }
-        const stateAndZip = address.split(', ')[2]
-        const lastSpaceIndex = stateAndZip.lastIndexOf(' ')
-        const state = stateAndZip.substring(0, lastSpaceIndex)
-        const zip = stateAndZip.substring(lastSpaceIndex + 1)
-        const buildingAndStreet = address.split(', ')[0]
-        const firstSpaceIndex = buildingAndStreet.indexOf(' ')
-        const building = buildingAndStreet.substring(0, firstSpaceIndex)
-        const street = buildingAndStreet.substring(firstSpaceIndex + 1)
+        const stateAndZip = address ? address.split(', ')[2] : ''
+        const lastSpaceIndex = address ? stateAndZip.lastIndexOf(' ') : 0
+        const state = address ? stateAndZip.substring(0, lastSpaceIndex) : ''
+        const zip = address ? stateAndZip.substring(lastSpaceIndex + 1) : ''
+        const buildingAndStreet = address ? address.split(', ')[0] : ''
+        const firstSpaceIndex = address ? buildingAndStreet.indexOf(' ') : 0
+        const building = address ? buildingAndStreet.substring(0, firstSpaceIndex) : ''
+        const street = address ? buildingAndStreet.substring(firstSpaceIndex + 1) : ''
         setFormData({
             ...formData,
             firstName,
             lastName,
             middleName,
+            username,
             preferredName,
             cellPhone,
             workPhone,
@@ -168,20 +149,22 @@ const EmployeeDetail = () => {
             carModel,
             carColor,
             ssn,
-            dob: birthday.split('T')[0],
+            email,
+            dob: birthday ? birthday.split('T')[0] : null,
             gender,
             permResStatus,
-            isPermRes,
-            hasDriversLicense: data.driversLicenseNumber ? 'Yes' : 'No',
+            isPermRes: ['Citizen', 'Green Card'].includes(permResStatus) ? 'Yes' : 'No',
+            hasDriversLicense: data['driversLicenseNumber'] ? 'Yes' : 'No',
             dlNum: driversLicenseNumber,
-            dlExpDate: driversLicenseExpDate ? driversLicenseExpDate.split('T')[0] : '',
+            dlExpDate: driversLicenseExpDate ? driversLicenseExpDate.split('T')[0] : null,
             isReferred: referer ? 'Yes' : 'No',
             emergencyContacts: newEmContacts,
             building,
             street,
-            city: address.split(', ')[1],
+            city: address ? address.split(', ')[1] : '',
             state,
             zip,
+            onboardingStatus,
             hrFeedback: onboardingStatus === 'Rejected' ? hrFeedback : '',
             refFirstName: referer ? referer.firstName : '',
             refLastName: referer ? referer.lastName : '',
@@ -196,373 +179,404 @@ const EmployeeDetail = () => {
         })
     }
 
-    const getDocs = async () => {
-        const response = await axios.get(`${USER_ENDPOINT}/getuserdocs`, {
+    const handleApproval = async () => {
+        axios.put(`${USER_ENDPOINT}/updateappstatus/${employeeId}`, { newStatus: 'Approved' }, {
             withCredentials: true,
         })
-        setDocs(response.data)
-    }
-
-    const handleChange = (e) => {
-        const { type, name, value } = e.target
-        setFormData({
-            ...formData,
-            [name]: type === 'file' ? e.target.files[0] : value,
-        })
-    }
-
-    const handleEmContactChange = (e, index) => {
-        const { name, value } = e.target
-        const newContacts = [...formData.emergencyContacts]
-        newContacts[index][name] = value
-        setFormData({...formData, emergencyContacts: newContacts})
-    }
-
-    const buildFormData = (formData, data, parentKey) => {
-        if (data && typeof data === 'object' && !(data instanceof File)) {
-          Object.keys(data).forEach(key => {
-            buildFormData(formData, data[key], parentKey ? `${parentKey}[${key}]` : key);
-          });
-        } else {
-          formData.append(parentKey, data);
-        }
-      };
-      
-    const createFormData = (data) => {
-        const formData = new FormData();
-        buildFormData(formData, data);
-        formData.append('username', username)
-        formData.append('onboardingStatus', 'Pending')
-        return formData;
-    }
-
-    const handleSubmit = async (e) => {
-        e.preventDefault()
-
-
-        const newErrorObject = {}
-        for (const key in errors) {
-            newErrorObject[key] = false
-        }
-        if (!checkZIP(formData.zip)) {
-            newErrorObject['zip'] = true
-        }
-        if (new Date(formData.dob) > new Date()) {
-            newErrorObject['dob'] = true
-        }
-        if (new Date(formData.visaEndDate) < new Date()) {
-            newErrorObject['visaEndDate'] = true
-        }
-        if (!alphanumRegex.test(formData.dlNum)) {
-            newErrorObject['dlNum'] = true
-        }
-        for (const key in newErrorObject) {
-            if (newErrorObject[key]) {
-                toast.error('Please fix input errors!')
-                return setErrors(newErrorObject)
-            }
-        }
-
-        setErrors(newErrorObject)
-
-
-        const data = createFormData(formData)
-
-        try {
-            await axios.post(`${USER_ENDPOINT}/applicationinput`, data, {
-                headers: {
-                    'Content-Type': 'multipart/form-data',
-                },
-                withCredentials: true,
+            .then(() => {
+                // window.close()
+                navigate('/hr/hiring')
             })
-            toast.success('Successfully submitted application!')
-            setSubmitted(!submitted)
-        }
-        catch (error) {
-            toast.error(`Error submitting application! Error: ${error.response.data}`)
-        }
-    }
-
-    const addEmergencyContact = (e) => {
-        e.preventDefault()
-        const newContacts = [...formData.emergencyContacts]
-        newContacts.push({
-                firstName: '',
-                lastName: '',
-                middleName: '',
-                phone: '',
-                emEmail: '',
-                relationship: '',
-                counter: emCounter,
-        })
-        setEmCounter(prev => prev + 1)
-        setFormData({
-            ...formData,
-            emergencyContacts: newContacts,
-        })
-    }
-
-    const removeEmergencyContact = (e, index) => {
-        e.preventDefault()
-        if (formData.emergencyContacts.length === 1) {
-            return
-        }
-        const newContacts = formData.emergencyContacts.filter((_, i) => i !== index)
-        setFormData({
-            ...formData,
-            emergencyContacts: newContacts
-        })
+            .catch(error => {
+                toast.error(`Error approving application! Error: ${error.message}`)
+            })
     }
 
     return (
-        <div style={{ width: '50vw' }}>
-            {/* <h2 style={{ color: appStatus === 'Rejected' ? 'red' : 'black' }}>Status: {appStatus}</h2>
-            {appStatus === 'Pending' && <h3>Please wait for HR to review your application.</h3>}
-            {appStatus === 'Rejected' && (formData.hrFeedback ?
-                <Box sx={{ mt: 2, mb: 4 }}>
-                    <Card sx={{ backgroundColor: '#f8d7da', color: '#721c24' }}>
-                        <CardHeader title='Feedback from HR:' sx={{ paddingBottom: 0 }} />
-                        <CardContent>
-                            <Typography variant='body1'>
-                                {formData.hrFeedback}
-                            </Typography>
-                        </CardContent>
-                    </Card>
-                </Box>
-                : (
-                    <Box sx={{ mt: 2, mb: 4 }}>
-                        <Card sx={{ backgroundColor: '#f8d7da', color: '#721c24' }}>
-                            <CardContent>
-                                <Typography variant='body1'>
-                                    No feedback provided
-                                </Typography>
-                            </CardContent>
-                        </Card>
-                    </Box>
-                ))
-            } */}
-            <h2>Profile</h2>
-            <form onSubmit={handleSubmit}>
-                <TextField label='First Name' name='firstName' value={formData.firstName} onChange={handleChange} disabled={appStatus === 'Pending'} variant='outlined' fullWidth required sx={{ mb: 2 }} />
-                <TextField label='Last Name' name='lastName' value={formData.lastName} onChange={handleChange} disabled={appStatus === 'Pending'} variant='outlined' fullWidth required sx={{ mb: 2 }} />
-                <TextField label='Middle Name' name='middleName' value={formData.middleName} onChange={handleChange} disabled={appStatus === 'Pending'} variant='outlined' fullWidth sx={{ mb: 2 }} />
-                <TextField label='Preferred Name' name='preferredName' value={formData.preferredName} onChange={handleChange} disabled={appStatus === 'Pending'} variant='outlined' fullWidth sx={{ mb: 2 }} />
-                <fieldset>
-                    <legend>Address</legend>
-                    <TextField label='Building/Apartment Number' type='number' name='building' value={formData.building} onChange={handleChange} disabled={appStatus === 'Pending'} required fullWidth sx={{ mb: 2 }} />
-                    <TextField label='Street' name='street' value={formData.street} onChange={handleChange} disabled={appStatus === 'Pending'} required fullWidth sx={{ mb: 2 }} />
-                    <TextField label='City' name='city' value={formData.city} onChange={handleChange} disabled={appStatus === 'Pending'} required fullWidth sx={{ mb: 2 }} />
-                    <TextField label='State' name='state' value={formData.state} onChange={handleChange} disabled={appStatus === 'Pending'} required fullWidth sx={{ mb: 2 }} />
-                    <TextField label='ZIP' name='zip' type='number' value={formData.zip} variant='outlined' onChange={handleChange} fullWidth error={errors.zip} disabled={appStatus === 'Pending'} required sx={{ mb: 2 }} />
-                    <ErrorHelperText hasError={errors.zip} message={helperTexts.zip} />
-                </fieldset>
-                <br />
-                <fieldset>
-                    <legend>Phone Numbers</legend>
-                    <TextField label='Cell Phone Number' name='cellPhone' value={formData.cellPhone} onChange={handleChange} disabled={appStatus === 'Pending'} variant='outlined' required fullWidth error={errors.landlordPhone} sx={{ mb: 2 }} />
-                    <ErrorHelperText hasError={errors.cellPhone} message={helperTexts.cellPhone} />
-                    <TextField label='Cell Phone Number' name='workPhone' value={formData.workPhone} onChange={handleChange} disabled={appStatus === 'Pending'} variant='outlined' fullWidth error={errors.landlordPhone} sx={{ mb: 1 }} />
-                    <ErrorHelperText hasError={errors.workPhone} message={helperTexts.workPhone} />
-                </fieldset>
-                <br />
-                <fieldset>
-                    <legend>Car Info</legend>
-                    <label>Make: </label>
-                    <input type='text' name='carMake' value={formData.carMake} onChange={handleChange} disabled={appStatus === 'Pending'} />
-                    <label>Model: </label>
-                    <input type='text' name='carModel' value={formData.carModel} onChange={handleChange} disabled={appStatus === 'Pending'} />
-                    <label>Color: </label>
-                    <input type='text' name='carColor' value={formData.carColor} onChange={handleChange} disabled={appStatus === 'Pending'} />
-                </fieldset>
-                <br />
-                <TextField label='Email' value={userEmail} variant='outlined' fullWidth sx={{ mb: 2 }} disabled />
-                <TextField label='SSN' type='password' name='ssn' value={formData.ssn} onChange={handleChange} disabled={appStatus === 'Pending'} required variant='outlined' fullWidth sx={{ mb: 1 }} />
-                <label>Date of Birth: </label>
-                <input type='date' name='dob' value={formData.dob} onChange={handleChange} disabled={appStatus === 'Pending'} required />
-                <ErrorHelperText hasError={errors.dob} message={helperTexts.dob} />
-                <label>Gender: </label>
-                <select name='gender' value={formData.gender} onChange={handleChange} disabled={appStatus === 'Pending'}>
-                    <option value='' selected>Select gender</option>
-                    <option value='Male'>Male</option>
-                    <option value='Female'>Female</option>
-                    <option value='I do not wish to answer'>I do not wish to answer</option>
-                </select>
-                <br />
-                <fieldset>
-                    <legend>Work Authorization</legend>
-                    <FormControl component='fieldset' disabled={appStatus === 'Pending'} required>
-                        <FormLabel component='legend'>Are you a citizen or permanent resident of the US?</FormLabel>
-                        <RadioGroup value={formData.isPermRes} name='isPermRes' onChange={handleChange} disabled={appStatus === 'Pending'} required>
-                            <FormControlLabel value='Yes' control={<Radio />} label='Yes' />
-                            <FormControlLabel value='No' control={<Radio />} label='No' />
-                        </RadioGroup>
-                    </FormControl>
-                    {formData.isPermRes === 'Yes' &&
-                        <>
-                            <br />
-                            <FormControl component='fieldset' disabled={appStatus === 'Pending'} required>
-                                <FormLabel component='legend'>What kind of permanent residence?</FormLabel>
-                                <RadioGroup value={formData.permResStatus} name='permResStatus' onChange={handleChange} disabled={appStatus === 'Pending'} required>
-                                    <FormControlLabel value='Citizen' control={<Radio />} label='Citizen' />
-                                    <FormControlLabel value='Green Card' control={<Radio />} label='Green Card' />
-                                </RadioGroup>
-                            </FormControl>
-                        </>
-                    }
-                    {formData.isPermRes === 'No' &&
-                        <>
-                            <br />
-                            <label>What is your work authorization? </label>
-                            <select name='nonPermWorkAuth' value={formData.nonPermWorkAuth} onChange={handleChange} disabled={appStatus === 'Pending'} required>
-                                <option value='' disabled selected>Select work auth</option>
-                                <option value='H1-B'>H1-B</option>
-                                <option value='L2'>L2</option>
-                                <option value='F1(CPT/OPT)'>F1(CPT/OPT)</option>
-                                <option value='H4'>H4</option>
-                                <option value='Other'>Other</option>
-                            </select>
-                            {formData.nonPermWorkAuth === 'F1(CPT/OPT)' &&
-                                <>
-                                    <br />
-                                    <label>Upload your OPT Receipt: </label>
-                                    <TextField type='file' name='optReceipt' onChange={handleChange} disabled={appStatus === 'Pending'} required variant='outlined' fullWidth sx={{ mb: 2 }} />
-                                </>
-                            }
-                            {formData.nonPermWorkAuth === 'Other' &&
-                                <>
-                                    <br />
-                                    <label>Visa title: </label>
-                                    <input type='text' name='visaTitle' value={formData.visaTitle} onChange={handleChange} disabled={appStatus === 'Pending'} />
-                                </>
-                            }
-                            <br />
-                            <label>Work authorization start date: </label>
-                            <input type='date' name='visaStartDate' value={formData.visaStartDate} onChange={handleChange} disabled={appStatus === 'Pending'} />
-                            <br />
-                            <label>Work authorization end date: </label>
-                            <input type='date' name='visaEndDate' value={formData.visaEndDate} onChange={handleChange} disabled={appStatus === 'Pending'} />
-                            <ErrorHelperText hasError={errors.visaEndDate} message={helperTexts.visaEndDate} />
-                        </>
-                    }
-                </fieldset>
-                <br />
-                <fieldset>
-                    <legend>Driver&#39;s License</legend>
-                    <FormControl component='fieldset' disabled={appStatus === 'Pending'} required>
-                        <FormLabel component='legend'>Do you have a driver&#39;s license?</FormLabel>
-                        <RadioGroup value={formData.hasDriversLicense} name='hasDriversLicense' onChange={handleChange} disabled={appStatus === 'Pending'} required>
-                            <FormControlLabel value='Yes' control={<Radio />} label='Yes' />
-                            <FormControlLabel value='No' control={<Radio />} label='No' />
-                        </RadioGroup>
-                    </FormControl>
-                    {formData.hasDriversLicense === 'Yes' &&
-                        <>
-                            <br />
-                            <label>Driver&#39;s License Number: </label>
-                            <input type='text' name='dlNum' value={formData.dlNum} onChange={handleChange} disabled={appStatus === 'Pending'} required />
-                            <ErrorHelperText hasError={errors.dlNum} message={helperTexts.dlNum} />
-                            <br />
-                            <label>Driver&#39;s License Expiration: </label>
-                            <input type='date' name='dlExpDate' value={formData.dlExpDate} onChange={handleChange} disabled={appStatus === 'Pending'} required />
-                            <br />
-                            <label>Driver&#39;s License Copy: </label>
-                            <TextField type='file' name='dlCopy' onChange={handleChange} disabled={appStatus === 'Pending'} required variant='outlined' fullWidth sx={{ mb: 2 }} />
-                        </>
-                    }
-                </fieldset>
-                <br />
-                <fieldset>
-                    <legend>Reference</legend>
-                    <FormControl component='fieldset' disabled={appStatus === 'Pending'} required>
-                        <FormLabel component='legend'>Did someone refer you to this company?</FormLabel>
-                        <RadioGroup value={formData.isReferred} name='isReferred' onChange={handleChange} disabled={appStatus === 'Pending'} required>
-                            <FormControlLabel value='Yes' control={<Radio />} label='Yes' />
-                            <FormControlLabel value='No' control={<Radio />} label='No' />
-                        </RadioGroup>
-                    </FormControl>
-                    {formData.isReferred === 'Yes' &&
-                        <>
-                            <br />
-                            <label>First Name: </label>
-                            <input type='text' name='refFirstName' value={formData.refFirstName} onChange={handleChange} disabled={appStatus === 'Pending'} required />
-                            <label>Last Name: </label>
-                            <input type='text' name='refLastName' value={formData.refLastName} onChange={handleChange} disabled={appStatus === 'Pending'} required />
-                            <label>Middle Name: </label>
-                            <input type='text' name='refMiddleName' value={formData.refMiddleName} onChange={handleChange} disabled={appStatus === 'Pending'} />
-                            <label>Phone: </label>
-                            <input type='tel' name='refPhone' value={formData.refPhone} onChange={handleChange} disabled={appStatus === 'Pending'} required />
-                            <label>Email: </label>
-                            <input type='email' name='refEmail' value={formData.refEmail} onChange={handleChange} disabled={appStatus === 'Pending'} required />
-                            <label>Relationship: </label>
-                            <input type='text' name='refRelationship' value={formData.refRelationship} onChange={handleChange} disabled={appStatus === 'Pending'} required />
-                        </>
-                    }
-                </fieldset>
-                <br />
-                <fieldset>
-                    <legend>Emergency Contact{formData.emergencyContacts.length === 1 ? '' : 's'}</legend>
-                    {formData.emergencyContacts.map((contact, index) => (
-                        <div key={index}>
-                            <label>First Name</label>
-                            <input type='text' name='firstName' value={contact.firstName} onChange={(e) => handleEmContactChange(e, index)} disabled={appStatus === 'Pending'} required />
-                            <label>Last Name</label>
-                            <input type='text' name='lastName' value={contact.lastName} onChange={(e) => handleEmContactChange(e, index)} disabled={appStatus === 'Pending'} required />
-                            <label>Middle Name</label>
-                            <input type='text' name='middleName' value={contact.middleName} onChange={(e) => handleEmContactChange(e, index)} disabled={appStatus === 'Pending'} />
-                            <label>Phone</label>
-                            <input type='tel' name='phone' value={contact.phone} onChange={(e) => handleEmContactChange(e, index)} disabled={appStatus === 'Pending'} required />
-                            <label>Email</label>
-                            <input type='email' name='emEmail' value={contact.emEmail} onChange={(e) => handleEmContactChange(e, index)} disabled={appStatus === 'Pending'} required />
-                            <label>Relationship</label>
-                            <input type='text' name='relationship' value={contact.relationship} onChange={(e) => handleEmContactChange(e, index)} disabled={appStatus === 'Pending'} required />
-                            {formData.emergencyContacts.length !== 1 && appStatus !== 'Pending' &&
-                                <Button onClick={(e) => removeEmergencyContact(e, index)} disabled={appStatus === 'Pending'}>Remove Contact</Button>
-                            }
-                            <br />
-                        </div>
-                    ))}
-                    {appStatus !== 'Pending' && <Button onClick={addEmergencyContact} disabled={appStatus === 'Pending'}>Add Contact</Button>}
-                </fieldset>
-                <input type='submit' value='Submit' disabled={appStatus === 'Pending'} />
-            </form>
-            {appStatus === 'Pending' &&
-                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, mb: '2rem' }}>
-                    {Object.keys(docs).map((key) => {
-                        const doc = docs[key]
-                        let fileName
-                        switch (key) {
-                            case 'profilePictureURL':
-                                fileName = 'Profile Picture'
-                                break
-                            case 'driversLicenseCopy_url':
-                                fileName = "Driver's License"
-                                break
-                            case 'optUrl':
-                                fileName = 'OPT Receipt'
-                                break
-                        }
-                        return (
+        <>
+            {!isLoading ? (
+                <Paper sx={{ p: 3 }}>
+                    <Typography variant='h4'>
+                        {formData.firstName} {formData.lastName} ({formData.username})
+                    </Typography>
+                    {formData.profilePicture ? null : (
+                        <Avatar sx={{ width: 56, height: 56 }}>
+                            <FontAwesomeIcon icon={faUser} />
+                        </Avatar>
+                    )}
+
+                    <form>
+                        <TextField
+                            fullWidth
+                            label="First Name"
+                            value={formData.firstName}
+                            disabled
+                            required
+                            margin="normal"
+                        />
+                        <TextField
+                            fullWidth
+                            label="Last Name"
+                            value={formData.lastName}
+                            disabled
+                            required
+                            margin="normal"
+                        />
+                        <TextField
+                            fullWidth
+                            label="Middle Name"
+                            value={formData.middleName}
+                            disabled
+                            margin="normal"
+                        />
+                        <TextField
+                            fullWidth
+                            label="Preferred Name"
+                            value={formData.preferredName}
+                            disabled
+                            margin="normal"
+                        />
+
+                        <Typography variant="h6" margin="normal">Address</Typography>
+                        <TextField
+                            fullWidth
+                            label="Building/Apartment #"
+                            value={formData.building}
+                            disabled
+                            required
+                            margin="normal"
+                        />
+                        <TextField
+                            fullWidth
+                            label="Street Name"
+                            value={formData.street}
+                            disabled
+                            required
+                            margin="normal"
+                        />
+                        <TextField
+                            fullWidth
+                            label="City"
+                            value={formData.city}
+                            disabled
+                            required
+                            margin="normal"
+                        />
+                        <TextField
+                            fullWidth
+                            label="State"
+                            value={formData.state}
+                            disabled
+                            required
+                            margin="normal"
+                        />
+                        <TextField
+                            fullWidth
+                            label="ZIP"
+                            value={formData.zip}
+                            disabled
+                            required
+                            type="number"
+                            margin="normal"
+                        />
+
+                        <Typography variant="h6" margin="normal">Phone Numbers</Typography>
+                        <TextField
+                            fullWidth
+                            label="Cell Phone Number"
+                            value={formData.cellPhone}
+                            disabled
+                            required
+                            type="tel"
+                            margin="normal"
+                        />
+                        <TextField
+                            fullWidth
+                            label="Work Phone Number"
+                            value={formData.workPhone}
+                            disabled
+                            type="tel"
+                            margin="normal"
+                        />
+
+                        <Typography variant="h6" margin="normal">Car Info</Typography>
+                        <TextField
+                            fullWidth
+                            label="Make"
+                            value={formData.carMake}
+                            disabled
+                            margin="normal"
+                        />
+                        <TextField
+                            fullWidth
+                            label="Model"
+                            value={formData.carModel}
+                            disabled
+                            margin="normal"
+                        />
+                        <TextField
+                            fullWidth
+                            label="Color"
+                            value={formData.carColor}
+                            disabled
+                            margin="normal"
+                        />
+
+                        <Typography variant="h6" margin="normal">Other Info</Typography>
+                        <TextField
+                            fullWidth
+                            label="Email"
+                            value={formData.email}
+                            disabled
+                            type="email"
+                            margin="normal"
+                        />
+                        <TextField
+                            fullWidth
+                            label="SSN"
+                            value={formData.ssn}
+                            disabled
+                            type="password"
+                            margin="normal"
+                        />
+                        <TextField
+                            fullWidth
+                            label="Date of Birth"
+                            value={formData.dob}
+                            disabled
+                            type="date"
+                            margin="normal"
+                        />
+                        <TextField
+                            fullWidth
+                            label="Gender"
+                            value={formData.gender}
+                            disabled
+                            margin="normal"
+                        />
+
+                        <Typography variant="h6" margin="normal">Work Authorization</Typography>
+                        <FormControl fullWidth margin="normal">
+                            <FormLabel>Are you a permanent resident?</FormLabel>
+                            <RadioGroup row value={formData.isPermRes}>
+                                <FormControlLabel
+                                    value="Yes"
+                                    control={<Radio />}
+                                    label="Yes"
+                                    disabled
+                                />
+                                <FormControlLabel
+                                    value="No"
+                                    control={<Radio />}
+                                    label="No"
+                                    disabled
+                                />
+                            </RadioGroup>
+                        </FormControl>
+                        {formData.isPermRes === 'No' && (
                             <>
-                                <Card key={`${key}-download`} sx={{ minWidth: 275 }}>
-                                    <CardContent>
-                                        <Typography variant='h6'>{fileName}</Typography>
-                                    </CardContent>
-                                    <CardActions sx={{ justifyContent: 'center' }}>
-                                        <Button href={doc.download} download>
-                                            Download
-                                        </Button>
-                                        <Button onClick={() => window.open(doc.preview, '_blank')}>
-                                            Preview
-                                        </Button>
-                                    </CardActions>
-                                </Card>
+                                <TextField
+                                    fullWidth
+                                    label="Work Authorization"
+                                    value={formData.nonPermWorkAuth}
+                                    disabled
+                                    margin="normal"
+                                />
+                                <TextField
+                                    fullWidth
+                                    label="Visa Start Date"
+                                    value={formData.visaStartDate}
+                                    disabled
+                                    type="date"
+                                    margin="normal"
+                                />
+                                <TextField
+                                    fullWidth
+                                    label="Visa End Date"
+                                    value={formData.visaEndDate}
+                                    disabled
+                                    type="date"
+                                    margin="normal"
+                                />
                             </>
-                        )
-                    })}
-                </Box>
-            }
-            <ToastContainer />
-        </div>
+                        )}
+
+                        <Typography variant="h6" margin="normal">{`Driver's License`}</Typography>
+                        <FormControl fullWidth margin="normal">
+                            <FormLabel>Do you have a {`driver's license`}?</FormLabel>
+                            <RadioGroup row value={formData.hasDriversLicense}>
+                                <FormControlLabel
+                                    value="Yes"
+                                    control={<Radio />}
+                                    label="Yes"
+                                    disabled
+                                />
+                                <FormControlLabel
+                                    value="No"
+                                    control={<Radio />}
+                                    label="No"
+                                    disabled
+                                />
+                            </RadioGroup>
+                        </FormControl>
+                        {formData.hasDriversLicense === 'Yes' && (
+                            <>
+                                <TextField
+                                    fullWidth
+                                    label="Driver's License Number"
+                                    value={formData.dlNum}
+                                    disabled
+                                    margin="normal"
+                                />
+                                <TextField
+                                    fullWidth
+                                    label="Driver's License Expiration"
+                                    value={formData.dlExpDate}
+                                    disabled
+                                    type="date"
+                                    margin="normal"
+                                />
+                            </>
+                        )}
+
+                        <Typography variant="h6" margin="normal">Reference</Typography>
+                        <FormControl fullWidth margin="normal">
+                            <FormLabel>Did someone refer you to this company?</FormLabel>
+                            <RadioGroup row value={formData.isReferred}>
+                                <FormControlLabel
+                                    value="Yes"
+                                    control={<Radio />}
+                                    label="Yes"
+                                    disabled
+                                />
+                                <FormControlLabel
+                                    value="No"
+                                    control={<Radio />}
+                                    label="No"
+                                    disabled
+                                />
+                            </RadioGroup>
+                        </FormControl>
+                        {formData.isReferred === 'Yes' && (
+                            <>
+                                <TextField
+                                    fullWidth
+                                    label="Referer's First Name"
+                                    value={formData.refFirstName}
+                                    disabled
+                                    margin="normal"
+                                />
+                                <TextField
+                                    fullWidth
+                                    label="Referer's Middle Name"
+                                    value={formData.refMiddleName}
+                                    disabled
+                                    margin="normal"
+                                />
+                                <TextField
+                                    fullWidth
+                                    label="Referer's Last Name"
+                                    value={formData.refLastName}
+                                    disabled
+                                    margin="normal"
+                                />
+                                <TextField
+                                    fullWidth
+                                    label="Referer's Phone"
+                                    value={formData.refPhone}
+                                    disabled
+                                    margin="normal"
+                                />
+                                <TextField
+                                    fullWidth
+                                    label="Referer's Email"
+                                    value={formData.refEmail}
+                                    disabled
+                                    margin="normal"
+                                />
+                                <TextField
+                                    fullWidth
+                                    label={`Referer's Relationship to ${formData.firstName}`}
+                                    value={formData.refRelationship}
+                                    disabled
+                                    margin="normal"
+                                />
+                            </>
+                        )}
+
+                        <Typography variant="h6" margin="normal">Emergency Contacts</Typography>
+                        {formData.emergencyContacts.map((contact, index) => (
+                            <Box key={index} sx={{ mb: 4 }}>
+                                <TextField
+                                    fullWidth
+                                    label="First Name"
+                                    value={contact.firstName}
+                                    disabled
+                                    margin="normal"
+                                />
+                                <TextField
+                                    fullWidth
+                                    label="Middle Name"
+                                    value={contact.middleName || 'N/A'}
+                                    disabled
+                                    margin="normal"
+                                />
+                                <TextField
+                                    fullWidth
+                                    label="Last Name"
+                                    value={contact.lastName}
+                                    disabled
+                                    margin="normal"
+                                />
+                                <TextField
+                                    fullWidth
+                                    label="Phone"
+                                    value={contact.phone}
+                                    disabled
+                                    margin="normal"
+                                />
+                                <TextField
+                                    fullWidth
+                                    label="Email"
+                                    value={contact.emEmail}
+                                    disabled
+                                    margin="normal"
+                                />
+                                <TextField
+                                    fullWidth
+                                    label={`Relationship to ${formData.firstName}`}
+                                    value={contact.relationship}
+                                    disabled
+                                    margin="normal"
+                                />
+                            </Box>
+                        ))}
+
+                        {formData.onboardingStatus == 'Pending' && (
+                            <Box sx={{ display: 'flex', justifyContent: 'center', gap: 2, mt: 4 }}>
+                                <Button
+                                    variant='contained'
+                                    sx={{ backgroundColor: 'green', color: 'white', '&:hover': { backgroundColor: 'darkgreen' } }}
+                                    onClick={handleApproval}
+                                >
+                                    Approve
+                                </Button>
+                                <Button
+                                    variant='contained'
+                                    sx={{ backgroundColor: 'red', color: 'white', '&:hover': { backgroundColor: 'darkred' } }}
+                                    onClick={() => setIsRejecting(!isRejecting)}
+                                >
+                                    Reject
+                                </Button>
+                            </Box>
+                        )}
+                        <ToastContainer />
+                    </form>
+                </Paper>
+            ) : (
+                'Loading...'
+            )}
+        </>
     )
 }
 

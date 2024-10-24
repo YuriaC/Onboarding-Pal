@@ -43,10 +43,10 @@ const Navbar = () => {
                                         Onboarding
                                     </NavLink>
                                     <NavLink
-                                        to="/employee/housing"
+                                        to="/employee/profile"
                                         className={({ isActive }) => (isActive ? 'active-link' : 'nav-link')}
                                     >
-                                        Housing
+                                        Personal
                                     </NavLink>
                                     <NavLink
                                         to="/employee/visa-status"
@@ -55,16 +55,16 @@ const Navbar = () => {
                                         Visa Status
                                     </NavLink>
                                     <NavLink
-                                        to="/employee/profile"
+                                        to="/employee/housing"
                                         className={({ isActive }) => (isActive ? 'active-link' : 'nav-link')}
                                     >
-                                        Personal
+                                        Housing
                                     </NavLink>
                                 </>
                             )}
                             {userRole === 'hr' && (
                                 <>
-                                  <NavLink
+                                    <NavLink
                                         to="/hr/home"
                                         className={({ isActive }) => (isActive ? 'active-link' : 'nav-link')}
                                     >

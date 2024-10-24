@@ -58,7 +58,7 @@ const register = async (req,res) =>{
             existingUser.password = hashedPassword;
             existingUser.role = 'employee';
             existingUser.house = randomHouse[0]._id;
-            existingUser.onboardingStatus = 'Pending';
+            // existingUser.onboardingStatus = 'Pending';
             existingUser.registrationHistory.email = email;
             existingUser.registrationHistory.status = 'Registered';
             await existingUser.save();
