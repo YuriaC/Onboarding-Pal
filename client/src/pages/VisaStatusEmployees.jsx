@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react'
 import { docNames, docStatuses, docUrls, TEST_ENDPOINT, USER_ENDPOINT } from '../constants'
 import { ToastContainer, toast } from 'react-toastify'
 import axios from 'axios'
-import { Typography, Box, Card, CardContent, CardHeader, TextField, InputLabel, Button } from '@mui/material'
+import { Container, Typography, Box, Card, CardContent, CardHeader, TextField, InputLabel, Button } from '@mui/material'
 
 const VisaStatusEmployees = () => {
     // only apply to employee OPT visa status
@@ -255,7 +255,8 @@ const VisaStatusEmployees = () => {
     }
 
     return (
-        <>
+        <Container maxWidth="md" sx={{marginTop: 15}}>
+            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, padding: 2, boxShadow: 3, borderRadius: 2, backgroundColor: 'white' }}>
             <h2>OPT Status Page</h2>
             {visaInfo.workAuth !== 'F1(CPT/OPT)' ? <Typography variant='h3'>Only for F1(CPT/OPT) work authorizations</Typography> : <div>
                 {/* employees with non-OPT status or those who got all OPT documentations see the following */}
@@ -525,7 +526,8 @@ const VisaStatusEmployees = () => {
                 </fieldset>}
                 <ToastContainer />
             </div>}
-        </>
+            </Box>
+        </Container>
     )
 }
 

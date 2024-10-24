@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react'
 import { ToastContainer, toast } from 'material-react-toastify'
 import { alphanumRegex, USER_ENDPOINT, username } from '../constants'
 import axios from 'axios'
-import { Box, Button, Radio, RadioGroup, Card, CardActions, CardContent, InputLabel, Typography, CardHeader, TextField, FormControlLabel, FormControl, FormLabel, Select, MenuItem } from '@mui/material'
+import { Box, Container, Button, Radio, RadioGroup, Card, CardActions, CardContent, InputLabel, Typography, CardHeader, TextField, FormControlLabel, FormControl, FormLabel, Select, MenuItem } from '@mui/material'
 import 'material-react-toastify/dist/ReactToastify.css'
 import ErrorHelperText from '../components/ErrorHelperText';
 import { useNavigate } from 'react-router-dom'
@@ -314,7 +314,8 @@ const Onboarding = () => {
     }
 
     return (
-        <div style={{ width: '50vw' }}>
+        <Container maxWidth="md" sx={{ marginTop: 15}}>
+            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, padding: 2, boxShadow: 3, borderRadius: 2,  backgroundColor: 'white'}}>
             <Typography variant='h4' sx={{ color: appStatus === 'Rejected' ? 'red' : 'black', mb: 1 }}>Status: {appStatus}</Typography>
             {appStatus === 'Pending' && <Typography variant='h5' sx={{ mb: 2 }}>Please wait for HR to review your application.</Typography>}
             {appStatus === 'Rejected' && (formData.hrFeedback ?
@@ -542,7 +543,8 @@ const Onboarding = () => {
                 </Box>
             }
             <ToastContainer />
-        </div>
+            </Box>
+        </Container>
     )
 }
 
