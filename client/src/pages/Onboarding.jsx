@@ -252,7 +252,7 @@ const Onboarding = () => {
         if (new Date(formData.visaEndDate) < new Date()) {
             newErrorObject['visaEndDate'] = true
         }
-        if (!alphanumRegex.test(formData.dlNum)) {
+        if (formData.dlNum && !alphanumRegex.test(formData.dlNum)) {
             newErrorObject['dlNum'] = true
         }
         for (const key in newErrorObject) {

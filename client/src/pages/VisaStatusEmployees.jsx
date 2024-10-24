@@ -392,8 +392,8 @@ const VisaStatusEmployees = () => {
                         <form id='i983Submit' onSubmit={handleSubmit}>
                             {/* <label htmlFor="i983">Please download and fill out the I-983 form. </label> <br></br> */}
                             <Typography>Please download and fill out the I-983 form</Typography>
-                            <Button href={docs['Empty Template'].download}>Download Empty Template</Button>
-                            <Button href={docs['Sample Template'].download}>Download Sample Template</Button>
+                            <Button href={docs['Empty Template']?.download}>Download Empty Template</Button>
+                            <Button href={docs['Sample Template']?.download}>Download Sample Template</Button>
                             {/* download form  */}
                             {/* <input type="file" name="i983" id="i983" onChange={handleFileChange} required/>
                             <button type="submit">Submit</button>  */}
