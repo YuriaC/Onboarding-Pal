@@ -4,13 +4,17 @@ import axios from 'axios'
 import { useNavigate } from 'react-router-dom';
 import { ToastContainer, toast } from 'react-toastify';
 import DeleteIcon from '@mui/icons-material/Delete'
-import PhoneIcon from '@mui/icons-material/Phone';
-import MailIcon from '@mui/icons-material/Mail'
 import {
     Typography,
-    Box,
     Button,
-    Card,
+    Paper,
+    Table,
+    TableBody,
+    TableCell,
+    TableContainer,
+    TableHead,
+    TableRow,
+
 } from '@mui/material'
 
 const HousingMgmt = () => {
@@ -58,32 +62,40 @@ const HousingMgmt = () => {
             <h1>Housing Management</h1>
             <Button onClick={() => navigate('/hr/addhouse')}>Add House</Button>
 
-            <Box sx={{ justifyContent: 'center', width: '100%' }}>
-            {houses.map((house) => {
-                return (
-                    <div key={house.address}>
-                        <Card key={house.address} sx={{ mb: '1rem' }}>
-                            <Box sx={{ width: '100%', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                                <Box sx={{ mr: '1rem' }}>
+            <TableContainer component={Paper}>
+                <Table sx={{ minWidth: 650 }} aria-label="simple table">
+                    <TableHead>
+                        <TableRow>
+                            <TableCell>Address</TableCell>
+                            <TableCell>Landlord Name</TableCell>
+                            <TableCell>Phone</TableCell>
+                            <TableCell>Email </TableCell>
+                            <TableCell>Residents</TableCell>
+                            <TableCell align="right">Actions</TableCell>
+                        </TableRow>
+                    </TableHead>
+                    <TableBody>
+                        {houses.map((house) => (
+                            <TableRow
+                                key={house.address}
+                                sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
+                            >
+                                <TableCell component="th" scope="row">
                                     <Typography variant='h5' sx={{ cursor: 'pointer'}} onClick={(e) => handleClick(e, house._id)}>{house.address.split(', ')[0]}</Typography>
                                     <Typography variant='body1'>{house.address.split(', ')[1]}, {house.address.split(', ')[2]}</Typography>
-                                </Box>
-                                <Box sx={{ mr: '1rem' }}>
-                                    <Typography color='text.primary' sx={{ ml: 2 }} display='block'>{house.landlordName}</Typography>
-                                </Box>
-                                <Box sx={{ mr: '1rem' }}>
-                                    <Typography><PhoneIcon />{house.landlordPhone}</Typography>
-                                    <Typography><MailIcon />{house.landlordEmail}</Typography>
-                                </Box>
-                                <Box sx={{ mr: '1rem' }}>
-                                    <Typography sx={{ ml: 2 }}>Residents: {house.employees.length}</Typography>
-                                </Box>
-                                <Button onClick={(e) => handleDelete(e, house._id, house.address)}><DeleteIcon /></Button>
-                            </Box>
-                        </Card>
-                    </div>
-            )})}
-            </Box>
+                                </TableCell>
+                                <TableCell>{house.landlordName}</TableCell>
+                                <TableCell>{house.landlordPhone}</TableCell>
+                                <TableCell>{house.landlordEmail}</TableCell>
+                                <TableCell>Residents: {house.employees.length}</TableCell>
+                                <TableCell align="right">
+                                    <Button onClick={(e) => handleDelete(e, house._id, house.address)}><DeleteIcon /></Button>
+                                </TableCell>
+                            </TableRow>
+                        ))}
+                    </TableBody>
+                </Table>
+            </TableContainer>
             <ToastContainer />
         </div>
     )
