@@ -4,20 +4,20 @@
   text-align: center;
 }
 
-
 input {
   margin: 0.5rem;
+  background-color: white;
 }
 
 input:required {
   border: 2px solid red;
+  background-color: white;
 }
 
 input:required:focus {
   outline: none;
   box-shadow: 0 0 5px red;
 }
-
 
 .address-input {
   width: 30rem;

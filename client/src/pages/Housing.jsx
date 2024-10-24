@@ -3,7 +3,7 @@ import axios from 'axios'
 import { COMMENT_ENDPOINT, REPORT_ENDPOINT, USER_ENDPOINT } from '../constants'
 import { toast, ToastContainer } from 'material-react-toastify'
 import 'material-react-toastify/dist/ReactToastify.css'
-import { Card, CardContent, Typography, List, ListItem, ListItemText, Box, Button, TextField, Accordion, AccordionDetails, AccordionSummary, ListItemIcon } from '@mui/material'
+import { Container, Card, CardContent, Typography, List, ListItem, ListItemText, Box, Button, TextField, Accordion, AccordionDetails, AccordionSummary, ListItemIcon } from '@mui/material'
 import PhoneIcon from '@mui/icons-material/Phone'
 
 const Housing = () => {
@@ -178,7 +178,7 @@ const Housing = () => {
     }
 
     return (
-        <div style={{ width: '90vw' }}>
+        <Container maxWidth="md" sx={{ marginTop: 15}}>
             <Box sx={{ margin: 'auto', mt: 5 }}>
                 <Card>
                     <CardContent>
@@ -330,7 +330,7 @@ const Housing = () => {
                 </Card>
             </Box>
             <ToastContainer />
-        </div>
+        </Container>
     )
 }
 

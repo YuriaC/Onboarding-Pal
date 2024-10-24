@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import { loginUserThunk } from '../store/user/userSlice';
-import { TextField, Button, Typography, Box, Container } from '@mui/material';
+import { TextField, Button, Typography, Box, Container, withTheme } from '@mui/material';
 
 const Login = () => {
     const [form, setForm] = useState({
@@ -22,13 +22,12 @@ const Login = () => {
     };
 
  
-
     return (
-        <Container maxWidth="sm" sx={{ marginTop: 8 }}>
+        <Container maxWidth="sm" sx={{ marginTop: 15}}>
             <Box
                 component="form"
                 onSubmit={userLogin}
-                sx={{ display: 'flex', flexDirection: 'column', gap: 2, padding: 2, boxShadow: 3, borderRadius: 2 }}
+                sx={{ display: 'flex', flexDirection: 'column', gap: 2, padding: 2, boxShadow: 3, borderRadius: 2,  backgroundColor: 'white'}}
             >
                 <Typography variant="h4" align="center" gutterBottom>
                     Login
@@ -61,7 +60,6 @@ const Login = () => {
                 />
 
 
-
                 <Button
                     type="submit"
                     variant="contained"
@@ -72,8 +70,6 @@ const Login = () => {
                     Login
 
                 </Button>
-
-
             </Box>
         </Container>
     );
