@@ -1,6 +1,7 @@
 import {useState} from 'react'
 import VisaStatusHR_inprogress from '../components/VisaStatusHR_Inprogress';
 import VisaStatusHR_all from '../components/VisaStatusHR_all';
+import { Button} from '@mui/material'
 
 const VisaStatusHR = () => {
     const [visibleDiv, setVisibleDiv] = useState('inprogress'); // State to track visible div
@@ -12,16 +13,16 @@ const VisaStatusHR = () => {
 
     return (
         <div>
-            <button onClick={() => handleToggle('all')}>
+            <Button onClick={() => handleToggle('all')}>
                 {visibleDiv === 'all' ? 'Hide' : 'Show'} All
-            </button>
-            <button onClick={() => handleToggle('inprogress')}>
+            </Button>
+            <Button onClick={() => handleToggle('inprogress')}>
                 {visibleDiv === 'inprogress' ? 'Hide' : 'Show'} In Progress
-            </button>
+            </Button>
 
-            {/* Conditionally render Div 1 */}
+            {/* Conditionally render D  iv 1 */}
             {visibleDiv === 'all' && (
-                <div style={{ marginTop: '10px', border: '1px solid #ccc', padding: '10px' }}>
+                <div >
                 <p>All Employees</p>
                 <VisaStatusHR_all/>
                 </div>
@@ -29,8 +30,8 @@ const VisaStatusHR = () => {
 
             {/* Conditionally render Div 2 */}
             {visibleDiv === 'inprogress' && (
-                <div style={{ marginTop: '10px', border: '1px solid #ccc', padding: '10px' }}>
-                <p>In progress Employees!</p>
+                <div >
+                <p>In progress Employees</p>
                 <VisaStatusHR_inprogress/>
                 </div>
             )}
