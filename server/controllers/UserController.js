@@ -880,6 +880,30 @@ const getUserInfo = async (req, res) =>{
         return res.status(500).json({ message: error.message });
     }
 };
+
+/*const updateUserInfo = async (req, res) =>{
+    const { userId } = req.user
+    try {
+        const user = await User.findById(userId).populate('referer').populate({
+            path: 'house',
+            populate: [
+                { path: 'employees' },
+                { path: 'reports', populate: {
+                    path: 'comments'
+                }
+            }]
+        }).populate('emergencyContacts').lean().exec();
+        if (!user) {
+            return res.status(401).json({ message: 'User not Found!' });
+        }
+
+        //return res.status(200).json(user)
+    } catch (error) {
+        console.error(error);
+        return res.status(500).json({ message: error.message });
+    }
+}*/
+
 const getUserInfoById = async (req, res) =>{
     const { userId } = req.params
     console.log('userId:', userId)
@@ -1197,6 +1221,7 @@ module.exports = {
     sendRegistrationLink,
     getUserDocs,
     getUserInfo,
+    //updateUserInfo,
     getEmpolyeesProfileForHR,
     getPersonalinfoById,
     logout,

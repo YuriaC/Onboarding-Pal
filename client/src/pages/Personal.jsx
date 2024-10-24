@@ -1,53 +1,67 @@
 import { useState, useEffect } from 'react';
 import './Personal.css';
 import axios from 'axios';
-import { USER_ENDPOINT } from '../constants';
+import { USER_ENDPOINT, username } from '../constants';
 import { toast, ToastContainer } from 'material-react-toastify';
 import 'material-react-toastify/dist/ReactToastify.css'
 import { Box, Card, CardActions, CardContent, Typography, Button } from '@mui/material'
 
 const Personal = () => {
-
-    console.log('Personal')
-    const [isEditing, setIsEditing] = useState(false);
+    //const [isEditing, setIsEditing] = useState(false);
     const [formData, setFormData] = useState({
         firstName: '',
         lastName: '',
         middleName: '',
         preferredName: '',
-        profilePicture: '',
-        email: '',
+        profilePicture: null,
+        optReceipt: null,
+        dlCopy: null,
+        building: '',
+        street: '',
+        city: '',
+        state: '',
+        zip: '',
         ssn: '',
         dob: '',
-        gender: '',
-        address: {
-            building: '',
-            street: '',
-            city: '',
-            state: '',
-            zip: ''
-        },
-        contactInfo: {
-            cellPhone: '',
-            workPhone: ''
-        },
-        employment: {
-            visaTitle: '',
-            startDate: '',
-            endDate: ''
-        },
-        emergencyContact: [{
-            firstName: '',
-            lastName: '',
-            middleName: '',
-            phone: '',
-            email: '',
-            relationship: ''
-        }],
+        gender: 'I do not wish to answer',
+        carMake: '',
+        carModel: '',
+        carColor: '',
+        cellPhone: '',
+        workPhone: '',
+        isPermRes: '',
+        permResStatus: '',
+        nonPermWorkAuth: 'H1-B',
+        hasDriversLicense: '',
+        isReferred: '',
+        dlNum: '',
+        dlExpDate: '',
+        refFirstName: '',
+        refLastName: '',
+        refMiddleName: '',
+        refPhone: '',
+        refEmail: '',
+        refRelationship: '',
+        visaStartDate: '',
+        visaEndDate: '',
+        visaTitle: '',
+        emergencyContacts: [
+            {
+                firstName: '',
+                lastName: '',
+                middleName: '',
+                phone: '',
+                emEmail: '',
+                relationship: '',
+                counter: 0,
+            }
+        ],
         documents: {} // This could be a list of file objects or URLs
     });
 
     const [formDataClone, setFormDataClone] = useState({});
+    const [submitted, setSubmitted] = useState(false);
+    const [editSections, setEditSections] = useState([]);
 
     // useEffect(() => {
     //     axios.get(`${USER_ENDPOINT}/userinfo`, { withCredentials: true })
@@ -62,92 +76,149 @@ const Personal = () => {
 
     useEffect(() => {
         setFormDataClone(JSON.parse(JSON.stringify(formData)))
-    }, [isEditing])
+    }, [editSections.length])
+
+
+    /*    useEffect(() => {
+            axios.get(`${USER_ENDPOINT}/getuserdocs`, {
+                // headers: {
+                //     'Authorization': `Bearer ${token}`
+                // },
+                withCredentials: true,
+            })
+            .then(response => {
+                // toast.success('Successfully fetched user files!')
+                console.log('response.data:', response.data)
+                setFormData({
+                    ...formData,
+                    documents: response.data
+                })
+            })
+            .catch(error => {
+                console.log('error:', error)
+                toast.error(`Error fetching user files! Error ${error.message}`)
+            })
+        }, []);*/
+
+    const getUserInfo = async () => {
+        try {
+            const userInfoResponse = await axios.get(`${USER_ENDPOINT}/userinfo`, {
+                withCredentials: true,
+            })
+
+            const urlResponse = await axios.get(`${USER_ENDPOINT}/getuserdocs`, {
+                // headers: {
+                //     'Authorization': `Bearer ${token}`
+                // },
+                withCredentials: true,
+            })
+
+
+            setFormData((formData) => {
+                return {
+                    ...formData,
+                    ...userInfoResponse.data,
+                    documents: urlResponse.data
+                }
+            })
+
+        } catch (error) {
+            console.log('error:', error)
+            toast.error(`Error fetching user info! Error: ${error.message}`)
+        }
+    }
+
 
 
     useEffect(() => {
-        axios.get(`${USER_ENDPOINT}/getuserdocs`, {
-            // headers: {
-            //     'Authorization': `Bearer ${token}`
-            // },
-            withCredentials: true,
-        })
-        .then(response => {
-            // toast.success('Successfully fetched user files!')
-            console.log('response.data:', response.data)
-            setFormData({
-                ...formData,
-                documents: response.data
-            })
-        })
-        .catch(error => {
-            console.log('error:', error)
-            toast.error(`Error fetching user files! Error ${error.message}`)
-        })
-    }, [])
+        getUserInfo();
+    }, [submitted])
 
 
     const handleChange = (e) => {
-        const { name, value } = e.target;
-        console.log(value)
-        setFormData((prevData) => ({ ...prevData, [name]: value }));
-    };
+        const { type, name, value } = e.target
+        setFormData({
+            ...formData,
+            [name]: type === 'file' ? e.target.files[0] : value,
+        })
+    }
 
-    const handleAddressChange = (e) => {
-        const { name, value } = e.target;
-        setFormData((prevData) => ({
-            ...prevData,
-            address: { ...prevData.address, [name]: value }
-        }));
-    };
-
-    const handleContactChange = (e) => {
-        const { name, value } = e.target;
-        setFormData((prevData) => ({
-            ...prevData,
-            contactInfo: { ...prevData.contactInfo, [name]: value }
-        }));
-    };
 
     const handleEmergencyContactChange = (e, index) => {
         const { name, value } = e.target;
         setFormData((prevData) => {
-            const newEmergencyContact = [...prevData.emergencyContact];
-            newEmergencyContact[index] = { ...newEmergencyContact[index], [name]: value};
-            return{
+            const newEmergencyContact = [...prevData.emergencyContacts];
+            newEmergencyContact[index] = { ...newEmergencyContact[index], [name]: value };
+            return {
                 ...prevData,
-                emergencyContact: newEmergencyContact
+                emergencyContacts: newEmergencyContact
             }
         });
     };
 
-    const handleEmployeeChange = (e) => {
-        const { name, value } = e.target;
-        setFormData((prevData) => {
-            return {
-                ...prevData,
-                employment: {
-                    ...prevData.employment,
-                    [name]: value
-                }
-            }
-        })
-    }
 
-    const handleEditToggle = () => {
-        if (isEditing) {
+
+    const handleEditToggle = (section) => {
+        if (editSections.includes(section)) {
             const confirmDiscard = window.confirm("Discard changes?");
             if (confirmDiscard) {
                 setFormData(formDataClone);
-                setIsEditing(false);
+                //setIsEditing(false);
+                setEditSections((prevSections) => {
+                    return prevSections.filter((s) => {
+                        return s !== section
+                    })
+                })
             }
         } else {
-            setIsEditing(true);
+            //setIsEditing(true);
+            setEditSections((prevSections) => {
+                return [
+                    ...prevSections,
+                    section
+                ]
+            })
         }
     };
 
-    const handleSave = () => {
-        setIsEditing(false);
+    const buildFormData = (formData, data, parentKey) => {
+        if (data && typeof data === 'object' && !(data instanceof File)) {
+            Object.keys(data).forEach(key => {
+                buildFormData(formData, data[key], parentKey ? `${parentKey}[${key}]` : key);
+            });
+        } else {
+            formData.append(parentKey, data);
+        }
+    };
+
+
+    const createFormData = (data) => {
+        const formData = new FormData();
+        buildFormData(formData, data);
+        formData.append('username', username)
+        formData.append('onboardingStatus', 'Pending')
+        return formData;
+    }
+
+
+    const handleSave = async (section) => {
+        const data = createFormData(formData)
+
+        await axios.patch(`${USER_ENDPOINT}/userinfo`, data, {
+            headers: {
+                'Content-Type': 'multipart/form-data'
+            },
+            withCredentials: true,
+        })
+
+
+        setEditSections((prevSections) => {
+            return prevSections.filter((s) => {
+                return s !== section
+            })
+        })
+
+        setSubmitted((old) => (!old));
     };
 
     const handleDocumentUpload = (e) => {
@@ -176,14 +247,16 @@ const Personal = () => {
 
 
 
+
     return (
         <div className="personal-information">
             <h2>Personal Information</h2>
             <div className="section">
-                <h3>Name</h3>
-                {isEditing ? (
-                    <div>
-                        <img src={formData.profilePicture} alt='profilePicture' width={100} height={100} />
+                <h3>Name:</h3>
+                {editSections.includes('name') ? (
+                    <section>
+                        <img src={formData.profilePicture || 'https://th.bing.com/th/id/R.634c153f9405f89ccfb5ab38f689f51c?rik=IzY0V%2fpVJiFoAQ&pid=ImgRaw&r=0'}
+                            alt='profilePicture' width={100} height={100} />
                         <input type='file' name='profilePicture' onChange={handleChange} accept='image/*' />
                         <input type="text" name="firstName" placeholder="First Name" value={formData.firstName} onChange={handleChange} />
                         <input type="text" name="lastName" placeholder="Last Name" value={formData.lastName} onChange={handleChange} />
@@ -197,10 +270,14 @@ const Personal = () => {
                             <option value="Female">Female</option>
                             <option value="Other">Other</option>
                         </select>
-                    </div>
+                        <button onClick={() => { handleEditToggle('name') }}>{editSections.includes('name') ? 'Cancel' : 'Edit'}</button>
+                        {editSections.includes('name') && <button onClick={() => { handleSave('name') }}>Save</button>}
+
+                    </section>
                 ) : (
                     <div>
-                        <img src={formData.profilePicture} alt='profilePicture' width={100} height={100} />
+                        <img src={formData.profilePicture || 'https://th.bing.com/th/id/R.634c153f9405f89ccfb5ab38f689f51c?rik=IzY0V%2fpVJiFoAQ&pid=ImgRaw&r=0'}
+                            alt='profilePicture' width={100} height={100} />
                         <input type="text" name="firstName" placeholder="First Name" value={formData.firstName} disabled />
                         <input type="text" name="lastName" placeholder="Last Name" value={formData.lastName} disabled />
                         <input type="text" name="middleName" placeholder="Middle Name" value={formData.middleName} disabled />
@@ -213,6 +290,8 @@ const Personal = () => {
                             <option value="Female">Female</option>
                             <option value="Other">Other</option>
                         </select>
+                        <button onClick={() => { handleEditToggle('name') }}>{editSections.includes('name') ? 'Cancel' : 'Edit'}</button>
+
                     </div>
                 )}
             </div>
@@ -221,36 +300,42 @@ const Personal = () => {
 
             <div className="section">
                 <h3>Contact Info</h3>
-                {isEditing ? (
+                {editSections.includes('contactInfo') ? (
                     <div>
-                        <input type="text" name="cellPhone" placeholder="Cell Phone" value={formData.contactInfo.cellPhone || ''} onChange={handleContactChange} />
-                        <input type="text" name="workPhone" placeholder="Work Phone" value={formData.contactInfo.workPhone || ''} onChange={handleContactChange} />
+                        <input type="text" name="cellPhone" placeholder="Cell Phone" value={formData.cellPhone || ''} onChange={handleChange} />
+                        <input type="text" name="workPhone" placeholder="Work Phone" value={formData.workPhone || ''} onChange={handleChange} />
+                        <button onClick={() => { handleEditToggle('contactInfo') }}>{editSections.includes('contactInfo') ? 'Cancel' : 'Edit'}</button>
+                        {editSections.includes('contactInfo') && <button onClick={() => { handleSave('contactInfo') }}>Save</button>}
                     </div>
                 ) : (
                     <div>
-                        <input type="text" name="cellPhone" placeholder="Cell Phone" value={formData.contactInfo.cellPhone || ''} disabled={true} />
-                        <input type="text" name="workPhone" placeholder="Work Phone" value={formData.contactInfo.workPhone || ''} disabled={true} />
+                        <input type="text" name="cellPhone" placeholder="Cell Phone" value={formData.cellPhone || ''} disabled={true} />
+                        <input type="text" name="workPhone" placeholder="Work Phone" value={formData.workPhone || ''} disabled={true} />
+                        <button onClick={() => { handleEditToggle('contactInfo') }}>{editSections.includes('contactInfo') ? 'Cancel' : 'Edit'}</button>
                     </div>
                 )}
             </div>
 
             <div className="section">
                 <h3>Address</h3>
-                {isEditing ? (
+                {editSections.includes('address') ? (
                     <div>
-                        <input type="text" name="building" placeholder="Building/Apt #" value={formData.address.building || ''} onChange={handleAddressChange} />
-                        <input type="text" name="street" placeholder="Street Name" value={formData.address.street || ''} onChange={handleAddressChange} />
-                        <input type="text" name="city" placeholder="City" value={formData.address.city || ''} onChange={handleAddressChange} />
-                        <input type="text" name="state" placeholder="State" value={formData.address.state || ''} onChange={handleAddressChange} />
-                        <input type="text" name="zip" placeholder="Zip Code" value={formData.address.zip || ''} onChange={handleAddressChange} />
+                        <input type="text" name="building" placeholder="Building/Apt #" value={formData.building} onChange={handleChange} />
+                        <input type="text" name="street" placeholder="Street Name" value={formData.street} onChange={handleChange} />
+                        <input type="text" name="city" placeholder="City" value={formData.city} onChange={handleChange} />
+                        <input type="text" name="state" placeholder="State" value={formData.state} onChange={handleChange} />
+                        <input type="text" name="zip" placeholder="Zip Code" value={formData.zip} onChange={handleChange} />
+                        <button onClick={() => { handleEditToggle('address') }}>{editSections.includes('address') ? 'Cancel' : 'Edit'}</button>
+                        {editSections.includes('address') && <button onClick={() => { handleSave('address') }}>Save</button>}
                     </div>
                 ) : (
                     <div>
-                        <input type="text" name="building" placeholder="Building/Apt #" value={formData.address.building || ''} disabled={true} />
-                        <input type="text" name="street" placeholder="Street Name" value={formData.address.street || ''} disabled={true} />
-                        <input type="text" name="city" placeholder="City" value={formData.address.city || ''} disabled={true} />
-                        <input type="text" name="state" placeholder="State" value={formData.address.state || ''} disabled={true} />
-                        <input type="text" name="zip" placeholder="Zip Code" value={formData.address.zip || ''} disabled={true} />
+                        <input type="text" name="building" placeholder="Building/Apt #" value={formData.building || ''} disabled={true} />
+                        <input type="text" name="street" placeholder="Street Name" value={formData.street || ''} disabled={true} />
+                        <input type="text" name="city" placeholder="City" value={formData.city || ''} disabled={true} />
+                        <input type="text" name="state" placeholder="State" value={formData.state || ''} disabled={true} />
+                        <input type="text" name="zip" placeholder="Zip Code" value={formData.zip || ''} disabled={true} />
+                        <button onClick={() => { handleEditToggle('address') }}>{editSections.includes('address') ? 'Cancel' : 'Edit'}</button>
                     </div>
                 )}
             </div>
@@ -258,17 +343,20 @@ const Personal = () => {
             <div className='section'>
                 <h3>Employment Status</h3>
                 {
-                    isEditing ?
+                    editSections.includes('status') ?
                         <div>
-                            <input type='text' name='visaTitle' placeholder='Visa Title' value={formData.employment.visaTitle || ''} onChange={handleEmployeeChange} />
-                            <input type='text' name='startDate' placeholder='Start Date' value={formData.employment.startDate || ''} onChange={handleEmployeeChange} />
-                            <input type='text' name='endDate' placeholder='End Date' value={formData.employment.endDate || ''} onChange={handleEmployeeChange} />
+                            <input type='text' name='visaTitle' placeholder='Visa Title' value={formData.visaTitle || ''} onChange={handleChange} />
+                            <input type='text' name='startDate' placeholder='Start Date' value={formData.visaStartDate || ''} onChange={handleChange} />
+                            <input type='text' name='endDate' placeholder='End Date' value={formData.visaEndDate || ''} onChange={handleChange} />
+                            <button onClick={() => { handleEditToggle('status') }}>{editSections.includes('status') ? 'Cancel' : 'Edit'}</button>
+                            {editSections.includes('status') && <button onClick={() => { handleSave('status') }}>Save</button>}
                         </div>
                         :
                         <div>
-                            <input type='text' name='visaTitle' placeholder='Visa Title' value={formData.employment.visaTitle || ''} disabled={true} />
-                            <input type='text' name='startDate' placeholder='Start Date' value={formData.employment.startDate || ''} disabled={true} />
-                            <input type='text' name='endDate' placeholder='End Date' value={formData.employment.endDate || ''} disabled={true} />
+                            <input type='text' name='visaTitle' placeholder='Visa Title' value={formData.visaTitle || ''} disabled={true} />
+                            <input type='text' name='startDate' placeholder='Start Date' value={formData.visaStartDate || ''} disabled={true} />
+                            <input type='text' name='endDate' placeholder='End Date' value={formData.visaEndDate || ''} disabled={true} />
+                            <button onClick={() => { handleEditToggle('status') }}>{editSections.includes('status') ? 'Cancel' : 'Edit'}</button>
                         </div>
                 }
             </div>
@@ -276,24 +364,26 @@ const Personal = () => {
             <div className='section'>
                 <h3>Emergency Contact</h3>
                 {
-                    isEditing ?
+                    editSections.includes('emergency') ?
                         <div>
-                            {formData.emergencyContact.map((contact, index) => {
+                            {formData.emergencyContacts.map((contact, index) => {
                                 return (
                                     <div key={contact.phone}>
-                                        <input type='text' name='firstName' placeholder='First Name' value={contact.firstName || ''} onChange={(e)=>{handleEmergencyContactChange(e, index)}} />
-                                        <input type='text' name='lastName' placeholder='Last Name' value={contact.lastName || ''} onChange={(e)=>{handleEmergencyContactChange(e, index)}} />
-                                        <input type='text' name='middleName' placeholder='Middle Name' value={contact.middleName || ''} onChange={(e)=>{handleEmergencyContactChange(e, index)}} />
-                                        <input type='text' name='phone' placeholder='Phone' value={contact.phone || ''} onChange={(e)=>{handleEmergencyContactChange(e, index)}} />
-                                        <input type='email' name='email' placeholder='Email' value={contact.email || ''} onChange={(e)=>{handleEmergencyContactChange(e, index)}} />
-                                        <input type='relationship' name='relationship' placeholder='relationship' value={contact.relationship || ''} onChange={(e)=>{handleEmergencyContactChange(e, index)}} />
+                                        <input type='text' name='firstName' placeholder='First Name' value={contact.firstName || ''} onChange={(e) => { handleEmergencyContactChange(e, index) }} />
+                                        <input type='text' name='lastName' placeholder='Last Name' value={contact.lastName || ''} onChange={(e) => { handleEmergencyContactChange(e, index) }} />
+                                        <input type='text' name='middleName' placeholder='Middle Name' value={contact.middleName || ''} onChange={(e) => { handleEmergencyContactChange(e, index) }} />
+                                        <input type='text' name='phone' placeholder='Phone' value={contact.phone || ''} onChange={(e) => { handleEmergencyContactChange(e, index) }} />
+                                        <input type='email' name='email' placeholder='Email' value={contact.emEmail || ''} onChange={(e) => { handleEmergencyContactChange(e, index) }} />
+                                        <input type='relationship' name='relationship' placeholder='relationship' value={contact.relationship || ''} onChange={(e) => { handleEmergencyContactChange(e, index) }} />
                                     </div>
                                 )
                             })}
+                            <button onClick={() => { handleEditToggle('emergency') }}>{editSections.includes('emergency') ? 'Cancel' : 'Edit'}</button>
+                            {editSections.includes('emergency') && <button onClick={() => { handleSave('emergency') }}>Save</button>}
                         </div>
                         :
                         <div>
-                            {formData.emergencyContact.map((contact) => {
+                            {formData.emergencyContacts.map((contact) => {
                                 return (
                                     <div key={contact.phone}>
                                         <input type='text' name='firstName' placeholder='First Name' value={contact.firstName || ''} disabled={true} />
@@ -302,6 +392,7 @@ const Personal = () => {
                                         <input type='text' name='phone' placeholder='Phone' value={contact.phone || ''} disabled={true} />
                                         <input type='email' name='email' placeholder='Email' value={contact.email || ''} disabled={true} />
                                         <input type='relationship' name='relationship' placeholder='relationship' value={contact.relationship || ''} disabled={true} />
+                                        <button onClick={() => { handleEditToggle('emergency') }}>{editSections.includes('emergency') ? 'Cancel' : 'Edit'}</button>
                                     </div>
                                 )
                             })}
@@ -311,26 +402,29 @@ const Personal = () => {
 
             <div className="section">
                 <h3>Documents</h3>
-                {isEditing ? (
+                {editSections.includes('documents') ? (
                     <div>
                         <input type="file" multiple onChange={handleDocumentUpload} accept=".pdf,.jpg,.jpeg,.png" />
                         {formData.documents.length > 0 && (
                             <ul>
                                 {Object.keys(formData.documents).map((key) => {
-                                    
+
                                     // Might need to look over this
                                     const doc = formData.documents[key]
                                     console.log('doc:', doc)
 
                                     return (
-                                    <li key={doc.name}>
-                                        {doc.name}
-                                        <button onClick={() => previewDocument(doc)}>Preview</button>
-                                        <button onClick={() => downloadDocument(doc)}>Download</button>
-                                    </li>
-                                )})}
+                                        <li key={doc.name}>
+                                            {doc.name}
+                                            <button onClick={() => previewDocument(doc)}>Preview</button>
+                                            <button onClick={() => downloadDocument(doc)}>Download</button>
+                                        </li>
+                                    )
+                                })}
                             </ul>
                         )}
+                        <button onClick={() => { handleEditToggle('documents') }}>{editSections.includes('documents') ? 'Cancel' : 'Edit'}</button>
+                        {editSections.includes('documents') && <button onClick={() => { handleSave('documents') }}>Save</button>}
                     </div>
                 ) : (
                     <div>
@@ -373,12 +467,15 @@ const Personal = () => {
                         ) : (
                             <p>No documents uploaded</p>
                         )}
+                        <button onClick={() => { handleEditToggle('documents') }}>{editSections.includes('documents') ? 'Cancel' : 'Edit'}</button>
+
                     </div>
+
                 )}
+
             </div>
 
-            <button onClick={handleEditToggle}>{isEditing ? 'Cancel' : 'Edit'}</button>
-            {isEditing && <button onClick={handleSave}>Save</button>}
+
             <ToastContainer />
         </div>
     );
