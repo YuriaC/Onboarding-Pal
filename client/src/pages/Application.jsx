@@ -215,7 +215,7 @@ const Application = () => {
     return (
         <>
             {!isLoading ? (
-                <Paper sx={{ p: 3 }}>
+                <Paper sx={{ p: 3, width: '60vw' }}>
                     <Typography variant='h4' sx={{ color: formData.onboardingStatus === 'Rejected' ? 'red' : formData.onboardingStatus === 'Approved' ? 'green' : 'black' }}>
                         Status: {formData.onboardingStatus}
                     </Typography>
@@ -244,7 +244,6 @@ const Application = () => {
                             label="First Name"
                             value={formData.firstName}
                             disabled
-                            required
                             margin="normal"
                         />
                         <TextField
@@ -252,7 +251,6 @@ const Application = () => {
                             label="Last Name"
                             value={formData.lastName}
                             disabled
-                            required
                             margin="normal"
                         />
                         <TextField
@@ -276,7 +274,6 @@ const Application = () => {
                             label="Building/Apartment #"
                             value={formData.building}
                             disabled
-                            required
                             margin="normal"
                         />
                         <TextField
@@ -284,7 +281,6 @@ const Application = () => {
                             label="Street Name"
                             value={formData.street}
                             disabled
-                            required
                             margin="normal"
                         />
                         <TextField
@@ -292,7 +288,6 @@ const Application = () => {
                             label="City"
                             value={formData.city}
                             disabled
-                            required
                             margin="normal"
                         />
                         <TextField
@@ -300,7 +295,6 @@ const Application = () => {
                             label="State"
                             value={formData.state}
                             disabled
-                            required
                             margin="normal"
                         />
                         <TextField
@@ -308,7 +302,6 @@ const Application = () => {
                             label="ZIP"
                             value={formData.zip}
                             disabled
-                            required
                             type="number"
                             margin="normal"
                         />
@@ -319,7 +312,6 @@ const Application = () => {
                             label="Cell Phone Number"
                             value={formData.cellPhone}
                             disabled
-                            required
                             type="tel"
                             margin="normal"
                         />
@@ -406,7 +398,7 @@ const Application = () => {
                                 />
                             </RadioGroup>
                         </FormControl>
-                        {formData.isPermRes === 'No' && (
+                        {formData.isPermRes === 'No' ? (
                             <>
                                 <TextField
                                     fullWidth
@@ -432,6 +424,24 @@ const Application = () => {
                                     margin="normal"
                                 />
                             </>
+                        ) : (
+                            <FormControl fullWidth margin="normal">
+                                <FormLabel>What kind of permanent resident?</FormLabel>
+                                <RadioGroup row value={formData.permResStatus}>
+                                    <FormControlLabel
+                                        value="Citizen"
+                                        control={<Radio />}
+                                        label="Citizen"
+                                        disabled
+                                    />
+                                    <FormControlLabel
+                                        value="Green Card"
+                                        control={<Radio />}
+                                        label="Green Card"
+                                        disabled
+                                    />
+                                </RadioGroup>
+                            </FormControl>
                         )}
 
                         <Typography variant="h6" margin="normal">{`Driver's License`}</Typography>
@@ -549,15 +559,15 @@ const Application = () => {
                                 />
                                 <TextField
                                     fullWidth
-                                    label="Middle Name"
-                                    value={contact.middleName || 'N/A'}
+                                    label="Last Name"
+                                    value={contact.lastName}
                                     disabled
                                     margin="normal"
                                 />
                                 <TextField
                                     fullWidth
-                                    label="Last Name"
-                                    value={contact.lastName}
+                                    label="Middle Name"
+                                    value={contact.middleName}
                                     disabled
                                     margin="normal"
                                 />

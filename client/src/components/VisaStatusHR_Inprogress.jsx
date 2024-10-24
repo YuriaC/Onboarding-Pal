@@ -14,6 +14,7 @@ import Paper from '@mui/material/Paper';
 
 import { USER_ENDPOINT } from '../constants';
 import { toast } from 'react-toastify';
+import { useNavigate } from 'react-router-dom';
 
 
 pdfjs.GlobalWorkerOptions.workerSrc = `http://localhost:3000/workers/pdf.worker.min.mjs`;
@@ -25,6 +26,7 @@ const docNames = ['OPT', 'OPT EAD', 'I-983', 'I-20']
 const VisaStatusHR_inprogress = () => {
     
     const today = new Date();
+    const navigate = useNavigate()
     // const [fileDisplayId, setFileDisplayId] = useState();
     // const [showFileBtn, setShowFileBtn] = useState(true);
     // const [currentFileUrl, setCurrentFileUrl] = useState();
@@ -145,11 +147,21 @@ const VisaStatusHR_inprogress = () => {
         //     message_to_employee = `Hello ${user.firstName} ${user.lastName}, all of your submitted visa documents has been reviewed and Approved.`;
         // }
         console.log('currDoc:', user.currDoc)
-        if (user[user.currDoc] === 'Rejected') {
-            message_to_employee = `Hello ${user.firstName} ${user.lastName}, your ${user.currDocName} has been rejected. Please submit it again.`
+        if (user.isPermRes === 'No' && user.workAuth === 'F1(CPT/OPT)') {
+            if (user[user.currDoc] === 'Rejected') {
+                message_to_employee = `Hello ${user.firstName} ${user.lastName}, your ${user.currDocName} has been rejected. Please submit it again.`
+            }
+            else {
+                message_to_employee = `Hello ${user.firstName} ${user.lastName}, your ${user.currDocName} has been approved! Please ${user.currDoc === 'eadStatus' ? 'download and ' : ''}submit your ${user.nextDocName} next.`
+            }
         }
         else {
-            message_to_employee = `Hello ${user.firstName} ${user.lastName}, your ${user.currDocName} has been approved! Please ${user.currDoc === 'eadStatus' ? 'download and ' : ''}submit your ${user.nextDocName} next.`
+            if (user.onboardingStatus === 'Rejected') {
+                message_to_employee = `Hello ${user.firstName} ${user.lastName}, your onboarding application has been rejected. Please submit it again.`
+            }
+            else {
+                message_to_employee = `Hello ${user.firstName} ${user.lastName}, you haven't submitted your onboarding application yet. Please submit it soon!`
+            }
         }
         
         try {
@@ -271,40 +283,64 @@ const VisaStatusHR_inprogress = () => {
                         <TableCell sx={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{user.firstName}</TableCell>
                         <TableCell sx={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{user.middleName}</TableCell>
                         <TableCell sx={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{user.lastName}</TableCell>
-                        <TableCell sx={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{user.workAuth}</TableCell>
+                        <TableCell sx={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{user.isPermRes === 'Yes' ? user.permResStatus : user.workAuth}</TableCell>
                         <TableCell>{formatDateToMDY(user.visaStartDate)}</TableCell>
                         <TableCell>{formatDateToMDY(user.visaEndDate)}</TableCell>
-                        <TableCell sx={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{calculateDaysDifference(user.visaEndDate,today)}</TableCell>
+                        <TableCell sx={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{calculateDaysDifference(user.visaEndDate,today) < 0 ? 'Expired' : calculateDaysDifference(user.visaEndDate,today)}</TableCell>
                         <TableCell sx={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                            { allFileApproved(user) ? <Typography>All done!</Typography> : !user.needSubmitNext ? (<Button variant='contained' href={user.docs[user.docToReview].preview} target='_blank'>Review Document</Button>) : (<Typography>{user[user.currDoc] !== 'Rejected' ? `${user.nextDocName} waiting to be submitted` : `${user.currDocName} waiting to be resubmitted`}</Typography>) }
+                            {console.log('user:', user)}
+                            {user.isPermRes === 'No' && user.workAuth === 'F1(CPT/OPT)' ?
+                            <>
+                                { allFileApproved(user) ? <Typography>All done!</Typography> : !user.needSubmitNext ? (<Button variant='contained' href={user.docs[user.docToReview].preview} target='_blank'>Review Document</Button>) : (<Typography>{user[user.currDoc] !== 'Rejected' ? `${user.nextDocName} waiting to be submitted` : `${user.currDocName} waiting to be resubmitted`}</Typography>) }
+                            </>
+                            :
+                            <>
+                                { user.onboardingStatus === 'Approved' ? <Typography>All done!</Typography> : user.onboardingStatus === 'Pending' ? (<Button variant='contained' onClick={() => navigate(`/hr/application/${user._id}`)}>Review Application</Button>) : (<Typography>{user.onboardingStatus !== 'Rejected' ? `Application waiting to be submitted` : `Application waiting to be resubmitted`}</Typography>) }
+                            </>
+                        }
                         </TableCell>
                         <TableCell sx={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                            {!allFileApproved(user) &&
+                            {user.isPermRes === 'No' && user.workAuth === 'F1(CPT/OPT)' ?
                             (<div>
-                                { user.needSubmitNext ? (<Button onClick={ () => notificationHandler(user) }>Send Notification</Button>) :
-                                    <>
-                                        <Button onClick={(e) => handleApprove(e, index)} sx={{ backgroundColor: 'green', color: 'white' }} fullWidth>Approve</Button>
-                                        <Button onClick={(e) => updateReject(e, index)} sx={{ backgroundColor: 'red', color: 'white' }} fullWidth>Reject</Button>
-                                        {user.isRejecting &&
-                                            <form onSubmit={(e) => handleReject(e, index)}>
-                                                <TextField label='Feedback' value={feedbacks[index]} onChange={(e) => updateFeedback(e, index)} fullWidth></TextField>
-                                                <Button type='submit'>Submit Feedback</Button>
-                                            </form>
-                                        }
-                                    </>
-                                }
-                            </div>)
+                                {!allFileApproved(user) ? <div>
+                                    { user.needSubmitNext ? (<Button onClick={ () => notificationHandler(user) }>Send Notification</Button>) :
+                                        <>
+                                            <Button onClick={(e) => handleApprove(e, index)} sx={{ backgroundColor: 'green', color: 'white' }} fullWidth>Approve</Button>
+                                            <Button onClick={(e) => updateReject(e, index)} sx={{ backgroundColor: 'red', color: 'white' }} fullWidth>Reject</Button>
+                                            {user.isRejecting &&
+                                                <form onSubmit={(e) => handleReject(e, index)}>
+                                                    <TextField label='Feedback' value={feedbacks[index]} onChange={(e) => updateFeedback(e, index)} fullWidth></TextField>
+                                                    <Button type='submit'>Submit Feedback</Button>
+                                                </form>
+                                            }
+                                        </>
+                                    }
+                                </div> : (
+                                    <Typography>No further action required</Typography>
+                                )}
+                            </div>) : (
+                                <>
+                                    {user.onboardingStatus === 'Approved' ? <>
+                                        <Typography>No further action required</Typography>
+                                    </> : user.onboardingStatus === 'Rejected' ? (
+                                        <Button onClick={ () => notificationHandler(user) }>Send Notification</Button>
+                                    ) : user.onboardingStatus === 'Pending' ? (
+                                        <Typography>Approve or reject</Typography>
+                                    ) : (
+                                        <Button onClick={ () => notificationHandler(user) }>Send Notification</Button>
+                                    )}
+                                </>
+                            )
                             }
-                            {allFileApproved(user) &&
+                            {/* {allFileApproved(user) &&
                             (<div>
                                 <Typography>No further action required</Typography>
                             </div>)
-                            }
+                            } */}
                         </TableCell>
                     </TableRow>
                 ))}
                 </TableBody>
-
             </Table>
             </TableContainer>
             </Box>

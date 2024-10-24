@@ -62,12 +62,12 @@ const HousingMgmt = () => {
             <h1>Housing Management</h1>
             <Button onClick={() => navigate('/hr/addhouse')}>Add House</Button>
 
-            <TableContainer component={Paper}>
+            <TableContainer component={Paper} sx={{ mb: 3 }}>
                 <Table sx={{ minWidth: 650 }} aria-label="simple table">
                     <TableHead>
                         <TableRow>
                             <TableCell>Address</TableCell>
-                            <TableCell>Landlord Name</TableCell>
+                            <TableCell>Landlord</TableCell>
                             <TableCell>Phone</TableCell>
                             <TableCell>Email </TableCell>
                             <TableCell>Residents</TableCell>
@@ -87,7 +87,7 @@ const HousingMgmt = () => {
                                 <TableCell>{house.landlordName}</TableCell>
                                 <TableCell>{house.landlordPhone}</TableCell>
                                 <TableCell>{house.landlordEmail}</TableCell>
-                                <TableCell>Residents: {house.employees.length}</TableCell>
+                                <TableCell align='center'>{house.employees.length}</TableCell>
                                 <TableCell align="right">
                                     <Button onClick={(e) => handleDelete(e, house._id, house.address)}><DeleteIcon /></Button>
                                 </TableCell>

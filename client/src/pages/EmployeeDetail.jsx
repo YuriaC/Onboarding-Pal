@@ -180,7 +180,7 @@ const EmployeeDetail = () => {
     return (
         <>
             {!isLoading ? (
-                <Paper sx={{ p: 3 }}>
+                <Paper sx={{ p: 3, width: '60vw' }}>
                     <Typography variant='h4' sx={{ mb: 1 }}>
                         {formData.firstName} {formData.lastName} ({formData.username})
                     </Typography>
@@ -196,7 +196,6 @@ const EmployeeDetail = () => {
                             label="First Name"
                             value={formData.firstName}
                             disabled
-                            required
                             margin="normal"
                         />
                         <TextField
@@ -204,7 +203,6 @@ const EmployeeDetail = () => {
                             label="Last Name"
                             value={formData.lastName}
                             disabled
-                            required
                             margin="normal"
                         />
                         <TextField
@@ -228,7 +226,6 @@ const EmployeeDetail = () => {
                             label="Building/Apartment #"
                             value={formData.building}
                             disabled
-                            required
                             margin="normal"
                         />
                         <TextField
@@ -236,7 +233,6 @@ const EmployeeDetail = () => {
                             label="Street Name"
                             value={formData.street}
                             disabled
-                            required
                             margin="normal"
                         />
                         <TextField
@@ -244,7 +240,6 @@ const EmployeeDetail = () => {
                             label="City"
                             value={formData.city}
                             disabled
-                            required
                             margin="normal"
                         />
                         <TextField
@@ -252,7 +247,6 @@ const EmployeeDetail = () => {
                             label="State"
                             value={formData.state}
                             disabled
-                            required
                             margin="normal"
                         />
                         <TextField
@@ -260,7 +254,6 @@ const EmployeeDetail = () => {
                             label="ZIP"
                             value={formData.zip}
                             disabled
-                            required
                             type="number"
                             margin="normal"
                         />
@@ -271,7 +264,6 @@ const EmployeeDetail = () => {
                             label="Cell Phone Number"
                             value={formData.cellPhone}
                             disabled
-                            required
                             type="tel"
                             margin="normal"
                         />
@@ -341,7 +333,14 @@ const EmployeeDetail = () => {
                         />
 
                         <Typography variant="h6" margin="normal">Work Authorization</Typography>
-                        <FormControl fullWidth margin="normal">
+                        <TextField
+                            fullWidth
+                            label="Work Authorization"
+                            value={formData.isPermRes ? formData.permResStatus : formData.nonPermWorkAuth}
+                            disabled
+                            margin="normal"
+                        />
+                        {/* <FormControl fullWidth margin="normal">
                             <FormLabel>Are you a permanent resident?</FormLabel>
                             <RadioGroup row value={formData.isPermRes}>
                                 <FormControlLabel
@@ -358,7 +357,7 @@ const EmployeeDetail = () => {
                                 />
                             </RadioGroup>
                         </FormControl>
-                        {formData.isPermRes === 'No' && (
+                        {formData.isPermRes === 'No' ? (
                             <>
                                 <TextField
                                     fullWidth
@@ -384,7 +383,25 @@ const EmployeeDetail = () => {
                                     margin="normal"
                                 />
                             </>
-                        )}
+                        ) : (
+                            <FormControl fullWidth margin="normal">
+                                <FormLabel>What kind of permanent resident?</FormLabel>
+                                <RadioGroup row value={formData.permResStatus}>
+                                    <FormControlLabel
+                                        value="Citizen"
+                                        control={<Radio />}
+                                        label="Citizen"
+                                        disabled
+                                    />
+                                    <FormControlLabel
+                                        value="Green Card"
+                                        control={<Radio />}
+                                        label="Green Card"
+                                        disabled
+                                    />
+                                </RadioGroup>
+                            </FormControl>
+                        )} */}
 
                         <Typography variant="h6" margin="normal">{`Driver's License`}</Typography>
                         <FormControl fullWidth margin="normal">
@@ -501,15 +518,15 @@ const EmployeeDetail = () => {
                                 />
                                 <TextField
                                     fullWidth
-                                    label="Middle Name"
-                                    value={contact.middleName || 'N/A'}
+                                    label="Last Name"
+                                    value={contact.lastName}
                                     disabled
                                     margin="normal"
                                 />
                                 <TextField
                                     fullWidth
-                                    label="Last Name"
-                                    value={contact.lastName}
+                                    label="Middle Name"
+                                    value={contact.middleName}
                                     disabled
                                     margin="normal"
                                 />
