@@ -21,3 +21,7 @@ export const TEST_ENDPOINT = `${API_BASE_URL}/tests`  // for unit test
 export const token = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MTIzLCJ1c2VybmFtZSI6IkVtcGxveWVlVGVzdCIsInJvbGUiOiJlbXBsb3llZSIsImlhdCI6MTcyOTQ4MTI3NCwiZXhwIjoxNzI5NDkyMDc0fQ.b6gjXYBK6zrrEXHcxvpuq-6nocWnO5EdERlTC1mg1IQ'
 
 export const username = 'EmployeeTest'
+
+export const docStatuses = ['optStatus', 'eadStatus', 'i983Status', 'i20Status']
+export const docUrls = ['optUrl', 'eadUrl', 'i983Url', 'i20Url']
+export const docNames = ['OPT', 'OPT EAD', 'I-983', 'I-20']

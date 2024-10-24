@@ -5,11 +5,8 @@ import { USER_ENDPOINT } from '../constants';
 import { toast, ToastContainer } from 'material-react-toastify';
 import 'material-react-toastify/dist/ReactToastify.css'
 import { Box, Card, CardActions, CardContent, Typography, Button } from '@mui/material'
-import { useNavigate } from 'react-router-dom';
 
 const Personal = () => {
-
-    const navigate = useNavigate()
 
     console.log('Personal')
     const [isEditing, setIsEditing] = useState(false);
@@ -296,7 +293,7 @@ const Personal = () => {
                         </div>
                         :
                         <div>
-                            {formData.emergencyContact.map((contact, index) => {
+                            {formData.emergencyContact.map((contact) => {
                                 return (
                                     <div key={contact.phone}>
                                         <input type='text' name='firstName' placeholder='First Name' value={contact.firstName || ''} disabled={true} />
@@ -319,7 +316,7 @@ const Personal = () => {
                         <input type="file" multiple onChange={handleDocumentUpload} accept=".pdf,.jpg,.jpeg,.png" />
                         {formData.documents.length > 0 && (
                             <ul>
-                                {Object.keys(formData.documents).map((key, index) => {
+                                {Object.keys(formData.documents).map((key) => {
                                     
                                     // Might need to look over this
                                     const doc = formData.documents[key]

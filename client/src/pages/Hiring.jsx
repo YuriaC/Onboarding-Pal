@@ -2,12 +2,9 @@ import  { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { Box, Tabs, Tab, TextField, Button, Typography, List, ListItem, ListItemText } from '@mui/material';
 import { sendRegistrationLinkThunk, fetchRegistrationHistoryThunk, fetchApplicationsThunk } from '../store/user/userSlice';
-import { useNavigate } from 'react-router-dom';
 import { toast, ToastContainer } from 'react-toastify';
 
 const Hiring = () => {
-
-    // const navigate = useNavigate()
 
     const [selectedTab, setSelectedTab] = useState(0);
     const [email, setEmail] = useState('');

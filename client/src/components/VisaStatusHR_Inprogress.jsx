@@ -2,30 +2,78 @@ import {useState, useEffect} from 'react';
 import MyDocument from '../helpers/PdfViewer';
 import axios from 'axios';
 import { pdfjs } from "react-pdf";
-
+import { Button, TextField, Typography } from '@mui/material'
+import { USER_ENDPOINT } from '../constants';
+import { toast } from 'react-toastify';
 
 pdfjs.GlobalWorkerOptions.workerSrc = `http://localhost:3000/workers/pdf.worker.min.mjs`;
 
+const docStatuses = ['optStatus', 'eadStatus', 'i983Status', 'i20Status']
+const docUrls = ['optUrl', 'eadUrl', 'i983Url', 'i20Url']
+const docNames = ['OPT', 'OPT EAD', 'I-983', 'I-20']
 
-const VisaStatusHR_inprogress = ()=>{
+const VisaStatusHR_inprogress = () => {
     
     const today = new Date();
-    const [fileDisplayId, setFileDisplayId] = useState();
+    // const [fileDisplayId, setFileDisplayId] = useState();
     const [showFileBtn, setShowFileBtn] = useState(false);
     const [currentFileUrl, setCurrentFileUrl] = useState();
-
+    const [feedbacks, setFeedbacks] = useState([])
+    const [changed, setChanged] = useState(false)
 
     // for users that holds f1-opt option
     // OPT Receipt should be submitted during onboarding stage
     // OPT EAD, I-983, I-20 should be submitted subsequently.
 
-    const [employees,setEmployees] = useState([]); // Static employee data
+    const [employees, setEmployees] = useState([]); // Static employee data
     // Fetch all users from the backend API
     useEffect(() => {
         const fetchUsers = async () => {
         try {
             const response = await axios.get('http://localhost:3000/api/users/alluser');
-            setEmployees(response.data); // Store fetched users in state
+            const initFeedbacks = []
+            const newData = []
+            for (const employee of response.data) {
+                let needSubmitNext = true
+                let docToReview = ''
+                let currDoc = ''
+                // let nextDoc = ''
+                let nextDocName = ''
+                initFeedbacks.push('')
+                for (const docStatus of docStatuses) {
+                    if (employee[docStatus] === 'Pending') {
+                        needSubmitNext = false
+                        break
+                    }
+                }
+                for (let i = 0; i < docStatuses.length; i++) {
+                    const currDocStatus = docStatuses[i]
+                    if (['Pending', 'Rejected'].includes(employee[currDocStatus])) {
+                        needSubmitNext = false
+                        docToReview = docUrls[i]
+                        currDoc = currDocStatus
+                    }
+                    if (employee[currDocStatus] === 'Not Started' && !nextDocName) {
+                        // nextDoc = currDocStatus
+                        nextDocName = docNames[i]
+                    }
+                }
+                const userDocs = await axios.get(`${USER_ENDPOINT}/getuserdocs/${employee._id}`, { withCredentials: true })
+                const newEmployeeData = {
+                    ...employee,
+                    needSubmitNext,
+                    isRejecting: false,
+                    docs: userDocs.data,
+                    docToReview,
+                    currDoc,
+                    // nextDoc,
+                    nextDocName,
+                }
+                newData.push(newEmployeeData)
+            }
+            console.log('newData:', newData)
+            setFeedbacks(initFeedbacks)
+            setEmployees(newData); // Store fetched users in state
         } catch (error) {
             console.error('Error fetching employees:', error);
         }
@@ -78,20 +126,20 @@ const VisaStatusHR_inprogress = ()=>{
 
     }
 
-    const haveFileToReview = (user_to_check) =>{
-        if(stepStatusChecker(user_to_check)==="opt"){
-            return user_to_check.optUrl !== "";
-        }
-        if(stepStatusChecker(user_to_check)==="ead"){
-            return user_to_check.eadUrl !== "";
-        }
-        if(stepStatusChecker(user_to_check)==="i983"){
-            return user_to_check.i983Url !== "";
-        }
-        if(stepStatusChecker(user_to_check)==="i20"){
-            return user_to_check.i20Url !== "";
-        }
-    }
+    // const haveFileToReview = (user_to_check) =>{
+    //     if(stepStatusChecker(user_to_check)==="opt"){
+    //         return user_to_check.optUrl !== "";
+    //     }
+    //     if(stepStatusChecker(user_to_check)==="ead"){
+    //         return user_to_check.eadUrl !== "";
+    //     }
+    //     if(stepStatusChecker(user_to_check)==="i983"){
+    //         return user_to_check.i983Url !== "";
+    //     }
+    //     if(stepStatusChecker(user_to_check)==="i20"){
+    //         return user_to_check.i20Url !== "";
+    //     }
+    // }
 
     const nextstepsHandler = (user)=>{
         // checks user status if Pending then pop to set next steps
@@ -123,7 +171,7 @@ const VisaStatusHR_inprogress = ()=>{
         if(stepStatusChecker(user) === "i983"){
             //render the review document 
             //setShowNotifyBtn(true);
-            if(user.i983Url){
+            if(user.i983Url) {
                 return review_i983;
             }
             //setNotifyID(user._id);
@@ -146,7 +194,7 @@ const VisaStatusHR_inprogress = ()=>{
 
     }
 
-    const actionHandler = async(user,decision) =>{
+    const actionHandler = async(user, decision) =>{
         // action1: files submitted, need review to approve or reject (when reject send message to user management)
         // action2: submit the next document, send reminder to the user
         // approve/reject
@@ -165,7 +213,6 @@ const VisaStatusHR_inprogress = ()=>{
                         optStatus: decision
                     });
                     console.log('User updated:', response.data);
-                    //alert('User updated successfully!');
                     } catch (error) {
                     console.error('Error updating user:', error);
                     alert('Failed to update user.');
@@ -226,7 +273,7 @@ const VisaStatusHR_inprogress = ()=>{
                     alert('Failed to update user.');
                     }
             }
-        if(decision === "rejected"){
+        if (decision === "rejected") {
             //if rejected, send this message to the employee side to remind resubmission.
             const reject_message=`Hello ${user.firstName} ${user.lastName}, your submitted file for ${step_status} has been rejected by HR, please resubmit.`;
             //console.log(`Hello ${user.firstName} ${user.lastName}, your submitted file for ${step_status} has been rejected by HR, please resubmit.`)
@@ -247,14 +294,20 @@ const VisaStatusHR_inprogress = ()=>{
         
 
     }
-    const notificationHandler = async(user) =>{
+    const notificationHandler = async (user) =>{
         //send an email notification to the user
-        const step_status = stepStatusChecker(user);
+        // const step_status = stepStatusChecker(user);
         let message_to_employee = "";
-        if(step_status!=="i20"){
-            message_to_employee = `Hello ${user.firstName} ${user.lastName}, your submission of ${step_status} has been Approved, please submit the next document.`;
-        }else{
-            message_to_employee = `Hello ${user.firstName} ${user.lastName}, all of your submitted visa documents has been reviewed and Approved.`;
+        // if(step_status!=="i20"){
+        //     message_to_employee = `Hello ${user.firstName} ${user.lastName}, your submission of ${step_status} has been Approved, please submit the next document.`;
+        // }else{
+        //     message_to_employee = `Hello ${user.firstName} ${user.lastName}, all of your submitted visa documents has been reviewed and Approved.`;
+        // }
+        if (user.docs[user.docToReview] === 'Rejected') {
+            message_to_employee = `Hello ${user.firstName} ${user.lastName}, your ${user.currDoc} has been rejected. Please submit it again.`
+        }
+        else {
+            message_to_employee = `Hello ${user.firstName} ${user.lastName}, your ${user.currDoc} has been approved!. Please submit your ${user.nextDocName} next.`
         }
         
         // console.log(message_to_employee);
@@ -264,51 +317,95 @@ const VisaStatusHR_inprogress = ()=>{
               firstName: user.firstName,
               lastName: user.lastName,
               useremail: user.email,
-              notification:message_to_employee
+              notification: message_to_employee,
             });
             console.log('Email Notification sent:', response.data);
-            alert('Email Notification sent successfully!');
+            toast.success('Email Notification sent successfully!')
+            // alert('Email Notification sent successfully!');
           } catch (error) {
             console.error('Error Email Notification sent:', error);
-            alert('Failed to sent Email Notification!');
+            toast.error('Failed to sent Email Notification!')
+            // alert('Failed to sent Email Notification!');
           }
     }
 
-    const viewFileHandler = (user) =>{
-        if(user._id !== fileDisplayId && showFileBtn){
-            setFileDisplayId(user._id);
+    // const viewFileHandler = (user) =>{
+    //     if(user._id !== fileDisplayId && showFileBtn){
+    //         setFileDisplayId(user._id);
             
-        }else{
-            setFileDisplayId(null);
+    //     }else{
+    //         setFileDisplayId(null);
+    //     }
+    //     setShowFileBtn(!showFileBtn);
+    //     if(stepStatusChecker(user)==="opt"){
+    //         setCurrentFileUrl(user.optUrl);
+    //     }
+    //     if(stepStatusChecker(user)==="ead"){
+    //         setCurrentFileUrl(user.eadUrl);
+    //     }
+    //     if(stepStatusChecker(user)==="i983"){
+    //         setCurrentFileUrl(user.i983Url);
+    //     }
+    //     if(stepStatusChecker(user)==="i20"){
+    //         setCurrentFileUrl(user.i20Url);
+    //     }
+    // }
+
+    const updateReject = (e, index) => {
+        e.preventDefault()
+        const newEmployees = employees
+        newEmployees[index].isRejecting = !newEmployees[index].isRejecting
+        console.log('newEmployees:', newEmployees)
+        setChanged(!changed)
+        setEmployees(newEmployees)
+    }
+
+    const updateFeedback = (e, index) => {
+        e.preventDefault()
+        const newFeedbacks = feedbacks
+        feedbacks[index] = e.target.value
+        setChanged(!changed)
+        setFeedbacks(newFeedbacks)
+    }
+
+    const handleReject = async (e, index) => {
+        e.preventDefault()
+        const feedback = feedbacks[index]
+        const employeeId = employees[index]._id
+        const data = {
+            newStatus: 'Rejected',
+            doc: employees[index].currDoc,
+            feedback,
         }
-        setShowFileBtn(!showFileBtn);
-        if(stepStatusChecker(user)==="opt"){
-            setCurrentFileUrl(user.optUrl);
-        }
-        if(stepStatusChecker(user)==="ead"){
-            setCurrentFileUrl(user.eadUrl);
-        }
-        if(stepStatusChecker(user)==="i983"){
-            setCurrentFileUrl(user.i983Url);
-        }
-        if(stepStatusChecker(user)==="i20"){
-            setCurrentFileUrl(user.i20Url);
-        }
+        axios.put(`${USER_ENDPOINT}/updateworkauthstatus/${employeeId}`, data, { withCredentials: true })
+            .then(response => {
+                console.log('response:', response)
+                const newEmployees = employees
+                newEmployees[index].isRejecting = false
+                setEmployees(newEmployees)
+                const newFeedbacks = feedbacks
+                newFeedbacks[index] = ''
+                setFeedbacks(newFeedbacks)
+                setChanged(!changed)
+            })
+            .catch(error => {
+                toast.error(`Error rejecting visa status! Error: ${error.message}`)
+            })
     }
     
     return (
         <>
-
             <table border="1">
                 <thead>
                     <tr>
-                        <th colSpan="2">Legal Name</th>
+                        <th colSpan="3">Legal Name</th>
                         <th colSpan="4" >Work Authorization</th>
                         <th rowSpan="2">Next Steps</th>
                         <th rowSpan="2">Action</th>
                     </tr>
                     <tr>
                         <th>First Name</th>
+                        <th>Middle Name</th>
                         <th>Last Name</th>
                         <th>Title</th>
                         <th>Start Date</th>
@@ -317,23 +414,36 @@ const VisaStatusHR_inprogress = ()=>{
                     </tr>
                 </thead>
                 <tbody>
-                {employees.map((user,index)=>(
+                {employees.map((user, index) => (
                     <tr key={index}>
                         <td>{user.firstName}</td>
+                        <td>{user.middleName}</td>
                         <td>{user.lastName}</td>
                         <td>{user.workAuth}</td>
                         <td>{formatDateToMDY(user.visaStartDate)}</td>
                         <td>{formatDateToMDY(user.visaEndDate)}</td>
                         <td>{calculateDaysDifference(user.visaEndDate,today)}</td>
-                        <td>{nextstepsHandler(user)}
-                            { haveFileToReview(user) && (<button onClick={()=>viewFileHandler(user)}>{fileDisplayId === user._id ? 'Hide' : 'Show'} Submitted File</button>)}
-                            { !allFileApproved(user) && (<button onClick={()=>notificationHandler(user)}>Send Notification</button>)}
+                        <td>
+                            {/* {nextstepsHandler(user)} */}
+                            {/* { console.log(user.docs[user.docToReview].preview) } */}
+                            {/* { haveFileToReview(user) && (<Button onClick={()=>viewFileHandler(user)}>{fileDisplayId === user._id ? 'Hide' : 'Show'} Submitted File</Button>)} */}
+                            { !user.needSubmitNext ? (<Button variant='contained' href={user.docs[user.docToReview].preview} target='_blank'>Review Document</Button>) : (<Typography>{user.nextDocName} waiting to be submitted</Typography>) }
                         </td>
                         <td>
                             {!allFileApproved(user) &&
                             (<div>
-                                <button onClick={() => actionHandler(user,'Approved')}>Approve</button>
-                                <button onClick={() => actionHandler(user,'Rejected')}>Reject</button>
+                                { user.needSubmitNext ? (<Button onClick={ () => notificationHandler(user) }>Send Notification</Button>) :
+                                    <>
+                                        <Button onClick={() => actionHandler(user, 'Approved')} sx={{ backgroundColor: 'green', color: 'white' }}>Approve</Button>
+                                        <Button onClick={(e) => updateReject(e, index)} sx={{ backgroundColor: 'red', color: 'white' }}>Reject</Button>
+                                        {user.isRejecting &&
+                                            <form onSubmit={(e) => handleReject(e, index)}>
+                                                <TextField label='Feedback' value={feedbacks[index]} onChange={(e) => updateFeedback(e, index)} fullWidth></TextField>
+                                                <Button type='submit'>Submit Feedback</Button>
+                                            </form>
+                                        }
+                                    </>
+                                }
                             </div>)
                             }
                             {allFileApproved(user) &&

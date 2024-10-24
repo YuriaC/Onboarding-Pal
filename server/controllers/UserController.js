@@ -110,6 +110,7 @@ const sendRegistrationLink = async (req,res) =>{
       );
       const frontendURL = process.env.FRONTEND_URL ? process.env.FRONTEND_URL : 'http://localhost:5173';
       const registrationLink = `${frontendURL}/register?token=${token}`;
+      const emailBody = `Here is your registration link: ${registrationLink}, you have 3 hours to activate your account.`
       try {
         // Check if user already exists
         const existingUser = await User.findOne({ email: sanitizedEmail }).lean().exec();
@@ -159,7 +160,7 @@ const sendRegistrationLink = async (req,res) =>{
         }
         // Send registration email
         const mailResult = await sendMail(
-            registrationLink,
+            emailBody,
             sanitizedEmail,
             'Welcome to Beaconfire - Here is your Registration Link',
             'dminhnguyen161@gmail.com'
@@ -336,7 +337,7 @@ const getHouse= async(req,res) =>{
 
 };
 
-const setApplicationInput = async(req,res) =>{
+const setApplicationInput = async (req, res) => {
     // tested working
     const { userId } = req.user
     // const username = req.body.username;
@@ -494,6 +495,59 @@ const setApplicationInput = async(req,res) =>{
 
 };
 
+const uploadNewWorkDoc = async (req, res) => {
+    const { employeeId } = req.params
+    const { username } = req.user
+    const { files } = req
+    const file = files[0]
+    let newUrl = ''
+    const { AccessKeyId, SecretAccessKey, SessionToken } = req.credentials
+    const { currDocStatus, currDocUrl } = req.body
+
+    console.log(currDocStatus, currDocUrl, employeeId)
+
+    const s3 = new S3Client({
+        region: process.env.AWS_REGION,
+        credentials: {
+            accessKeyId: AccessKeyId,
+            secretAccessKey: SecretAccessKey,
+            sessionToken: SessionToken,
+        }
+    })
+
+    try {
+        const newFileName = `${username}-${file.originalname}`
+
+        const command = new PutObjectCommand({
+            Bucket: process.env.S3_BUCKET,
+            Key: newFileName,
+            Body: file.buffer,
+            ContentType: file.mimetype,
+        })
+
+        await s3.send(command).then(() => {
+            const fileURL = `https://${process.env.S3_BUCKET}.s3.amazonaws.com/${newFileName}`
+            newUrl = fileURL
+        })
+
+        const user = await User.findById(employeeId).exec();
+        if (!user) {
+            return res.status(404).json('User not Found!');
+        }
+
+        user[currDocStatus] = 'Pending'
+        user[currDocUrl] = newUrl
+
+        await user.save()
+
+        res.status(200).json(user)
+    }
+    catch (error) {
+        console.error(error);
+        return res.status(500).json({ message: error.message });
+    }
+}
+
 const setContactInput = async(req,res) =>{
     // tested working
     const username = req.body.username;
@@ -616,6 +670,65 @@ const getUserDocs = async (req, res) => {
             profilePictureURL,
             optUrl,
             driversLicenseCopy_url,
+        }
+        const ret = {}
+        for (const key of ['profilePictureURL', 'optUrl', 'driversLicenseCopy_url', 'eadUrl', 'i983Url', 'i20Url']) {
+            const url = urls[key]
+            if (!url) {
+                continue
+            }
+            const parts = url.split('/')
+            const fileName = parts[parts.length - 1]
+
+            const params = {
+                Bucket: process.env.S3_BUCKET,
+                Key: fileName,
+                ResponseContentDisposition: `attachment; filename="${fileName}"`,
+            }
+            const previewParams = {
+                Bucket: process.env.S3_BUCKET,
+                Key: fileName,
+            }
+            const command = new GetObjectCommand(params)
+            const previewCommand = new GetObjectCommand(previewParams)
+            const signedURL = await getSignedUrl(s3, command, { expiresIn: 300 })
+            const previewSignedURL = await getSignedUrl(s3, previewCommand, { expiresIn: 300 })
+            ret[key] = {
+                download: signedURL,
+                preview: previewSignedURL
+            }
+        }
+        res.status(200).json(ret)
+    }
+    catch (error) {
+        res.status(500).json(error.message)
+    }
+}
+const getUserDocsById = async (req, res) => {
+    try {
+        const { employeeId } = req.params
+        const { AccessKeyId, SecretAccessKey, SessionToken } = req.credentials
+        const s3 = new S3Client({
+            region: process.env.AWS_REGION,
+            credentials: {
+                accessKeyId: AccessKeyId,
+                secretAccessKey: SecretAccessKey,
+                sessionToken: SessionToken,
+            }
+        })
+
+        const user = await User.findById(employeeId).lean().exec()
+        if (!user) {
+            return res.status(404).json('User not found!')
+        }
+        const { profilePictureURL, optUrl, driversLicenseCopy_url, eadUrl, i983Url, i20Url } = user
+        const urls = {
+            profilePictureURL,
+            optUrl,
+            driversLicenseCopy_url,
+            eadUrl,
+            i983Url,
+            i20Url,
         }
         const ret = {}
         for (const key of ['profilePictureURL', 'optUrl', 'driversLicenseCopy_url', 'eadUrl', 'i983Url', 'i20Url']) {
@@ -894,6 +1007,26 @@ const updateWorkauthStatus = async(req,res) => {
     }
 }
 
+const updateWorkAuthStatus = async (req, res) => {
+    try {
+        const { employeeId } = req.params
+        const { newStatus, doc, feedback } = req.body
+    
+        const user = await User.findById(employeeId).exec()
+
+        user[doc] = newStatus
+        user.hrVisaFeedBack = newStatus === 'Rejected' ? feedback : ''
+
+        await user.save()
+        
+        res.status(200).json(user)
+    }
+    catch (error) {
+        console.log('error:', error)
+        res.status(500).json(error)
+    }
+}
+
 
 const getEmpolyeesProfileForHR = async(req, res)=>{
     const {searchTerm} = req.query;
@@ -940,7 +1073,7 @@ const getPersonalinfoById = async(req,res) =>{
 
 const getAllUser = async(req,res) =>{
     try {
-        const users = await User.find({role:{ $ne:"hr"}},"email firstName lastName preferredName workAuth visaStartDate visaEndDate optUrl eadUrl i983Url i20Url optStatus eadStatus i983Status i20Status");
+        const users = await User.find({role:{ $ne:"hr"}},"email firstName middleName lastName preferredName workAuth visaStartDate visaEndDate optUrl eadUrl i983Url i20Url optStatus eadStatus i983Status i20Status");
         res.json(users);
       } catch (error) {
         res.status(500).json({ error: 'Failed to fetch users' });
@@ -950,7 +1083,7 @@ const getAllUser = async(req,res) =>{
 const sendEmailNotification = async(req,res)=>{
 
     // Get user information
-    const { id, firstName, lastName, useremail, notification} = req.body;
+    const { id, firstName, lastName, useremail, notification } = req.body;
     //console.log(req.body.email);
     if (!useremail || !id) {
         return res.status(400).json({ message: 'Email is required and name is required' });
@@ -1049,4 +1182,7 @@ module.exports = {
     getUserInfoById,
     updateAppStatus,
     postVisaDecision,
+    getUserDocsById,
+    uploadNewWorkDoc,
+    updateWorkAuthStatus,
 }

@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react'
-import { token, TEST_ENDPOINT, USER_ENDPOINT, username } from '../constants'
-// import { ToastContainer, toast } from 'react-toastify'
+import { docNames, docStatuses, docUrls, TEST_ENDPOINT, USER_ENDPOINT } from '../constants'
+import { ToastContainer, toast } from 'react-toastify'
 import axios from 'axios'
+import { Typography, Box, Card, CardContent, CardHeader, TextField, InputLabel, Button } from '@mui/material'
 
 const VisaStatusEmployees = () => {
     // only apply to employee OPT visa status
@@ -13,6 +14,7 @@ const VisaStatusEmployees = () => {
     });
 
     const [visaInfo, setVisaInfo] = useState({
+        workAuth: '',
         optStatus: '',  // OPT receipt status
         eadStatus: '',
         i983Status: '',
@@ -25,6 +27,14 @@ const VisaStatusEmployees = () => {
     })
     
     const [files, setFiles] = useState([])
+
+    const [docStatusInfo, setDocStatusInfo] = useState({})
+    // const [employeeInfo, setEmployeeInfo] = useState({})
+    const [docs, setDocs] = useState({})
+    const [employeeId, setEmployeeId] = useState()
+    const [changed, setChanged] = useState(false)
+
+    const [fileToSubmit, setFileToSubmit] = useState()
     
     const testGetURL = `${TEST_ENDPOINT}/visa`;
     const testPostURL = `${TEST_ENDPOINT}/postVisa`;
@@ -43,49 +53,84 @@ const VisaStatusEmployees = () => {
     // }
 
     useEffect(() => {
-        // axios.get(deploymentURL, {
-        //     headers: {
-        //         'Authorization': `Bearer ${token}`
-        //     }
-        // })
+        axios.get(deploymentURL, { withCredentials: true }) // test
+            .then(response => {
+                const { workAuth } = response.data
+                console.log('response:', response)
+                const optUrl = response.data.optUrl;
+                const eadUrl = response.data.eadUrl;
+                const i983Url = response.data.i983Url;
+                const i20Url = response.data.i20Url;
+                const optStatus = response.data.optStatus;
+                const eadStatus = response.data.eadStatus;  
+                const i983Status = response.data.i983Status;
+                const i20Status = response.data.i20Status;
+                const hrVisaFeedBack = response.data.hrVisaFeedBack;
 
-        axios.get(testGetURL) // test
+                setViewSection({  // update view options
+                    viewOPT: optStatus === 'Not Started' ? false : true,
+                    viewEAD: eadStatus === 'Not Started' ? false : true,
+                    viewI983: i983Status === 'Not Started' ? false : true,
+                    viewI20: i20Status === 'Not Started' ? false : true,
+                });
 
-        .then(response => {
-            const optUrl = response.data.optUrl;
-            const eadUrl = response.data.eadUrl;
-            const i983Url = response.data.i983Url;
-            const i20Url = response.data.i20Url;
-            const optStatus = response.data.optStatus;
-            const eadStatus = response.data.eadStatus;  
-            const i983Status = response.data.i983Status;
-            const i20Status = response.data.i20Status;
-            const hrVisaFeedBack = response.data.hrVisaFeedBack;
+                // getDocs();  // fetch documents
+                    
+                setVisaInfo({  // update visa info state
+                    workAuth,
+                    optStatus,
+                    eadStatus,
+                    i983Status,
+                    i20Status,
+                    optUrl, 
+                    eadUrl,
+                    i983Url,
+                    i20Url,
+                    hrVisaFeedBack,
+                });
 
-            setViewSection({  // update view options
-                viewOPT: optStatus === 'Not Started' ? false : true,
-                viewEAD: eadStatus === 'Not Started' ? false : true,
-                viewI983: i983Status === 'Not Started' ? false : true,
-                viewI20: i20Status === 'Not Started' ? false : true,
-            });
-
-            // getDocs();  // fetch documents
-                
-            setVisaInfo({  // update visa info state
-                optStatus: optStatus,
-                eadStatus: eadStatus,
-                i983Status: i983Status,
-                i20Status: i20Status,
-                optUrl: optUrl, 
-                eadUrl: eadUrl,
-                i983Url: i983Url,
-                i20Url: i20Url,
-                hrVisaFeedBack: hrVisaFeedBack
-            });  
-        })
-        .catch((err) => {
-            console.error(`Error fetching visa info! Error: ${err.message}`)
-        })
+                let currDocUrl = ''
+                let currDocStatus = ''
+                let currDocName = ''
+                for (let i = 0; i < docStatuses.length; i++) {
+                    if (['Pending', 'Rejected'].includes(response.data[docStatuses[i]])) {
+                        currDocUrl = docUrls[i]
+                        currDocStatus = docStatuses[i]
+                        currDocName = docNames[i]
+                        break
+                    }
+                }
+                const currDocInfo = {
+                    currDocName,
+                    currDocStatus,
+                    currDocUrl,
+                }
+                console.log('currDocInfo:', currDocInfo)
+                setDocStatusInfo(currDocInfo)
+                setEmployeeId(response.data._id)
+                // axios.get(`${USER_ENDPOINT}/getuserdocs/${response.data._id}`, { withCredentials: true })
+                //     .then(response => {
+                //         const newEmployeeData = {
+                //             docToReview,
+                //             currDoc,
+                //         }
+                //         newData.push(newEmployeeData)
+                //     })
+                // const newEmployeeData = {
+                //     ...employee,
+                //     needSubmitNext,
+                //     isRejecting: false,
+                //     docs: userDocs.data,
+                //     docToReview,
+                //     currDoc,
+                //     // nextDoc,
+                //     nextDocName,
+                // }
+                // newData.push(newEmployeeData)
+            })
+            .catch((err) => {
+                console.error(`Error fetching visa info! Error: ${err.message}`)
+            })
     }, [])
 
     const handleFileChange = (e) => {
@@ -152,49 +197,69 @@ const VisaStatusEmployees = () => {
 
         return [updatedStatus, toggleView]
     }
+      
+    const createFormData = (data) => {
+        const formData = new FormData();
+        buildFormData(formData, data);
+        formData.append('onboardingStatus', 'Pending')
+        return formData;
+    }
 
     const handleSubmit = async (e) => {
         e.preventDefault()
-        const formName = e.target.id;
+        // const formName = e.target.id;
 
-        const [updatedStatus, toggleView] = viewToggler(formName);
+        // const [updatedStatus, toggleView] = viewToggler(formName);
 
-        const updatedVisaInfo = {
-            ...visaInfo,      
-            ...updatedStatus, 
-        };
+        // const updatedVisaInfo = {
+        //     ...visaInfo,
+        //     ...updatedStatus,
+        // };
 
-        setVisaInfo(updatedVisaInfo);
-        const data = generateFormData(updatedVisaInfo, files);
+        const oldData = {
+            ...docStatusInfo,
+            // file: fileToSubmit,
+        }
+
+        // setVisaInfo(updatedVisaInfo);
+        // const data = generateFormData(updatedVisaInfo, files);
+        const data = createFormData(oldData)
+        data.append('file', fileToSubmit)
 
         try {
-            // // for deployment
-            // await axios.post(testPostURL, data, {
-            //     headers: {
-            //         'Content-Type': 'multipart/form-data',  // for file transfer
-            //         'Authorization': `Bearer ${token}`,
-            //     }
-            // })
-
-            const response = await axios.post(testPostURL, data, {  // for testing
-                    headers: {
-                        'Content-Type': 'multipart/form-data',  // for file transfer
-                    }
+            const response = await axios.put(`${USER_ENDPOINT}/uploadworkdoc/${employeeId}`, data, {
+                headers: {
+                    'Content-Type': 'multipart/form-data',  // for file transfer
+                },
+                withCredentials: true,
             })
 
-            setViewSection({...viewSection, [toggleView] : true});  // display uploaded documentation
-            console.log("File uploaded successfully!");  // debug
-            console.log(response.data.message);  // debug
+            console.log('response:', response)
+
+            setChanged(!changed)
+            toast.success('Successfully uploaded file!')
+
+            // setViewSection({...viewSection, [toggleView] : true});  // display uploaded documentation
+            // console.log("File uploaded successfully!");  // debug
+            // console.log(response.data.message);  // debug
         }
         catch (err) {
-            console.error(`Error submitting application! Error: ${err.response}`)
+            toast.error(`Error submitting application! Error: ${err.response}`)
+            // console.error(`Error submitting application! Error: ${err.response}`)
         }
+    }
+
+    const handleChange = (e) => {
+        e.preventDefault()
+        const file = e.target.files[0]
+        // console.log('file:', file)
+        setFileToSubmit(file)
     }
 
     return (
         <>
             <h2>OPT Status Page</h2>
-            <div>
+            {visaInfo.workAuth !== 'F1(CPT/OPT)' ? <Typography variant='h3'>Only for F1(CPT/OPT) work authorizations</Typography> : <div>
                 {/* employees with non-OPT status or those who got all OPT documentations see the following */}
                 {!viewSection.viewOPT && 
                     <p>This page is for OPT related documentations only.</p>
@@ -204,23 +269,46 @@ const VisaStatusEmployees = () => {
                 {viewSection.viewOPT && <fieldset className='opt'>
                     <h3 className="statusSummary">Your OPT receipt status is {visaInfo.optStatus}</h3>
                     {visaInfo.optStatus === 'Pending' && 
-                        <p>OPT receipt submitted in onboarding application. Please wait for HR approval.</p>
+                        <p>Waiting for HR to approve your OPT Receipt</p>
                     }
 
-                    {visaInfo.optStatus === 'Approved' && 
-                        <p>Your OPT receipt has been approved!</p>
+                    {visaInfo.optStatus === 'Approved' &&
+                        <>
+                            {/* <p>Your OPT receipt has been approved!</p> */}
+                            <Typography variant='h5' sx={{ color: 'green' }}>Your OPT receipt has been approved!</Typography>
+                            {/* <p>Please upload a copy of your OPT EAD!</p> */}
+                            <Typography variant='h6'>Please upload a copy of your OPT EAD!</Typography>
+                        </>
                     }
 
                     {visaInfo.optStatus === 'Rejected' && 
                         <>
-                            <p>Your OPT receipt is rejected. Below is your HR's feedback: </p>
-                            {visaInfo.hrVisaFeedBack &&
+                            {/* <p>Your OPT receipt has been rejected. Below is your HR's feedback: </p> */}
+                            {/* <Typography variant='h5' sx={{ color: 'red' }}>Your OPT receipt has been rejected</Typography> */}
+                            {/* {visaInfo.hrVisaFeedBack &&
                                 <div>
                                     <h3>Feedback from HR:</h3>
                                     <h4>{visaInfo.hrVisaFeedBack}</h4>
                                 </div>
-                            }
-                        </>                    
+                            } */}
+                            <Box sx={{ mt: 2, mb: 2 }}>
+                                <Card sx={{ backgroundColor: '#f8d7da', color: '#721c24' }}>
+                                    <CardHeader title='Feedback given:' sx={{ paddingBottom: 0 }} />
+                                    <CardContent>
+                                        <Typography variant='body1'>
+                                            {visaInfo.hrVisaFeedBack || 'No feedback given'}
+                                        </Typography>
+                                    </CardContent>
+                                </Card>
+                            </Box>
+                            <Box>
+                                <form onSubmit={handleSubmit}>
+                                    <InputLabel>Please reupload your document again</InputLabel>
+                                    <TextField type='file' onChange={handleChange} fullWidth sx={{ mb: 2 }} required></TextField>
+                                    <Button type='submit' fullWidth>Reupload</Button>
+                                </form>
+                            </Box>
+                        </>
                     }
 
                     {/* view uploaded OPT documentation  */}
@@ -374,7 +462,8 @@ const VisaStatusEmployees = () => {
                         </div>
                     }
                 </fieldset>}
-            </div>
+                <ToastContainer />
+            </div>}
         </>
     )
 }
