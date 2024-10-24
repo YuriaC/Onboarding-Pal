@@ -2,8 +2,10 @@ import  { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { Box, Tabs, Tab, TextField, Button, Typography, List, ListItem, ListItemText } from '@mui/material';
 import { sendRegistrationLinkThunk, fetchRegistrationHistoryThunk, fetchApplicationsThunk } from '../store/user/userSlice';
+import { toast, ToastContainer } from 'react-toastify';
 
 const Hiring = () => {
+
     const [selectedTab, setSelectedTab] = useState(0);
     const [email, setEmail] = useState('');
     const [name, setName] = useState('');
@@ -25,8 +27,12 @@ const Hiring = () => {
             .unwrap()
             .then(() => {
                 // Fetch the updated registration history only after successfully sending
+                toast.success('Successfully sent registration token!')
                 dispatch(fetchRegistrationHistoryThunk());
-            });
+            })
+            .catch(error => {
+                toast.error(`Error sending registration token! Error: ${error.message}`)
+            })
         setEmail(''); // Clear the input after sending
         setName(''); // Clear the name input after sending
     };
@@ -35,13 +41,18 @@ const Hiring = () => {
         dispatch(sendRegistrationLinkThunk({ email: entry.email, name: `${entry.firstName} ${entry.lastName}` }))
             .unwrap()
             .then(() => {
+                toast.success('Successfully resent registration token!')
                 dispatch(fetchRegistrationHistoryThunk());
-            });
+            })
+            .catch(error => {
+                toast.error(`Error resending registration token! Error: ${error.message}`)
+            })
     };
 
-    const handleViewApplication = (applicationId) => {
+    const handleViewApplication = (employeeId) => {
         // Logic to open the application in a new tab
-        window.open(`/application/${applicationId}`, '_blank');
+        window.open(`/hr/application/${employeeId}`, '_blank');
+
     };
 
     return (
@@ -75,7 +86,7 @@ const Hiring = () => {
                         color="primary"
                         onClick={handleSendRegistration}
                     >
-                        Send Registration Link
+                        Generate token and send email
                     </Button>
 
                     <Box sx={{ marginTop: 4 }}>
@@ -87,7 +98,8 @@ const Hiring = () => {
                                         primary={`Name: ${entry.firstName} ${entry.lastName} | Email: ${entry.email}`}
                                         secondary={`Registration Status: ${entry.registrationHistory.status }`}
                                     />
-                                    <Button onClick={() => handleResendRegistration(entry)}>Resend Link</Button>
+                                    <ListItemText secondary={`Link: ${entry.registrationHistory.link.slice(0, 20)}...`} />
+                                    {entry.registrationHistory.status === 'Pending' && <Button onClick={() => handleResendRegistration(entry)}>Resend Link</Button>}
                                 </ListItem>
                             ))}
                         </List>
@@ -104,16 +116,17 @@ const Hiring = () => {
                         <Typography>No pending applications</Typography>
                     ) : (
                         <List>
-                            {pendingApplications.map(application => (
-                                <ListItem key={application.id}>
+                            {pendingApplications.map(application => {
+                                return (
+                                <ListItem key={application._id}>
                                     <ListItemText
                                         primary={`Name: ${application.firstName} ${application.lastName} | Email: ${application.email}`}
                                     />
-                                    <Button onClick={() => handleViewApplication(application.id)}>
+                                    <Button onClick={() => handleViewApplication(application._id)}>
                                         View Application
                                     </Button>
                                 </ListItem>
-                            ))}
+                            )})}
                         </List>
                     )}
 
@@ -123,16 +136,17 @@ const Hiring = () => {
                         <Typography>No rejected applications</Typography>
                     ) : (
                         <List>
-                            {rejectedApplications.map(application => (
-                                <ListItem key={application.id}>
+                            {rejectedApplications.map(application => {
+                                return (
+                                <ListItem key={application._id}>
                                     <ListItemText
                                         primary={`Name: ${application.firstName} ${application.lastName} | Email: ${application.email}`}
                                     />
-                                    <Button onClick={() => handleViewApplication(application.id)}>
+                                    <Button onClick={() => handleViewApplication(application._id)}>
                                         View Application
                                     </Button>
                                 </ListItem>
-                            ))}
+                            )})}
                         </List>
                     )}
 
@@ -143,11 +157,11 @@ const Hiring = () => {
                     ) : (
                         <List>
                             {approvedApplications.map(application => (
-                                <ListItem key={application.id}>
+                                <ListItem key={application._id}>
                                     <ListItemText
                                         primary={`Name: ${application.firstName} ${application.lastName} | Email: ${application.email}`}
                                     />
-                                    <Button onClick={() => handleViewApplication(application.id)}>
+                                    <Button onClick={() => handleViewApplication(application._id)}>
                                         View Application
                                     </Button>
                                 </ListItem>
@@ -156,6 +170,7 @@ const Hiring = () => {
                     )}
                 </Box>
             )}
+            <ToastContainer />
         </Box>
     );
 };

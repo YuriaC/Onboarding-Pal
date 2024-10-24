@@ -1,22 +1,38 @@
 import { useState } from 'react'
-import { HOUSE_ENDPOINT, token } from '../constants'
+import { emailRegex, HOUSE_ENDPOINT, phoneRegex } from '../constants'
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import axios from 'axios'
 import { resetObject } from '../helpers/HelperFunctions';
+import { TextField, Box } from '@mui/material';
+import ErrorHelperText from '../components/ErrorHelperText';
 
 const AddHouse = () => {
 
     const [formData, setFormData] = useState({
-        address: '',
+        street: '',
+        city: '',
+        state: '',
+        zip: null,
         landlordName: '',
         landlordPhone: '',
         landlordEmail: '',
-        numBeds: 0,
-        numMattresses: 0,
-        numTables: 0,
-        numChairs: 0,
+        numBeds: null,
+        numMattresses: null,
+        numTables: null,
+        numChairs: null,
     })
+
+    const [errors, setErrors] = useState({
+        landlordEmail: false,
+        landlordPhone: false,
+        zip: false,
+    })
+    const helperTexts = {
+        landlordEmail: 'Invalid email format!',
+        landlordPhone: 'Invalid phone format!',
+        zip: 'ZIP code must have 5 digits!',
+    }
 
     const handleChange = (e) => {
         const { name, value } = e.target
@@ -28,19 +44,35 @@ const AddHouse = () => {
 
     const handleSubmit = (e) => {
         e.preventDefault()
-        axios.post(HOUSE_ENDPOINT, formData, {
-            headers: {
-                'Authorization': `Bearer ${token}`
+        const newErrorObject = {}
+        for (const key in errors) {
+            newErrorObject[key] = false
+        }
+        if (formData.zip < 10000 || formData.zip > 999999) {
+            newErrorObject['zip'] = true
+        }
+        if (!phoneRegex.test(formData.landlordPhone)) {
+            newErrorObject['landlordPhone'] = true
+        }
+        if (!emailRegex.test(formData.landlordEmail)) {
+            newErrorObject['landlordEmail'] = true
+        }
+        for (const key in newErrorObject) {
+            if (newErrorObject[key]) {
+                toast.error('Please fix input errors!')
+                return setErrors(newErrorObject)
             }
+        }
+        axios.post(HOUSE_ENDPOINT, formData, {
+            withCredentials: true,
         })
-            .then(response => {
-                console.log('response:', response)
-                toast.success(`Successfully added ${formData.address}!`)
+            .then(() => {
+                toast.success(`Successfully added new house!`)
+                setErrors(newErrorObject)
                 setFormData(resetObject(formData))
             })
             .catch(error => {
-                console.log('error:', error)
-                toast.error(`Error adding new house! Error: ${error.response.data}`)
+                toast.error(`Error adding new house! Error: ${error.response.data.message}`)
             })
     }
 
@@ -49,16 +81,21 @@ const AddHouse = () => {
             <form onSubmit={handleSubmit}>
                 <fieldset>
                     <legend>Address</legend>
-                    <input className='address-input' type='text' value={formData.address} name='address' onChange={handleChange} required />
+                    <Box>
+                        <TextField label='Street' name='street' value={formData.street} variant='outlined' onChange={handleChange} fullWidth required sx={{ mb: 2 }} />
+                        <TextField label='City' name='city' value={formData.city} variant='outlined' onChange={handleChange} fullWidth required sx={{ mb: 2 }} />
+                        <TextField label='State' name='state' value={formData.state} variant='outlined' onChange={handleChange} fullWidth required sx={{ mb: 2 }} />
+                        <TextField label='ZIP' name='zip' type='number' value={formData.zip} variant='outlined' onChange={handleChange} fullWidth error={errors.zip} required sx={{ mb: 2 }} />
+                        <ErrorHelperText hasError={errors.zip} message={helperTexts.zip} />
+                    </Box>
                 </fieldset>
                 <fieldset>
                     <legend>Landlord Information</legend>
-                    <label>Name:</label>
-                    <input type='text' value={formData.landlordName} name='landlordName' onChange={handleChange} required />
-                    <label>Phone:</label>
-                    <input type='tel' value={formData.landlordPhone} name='landlordPhone' onChange={handleChange} required />
-                    <label>Email:</label>
-                    <input type='email' value={formData.landlordEmail} name='landlordEmail' onChange={handleChange} required />
+                    <TextField label='Full Name' name='landlordName' value={formData.landlordName} variant='outlined' onChange={handleChange} fullWidth required sx={{ mb: 2 }} />
+                    <TextField label='Phone' name='landlordPhone' value={formData.landlordPhone} variant='outlined' onChange={handleChange} fullWidth error={errors.landlordPhone} required sx={{ mb: 2 }} />
+                    <ErrorHelperText hasError={errors.landlordPhone} message={helperTexts.landlordPhone} />
+                    <TextField label='Email' name='landlordEmail' value={formData.landlordEmail} variant='outlined' onChange={handleChange} fullWidth error={errors.landlordEmail} required sx={{ mb: 2 }} />
+                    <ErrorHelperText hasError={errors.landlordEmail} message={helperTexts.landlordEmail} />
                 </fieldset>
                 <fieldset>
                     <legend>Facility Information</legend>

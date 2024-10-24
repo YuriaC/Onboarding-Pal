@@ -58,7 +58,7 @@ const register = async (req,res) =>{
             existingUser.password = hashedPassword;
             existingUser.role = 'employee';
             existingUser.house = randomHouse[0]._id;
-            existingUser.onboardingStatus = 'Pending';
+            // existingUser.onboardingStatus = 'Pending';
             existingUser.registrationHistory.email = email;
             existingUser.registrationHistory.status = 'Registered';
             await existingUser.save();
@@ -110,6 +110,7 @@ const sendRegistrationLink = async (req,res) =>{
       );
       const frontendURL = process.env.FRONTEND_URL ? process.env.FRONTEND_URL : 'http://localhost:5173';
       const registrationLink = `${frontendURL}/register?token=${token}`;
+      const emailBody = `Here is your registration link: ${registrationLink}, you have 3 hours to activate your account.`
       try {
         // Check if user already exists
         const existingUser = await User.findOne({ email: sanitizedEmail }).lean().exec();
@@ -128,7 +129,8 @@ const sendRegistrationLink = async (req,res) =>{
                         registrationHistory: {
                             status: 'Pending',
                             expiresAt: Date.now() + 3 * 60 * 60 * 1000,
-                            token: token
+                            token: token,
+                            link: registrationLink,
                         }
                     }
                 });
@@ -143,12 +145,13 @@ const sendRegistrationLink = async (req,res) =>{
                 lastName: sanitizedLastName,
                 password: '',
                 role: 'employee',
-                onboardingStatus: 'Pending',
+                // onboardingStatus: 'Not Started',
                 registrationHistory: {
                   email: sanitizedEmail,
-                  status: 'Pending',
+                //   status: 'Pending',
                   expiresAt: Date.now() + 3 * 60 * 60 * 1000,
-                  token: token
+                  token: token,
+                  link: registrationLink,
                 },
               });
               if(!newUser){
@@ -157,7 +160,7 @@ const sendRegistrationLink = async (req,res) =>{
         }
         // Send registration email
         const mailResult = await sendMail(
-            registrationLink,
+            emailBody,
             sanitizedEmail,
             'Welcome to Beaconfire - Here is your Registration Link',
             'dminhnguyen161@gmail.com'
@@ -334,9 +337,10 @@ const getHouse= async(req,res) =>{
 
 };
 
-const setApplicationInput = async(req,res) =>{
+const setApplicationInput = async (req, res) => {
     // tested working
-    const username = req.body.username;
+    const { userId } = req.user
+    // const username = req.body.username;
     const firstname = req.body.firstName;
     const lastname = req.body.lastName;
     const middlename = req.body.middleName;
@@ -347,8 +351,8 @@ const setApplicationInput = async(req,res) =>{
     const { files } = req
     const { AccessKeyId, SecretAccessKey, SessionToken } = req.credentials
     const { building, street, city, state, zip } = req.body
-    const address = `${building}, ${street}, ${city}, ${state} ${zip}`
-    const { permResStatus } = req.body
+    const address = `${building} ${street}, ${city}, ${state} ${zip}`
+    const { isPermRes, permResStatus } = req.body
     const cellPhone = req.body.cellPhone;
     const workPhone = req.body.workPhone
     const { carMake, carModel, carColor } = req.body
@@ -405,7 +409,7 @@ const setApplicationInput = async(req,res) =>{
 
         const uploadedFiles = await Promise.all(filePromises)
 
-        const user = await User.findOne({ username }).lean().exec();
+        const user = await User.findById(userId).lean().exec();
         if (!user) {
             return res.status(404).json('User not Found!');
         }
@@ -419,7 +423,6 @@ const setApplicationInput = async(req,res) =>{
                 cellPhone: refPhone,
                 email: refEmail,
                 relationship: refRelationship,
-                // relationshipToId: "6711edc999bed2d3ff6f0f45",
             })
             if (!reference) {
                 return res.status(500).json('Error creating reference!')
@@ -469,17 +472,18 @@ const setApplicationInput = async(req,res) =>{
                 "birthday": dob,
                 "gender": gender,
                 "workAuth": workauth,
-                // "workAuthFile_url": workauth_url,
                 "driversLicenseNumber": dlnum,
                 "driversLicenseExpDate": dldate,
                 "driversLicenseCopy_url": dlCopyURL,
                 "permResStatus": permResStatus,
+                "isPermRes": isPermRes,
                 "referer": isReferred === 'Yes' ? reference._id : null,
                 "optUrl": optReceiptURL,
                 "emergencyContacts": emergencyContactIds,
-                "visaStartDate": visaStartDate,
-                "visaEndDate": visaEndDate,
+                "visaStartDate": visaStartDate || undefined,
+                "visaEndDate": visaEndDate || undefined,
                 "visaTitle": visaTitle,
+                "optStatus": workauth === 'F1(CPT/OPT)' ? 'Pending' : 'Not Started',
             }
         }
         );
@@ -494,6 +498,59 @@ const setApplicationInput = async(req,res) =>{
     }
 
 };
+
+const uploadNewWorkDoc = async (req, res) => {
+    const { employeeId } = req.params
+    const { username } = req.user
+    const { files } = req
+    const file = files[0]
+    let newUrl = ''
+    const { AccessKeyId, SecretAccessKey, SessionToken } = req.credentials
+    const { currDocStatus, currDocUrl } = req.body
+
+    console.log(currDocStatus, currDocUrl, employeeId)
+
+    const s3 = new S3Client({
+        region: process.env.AWS_REGION,
+        credentials: {
+            accessKeyId: AccessKeyId,
+            secretAccessKey: SecretAccessKey,
+            sessionToken: SessionToken,
+        }
+    })
+
+    try {
+        const newFileName = `${username}-${file.originalname}`
+
+        const command = new PutObjectCommand({
+            Bucket: process.env.S3_BUCKET,
+            Key: newFileName,
+            Body: file.buffer,
+            ContentType: file.mimetype,
+        })
+
+        await s3.send(command).then(() => {
+            const fileURL = `https://${process.env.S3_BUCKET}.s3.amazonaws.com/${newFileName}`
+            newUrl = fileURL
+        })
+
+        const user = await User.findById(employeeId).exec();
+        if (!user) {
+            return res.status(404).json('User not Found!');
+        }
+
+        user[currDocStatus] = 'Pending'
+        user[currDocUrl] = newUrl
+
+        await user.save()
+
+        res.status(200).json(user)
+    }
+    catch (error) {
+        console.error(error);
+        return res.status(500).json({ message: error.message });
+    }
+}
 
 const setContactInput = async(req,res) =>{
     // tested working
@@ -590,7 +647,14 @@ const setContactInput = async(req,res) =>{
 
 const getUserDocs = async (req, res) => {
     try {
-        const { username } = req.user
+        let username
+        const { role } = req.user
+        if (role === 'hr') {
+            username = req.body.username
+        }
+        else {
+            username = req.user.username
+        }
         const { AccessKeyId, SecretAccessKey, SessionToken } = req.credentials
         const s3 = new S3Client({
             region: process.env.AWS_REGION,
@@ -613,7 +677,7 @@ const getUserDocs = async (req, res) => {
             driversLicenseCopy_url,
         }
         const ret = {}
-        for (const key of ['profilePictureURL', 'optUrl', 'driversLicenseCopy_url']) {
+        for (const key of ['profilePictureURL', 'optUrl', 'driversLicenseCopy_url', 'eadUrl', 'i983Url', 'i20Url']) {
             const url = urls[key]
             if (!url) {
                 continue
@@ -629,7 +693,67 @@ const getUserDocs = async (req, res) => {
             const previewParams = {
                 Bucket: process.env.S3_BUCKET,
                 Key: fileName,
-                // ResponseContentDisposition: `attachment; filename="${fileName}"`,
+            }
+            const command = new GetObjectCommand(params)
+            const previewCommand = new GetObjectCommand(previewParams)
+            const signedURL = await getSignedUrl(s3, command, { expiresIn: 300 })
+            const previewSignedURL = await getSignedUrl(s3, previewCommand, { expiresIn: 300 })
+            ret[key] = {
+                download: signedURL,
+                preview: previewSignedURL
+            }
+        }
+        res.status(200).json(ret)
+    }
+    catch (error) {
+        res.status(500).json(error.message)
+    }
+}
+const getUserDocsById = async (req, res) => {
+    try {
+        const { employeeId } = req.params
+        const { AccessKeyId, SecretAccessKey, SessionToken } = req.credentials
+        const s3 = new S3Client({
+            region: process.env.AWS_REGION,
+            credentials: {
+                accessKeyId: AccessKeyId,
+                secretAccessKey: SecretAccessKey,
+                sessionToken: SessionToken,
+            }
+        })
+
+        const user = await User.findById(employeeId).lean().exec()
+        if (!user) {
+            return res.status(404).json('User not found!')
+        }
+        const { profilePictureURL, optUrl, driversLicenseCopy_url, eadUrl, i983Url, i20Url } = user
+        const urls = {
+            profilePictureURL,
+            optUrl,
+            driversLicenseCopy_url,
+            eadUrl,
+            i983Url,
+            i20Url,
+            'Empty Template': 'a/Empty Template.pdf',
+            'Sample Template': 'a/Sample Template.pdf',
+        }
+        const ret = {}
+        for (const key of ['profilePictureURL', 'optUrl', 'driversLicenseCopy_url', 'eadUrl', 'i983Url', 'i20Url', 'Empty Template', 'Sample Template']) {
+            const url = urls[key]
+            if (!url) {
+                continue
+            }
+            const parts = url.split('/')
+            const fileName = parts[parts.length - 1]
+
+            const params = {
+                Bucket: process.env.S3_BUCKET,
+                Key: fileName,
+                ResponseContentDisposition: `attachment; filename="${fileName}"`,
+            }
+            const previewParams = {
+                Bucket: process.env.S3_BUCKET,
+                Key: fileName,
             }
             const command = new GetObjectCommand(params)
             const previewCommand = new GetObjectCommand(previewParams)
@@ -704,7 +828,6 @@ const getApplications = async(req,res) =>{
     try{
         const users = await User.find({ role: "employee",  "registrationHistory.status": { $ne: "Pending" } }).select('-password').lean().exec();
 
-        console.log(users)
         if (!users) {
             return res.status(401).json({ message: 'User not Found!' });
         } 
@@ -715,14 +838,13 @@ const getApplications = async(req,res) =>{
     }catch (error) {
         console.error(error);
         return res.status(500).json({ message: error.message });    
-
     }
 }
 
 const getUserInfo = async (req, res) =>{
-    const { username } = req.user
-    try{
-        const user = await User.findOne({ username }).populate('referer').populate({
+    const { userId } = req.user
+    try {
+        const user = await User.findById(userId).populate('referer').populate({
             path: 'house',
             populate: [
                 { path: 'employees' },
@@ -740,6 +862,43 @@ const getUserInfo = async (req, res) =>{
         return res.status(500).json({ message: error.message });
     }
 };
+const getUserInfoById = async (req, res) =>{
+    const { userId } = req.params
+    console.log('userId:', userId)
+    try{
+        const user = await User.findById(userId)
+            .populate('referer')
+            .populate('emergencyContacts').lean().exec();
+        if (!user) {
+            return res.status(401).json({ message: 'User not Found!' });
+        }
+        return res.status(200).json(user)
+    } catch (error) {
+        console.error(error);
+        return res.status(500).json({ message: error.message });
+    }
+};
+const updateAppStatus = async (req, res) => {
+    try {
+        const { employeeId } = req.params
+        const { newStatus, feedback } = req.body
+        const employee = await User.findById(employeeId)
+        if (!employee) {
+            return res.status(404).json('Employee not found!')
+        }
+
+        employee.onboardingStatus = newStatus
+        if (newStatus === 'Rejected') {
+            employee.hrFeedback = feedback
+        }
+        employee.save()
+
+        return res.status(200).json(employee)
+    }
+    catch (error) {
+        res.status(500).json(error)
+    }
+}
 const logout = async (req, res) => {
     try {
         res.clearCookie('auth_token');
@@ -804,21 +963,21 @@ const updateWorkauthdoc = async(req,res) =>{
 
 const updateWorkauthStatus = async(req,res) => {
     //tested working
-    const username = req.body.username;
+    const id = req.body.id;
     const optStatus = req.body.optStatus;
     const eadStatus = req.body.eadStatus;
     const i983Status = req.body.i983Status;
     const i20Status = req.body.i20Status;
     try{
-        const user = await User.findOne({ username })
+        const user = await User.findById(id)
         .lean()
         .exec();
         if (!user) {
             return res.status(401).json({ message: 'User not Found!' });
         }
-
-        let update_status = { 
-        }
+        
+        let update_status = {}
+        
         if(optStatus){
             update_status.optStatus = optStatus;
         }
@@ -854,12 +1013,34 @@ const updateWorkauthStatus = async(req,res) => {
         return res.status(500).json({ message: error.message });
     }
 }
+
+const updateWorkAuthStatus = async (req, res) => {
+    try {
+        const { employeeId } = req.params
+        const { newStatus, doc, feedback } = req.body
+    
+        const user = await User.findById(employeeId).exec()
+
+        user[doc] = newStatus
+        user.hrVisaFeedBack = newStatus === 'Rejected' ? feedback : ''
+
+        await user.save()
+        
+        res.status(200).json(user)
+    }
+    catch (error) {
+        console.log('error:', error)
+        res.status(500).json(error)
+    }
+}
+
+
 const getEmpolyeesProfileForHR = async(req, res)=>{
     const {searchTerm} = req.query;
     const regexSearchTerm = new RegExp(searchTerm, 'i');
-
     try{
         const filterUser = await User.find({
+            role: { $ne: 'hr' },
             $or: [
                 {username: regexSearchTerm},
                 {firstName: regexSearchTerm},
@@ -897,6 +1078,91 @@ const getPersonalinfoById = async(req,res) =>{
     }
 } 
 
+const getAllUser = async(req,res) =>{
+    try {
+        const users = await User.find({role:{ $ne:"hr"}},"email firstName middleName lastName preferredName workAuth visaStartDate visaEndDate optUrl eadUrl i983Url i20Url optStatus eadStatus i983Status i20Status");
+        res.json(users);
+      } catch (error) {
+        res.status(500).json({ error: 'Failed to fetch users' });
+    }
+};
+
+const sendEmailNotification = async(req,res)=>{
+
+    // Get user information
+    const { id, firstName, lastName, useremail, notification } = req.body;
+    //console.log(req.body.email);
+    if (!useremail || !id) {
+        return res.status(400).json({ message: 'Email is required and name is required' });
+    }
+    const sanitizedEmail = sanitizeInput(useremail);
+    const sanitizedFirstName = sanitizeInput(firstName);
+    const sanitizedLastName = sanitizeInput(lastName);
+
+    console.log(sanitizedFirstName, sanitizedLastName, sanitizedEmail)
+
+    try {
+    // Check if user already exists
+    const existingUser = await User.findById(id).lean().exec();
+    if(!existingUser){
+        return res.status(409).json({ message: 'User with this email does not exists.' });
+    }
+    // Send registration email
+    //todo need to change the email receiver
+    // todo need to test the email content
+    const mailResult = await sendMail(
+        notification,
+        sanitizedEmail,
+        'Notification from Beaconfire - Please check or update your visa documents',
+        'dminhnguyen161@gmail.com' 
+        );
+    if (mailResult.error) {
+        return res.status(500).json({ message: 'Failed to send email.', error: mailResult.error });
+    }
+    return res.status(200).json({ message: 'Notification sent successfully to ' + sanitizedEmail });
+    } catch (error) {
+        return res.status(500).json({ message: 'Server error.', error: error.message });
+    }
+}
+
+const postVisaDecision = async(req,res) =>{
+    const {id, message} = req.body;
+    if (!id||!message) {
+        return res.status(400).json({ message: 'User id or update message is required and name is required' });
+    }
+    try{
+        const user = await User.findById(id)
+        .lean()
+        .exec();
+        if (!user) {
+            return res.status(401).json({ message: 'User not Found!' });
+        }
+        
+        const update_status = {hrVisaFeedBack:message}
+
+        function isObjectEmpty(obj) {
+            return obj && Object.keys(obj).length === 0;
+        }
+        if(isObjectEmpty(update_status)){
+            return res.status(401).json(`no file to update`);
+        }
+
+        const result = await User.updateOne(
+            { _id: user._id },
+            { $set: update_status
+        });
+        if(!result.acknowledged){
+            return res.status(401).json(`visa feedback update for user ${result.acknowledged?"success":"failed"}`);
+        }
+        return res.status(200).json(`uvisa feedback update for user ${result.acknowledged?"success":"failed"}`);
+
+    }
+    catch (error) {
+        console.error(error);
+        return res.status(500).json({ message: error.message });
+    }
+
+}
 module.exports = {
     register,
     login,
@@ -917,5 +1183,13 @@ module.exports = {
     getPersonalinfoById,
     logout,
     getRegistrationHistory,
-    getApplications
+    getApplications,
+    getAllUser,
+    sendEmailNotification,
+    getUserInfoById,
+    updateAppStatus,
+    postVisaDecision,
+    getUserDocsById,
+    uploadNewWorkDoc,
+    updateWorkAuthStatus,
 }

@@ -17,7 +17,7 @@ const sendMail = async (
       to,
       subject,
       text: 'Hi there,',
-      html: `<strong>Here is your registration link: ${param}, you have 3 hours to activate your account </strong>`,
+      html: `<strong>${param}</strong>`,
     };
     sgMail.setApiKey(process.env.SENDGRID_API_KEY);
     let result = await sgMail.send(msg);

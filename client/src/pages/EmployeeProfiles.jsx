@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import axios from 'axios';
 import {Link} from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
@@ -54,7 +54,7 @@ const EmployeeProfiles = () => {
                                     to={`/hr/employee-profiles/${employee._id}`}
                                     rel="noopener noreferrer"
                                 >
-                                    {`${employee.firstName} ${employee.lastName} ${employee.username}`.trim() || 'Undefined Name'}
+                                    {`${employee.firstName} ${employee.lastName} (${employee.username})`.trim() || 'Undefined Name'}
                                 </Link>
                             </h4>
                             <p>SSN: {employee.ssn || 'Undefined SSN'}</p>

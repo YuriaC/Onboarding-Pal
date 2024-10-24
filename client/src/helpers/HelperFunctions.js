@@ -12,11 +12,12 @@ export const resetObject = (obj) => {
 
     for (let key in obj) {
         if (typeof obj[key] === 'number') {
-            ret[key] = 0
+            ret[key] = undefined
         }
         else if (typeof obj[key] === 'string') {
             ret[key] = ''
         }
+        // ret[key] = null
     }
 
     return ret
@@ -50,3 +51,11 @@ export const getUserRoleFromCookie = () => {
         return null;
     }
 };
+
+export const isNumeric = (str) => {
+    return !isNaN(str) && !isNaN(parseFloat(str))
+}
+
+export const checkZIP = (str) => {
+    return str.length === 5 && isNumeric(str)
+}

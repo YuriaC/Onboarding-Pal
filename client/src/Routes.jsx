@@ -17,6 +17,7 @@ import LoginGuard from './components/guards/LoginGuard';
 import RoleGuard from './components/guards/RoleGuard';
 import HouseDetails from './pages/HouseDetails';
 import AddHouse from './pages/AddHouse';
+import Application from './pages/Application';
 const RoutesComponent = () => {
   return (
     <BrowserRouter>
@@ -49,6 +50,7 @@ const RoutesComponent = () => {
               <Route path="hiring" element={<Hiring />} />
               <Route path="visa-status" element={<VisaStatusHR />} />
               <Route path="addhouse" element={<AddHouse />} />
+              <Route path="application/:employeeId" element={<Application />} />
             </Route>
           </Route>
         

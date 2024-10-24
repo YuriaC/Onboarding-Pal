@@ -15,21 +15,24 @@ import {
     Radio,
     Typography,
     Paper,
+    Card,
+    CardHeader,
+    CardContent,
 } from '@mui/material'
 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faUser } from '@fortawesome/free-solid-svg-icons'
 
-const EmployeeDetail = () => {
+const Application = () => {
     const navigate = useNavigate()
     const { employeeId } = useParams()
+    const [feedback, setFeedback] = useState('')
     const [isRejecting, setIsRejecting] = useState(false)
     const [isLoading, setIsLoading] = useState(true)
     const [formData, setFormData] = useState({
         firstName: '',
         lastName: '',
         middleName: '',
-        username: '',
         preferredName: '',
         profilePicture: null,
         optReceipt: null,
@@ -92,7 +95,6 @@ const EmployeeDetail = () => {
             firstName,
             lastName,
             middleName,
-            username,
             preferredName,
             address,
             cellPhone,
@@ -141,7 +143,6 @@ const EmployeeDetail = () => {
             firstName,
             lastName,
             middleName,
-            username,
             preferredName,
             cellPhone,
             workPhone,
@@ -192,13 +193,44 @@ const EmployeeDetail = () => {
             })
     }
 
+    const handleRejection = async () => {
+        axios.put(`${USER_ENDPOINT}/updateappstatus/${employeeId}`, { newStatus: 'Rejected', feedback }, {
+            withCredentials: true,
+        })
+            .then(() => {
+                // window.close()
+                navigate('/hr/hiring')
+            })
+            .catch(error => {
+                toast.error(`Error rejecting application! Error: ${error.message}`)
+            })
+    }
+
+    const handleChange = (e) => {
+        e.preventDefault()
+        const { value } = e.target
+        setFeedback(value)
+    }
+
     return (
         <>
             {!isLoading ? (
                 <Paper sx={{ p: 3 }}>
-                    <Typography variant='h4' sx={{ mb: 1 }}>
-                        {formData.firstName} {formData.lastName} ({formData.username})
+                    <Typography variant='h4' sx={{ color: formData.onboardingStatus === 'Rejected' ? 'red' : formData.onboardingStatus === 'Approved' ? 'green' : 'black' }}>
+                        Status: {formData.onboardingStatus}
                     </Typography>
+                    {formData.onboardingStatus === 'Rejected' &&
+                        <Box sx={{ mt: 2, mb: 4 }}>
+                            <Card sx={{ backgroundColor: '#f8d7da', color: '#721c24' }}>
+                                <CardHeader title='Feedback given:' sx={{ paddingBottom: 0 }} />
+                                <CardContent>
+                                    <Typography variant='body1'>
+                                        {formData.hrFeedback}
+                                    </Typography>
+                                </CardContent>
+                            </Card>
+                        </Box>
+                    }
                     {formData.profilePicture ? null : (
                         <Avatar sx={{ width: 56, height: 56 }}>
                             <FontAwesomeIcon icon={faUser} />
@@ -570,6 +602,24 @@ const EmployeeDetail = () => {
                                 </Button>
                             </Box>
                         )}
+
+                        {isRejecting && (
+                            <Box sx={{ mt: 4, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2 }}>
+                                <TextField
+                                    fullWidth
+                                    required
+                                    placeholder='Provide rejection feedback'
+                                    onChange={handleChange}
+                                    value={feedback}
+                                />
+                                <Button
+                                    sx={{ backgroundColor: 'red', color: 'white', '&:hover': { backgroundColor: 'darkred' } }}
+                                    onClick={handleRejection}
+                                >
+                                    Submit Rejection
+                                </Button>
+                            </Box>
+                        )}
                         <ToastContainer />
                     </form>
                 </Paper>
@@ -580,4 +630,4 @@ const EmployeeDetail = () => {
     )
 }
 
-export default EmployeeDetail
+export default Application
