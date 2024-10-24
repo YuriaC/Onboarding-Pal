@@ -1,5 +1,5 @@
 import {useState, useEffect} from 'react';
-import MyDocument from './PdfViewer';
+import MyDocument from '../helpers/PdfViewer';
 import axios from 'axios';
 import { pdfjs } from "react-pdf";
 
@@ -190,9 +190,20 @@ const VisaStatusHR_inprogress = ()=>{
             }
         if(decision === "rejected"){
             //if rejected, send this message to the employee side to remind resubmission.
-            console.log(`Hello ${user.firstName} ${user.lastName}, your submitted file for ${step_status} has been rejected by HR, please resubmit.`)
+            const reject_message=`Hello ${user.firstName} ${user.lastName}, your submitted file for ${step_status} has been rejected by HR, please resubmit.`;
+            //console.log(`Hello ${user.firstName} ${user.lastName}, your submitted file for ${step_status} has been rejected by HR, please resubmit.`)
             //todo, modify the message to the user
-
+            try {
+                const response = await axios.post(`http://localhost:3000/api/users/postVisaDecision`, {
+                  id: user._id,
+                  message: reject_message
+                });
+                console.log('User visa document decision posted:', response.data);
+                alert('Visa document decision posted successfully!');
+              } catch (error) {
+                console.error('Error posting user visa document decision:', error);
+                alert('Failed to post Visa document decision.');
+              }
         }
 
         //modify the changed visa document status for user
