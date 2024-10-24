@@ -947,7 +947,7 @@ const sendEmailNotification = async(req,res)=>{
 
     // Get user information
     const { id, firstName, lastName, useremail, notification} = req.body;
-    console.log(req.body.email);
+    //console.log(req.body.email);
     if (!useremail || !id) {
         return res.status(400).json({ message: 'Email is required and name is required' });
     }
@@ -980,6 +980,45 @@ const sendEmailNotification = async(req,res)=>{
         return res.status(500).json({ message: 'Server error.', error: error.message });
     }
 }
+
+const postVisaDecision = async(req,res) =>{
+    const {id, message} = req.body;
+    if (!id||!message) {
+        return res.status(400).json({ message: 'User id or update message is required and name is required' });
+    }
+    try{
+        const user = await User.findById(id)
+        .lean()
+        .exec();
+        if (!user) {
+            return res.status(401).json({ message: 'User not Found!' });
+        }
+        
+        const update_status = {hrVisaFeedBack:message}
+
+        function isObjectEmpty(obj) {
+            return obj && Object.keys(obj).length === 0;
+        }
+        if(isObjectEmpty(update_status)){
+            return res.status(401).json(`no file to update`);
+        }
+
+        const result = await User.updateOne(
+            { _id: user._id },
+            { $set: update_status
+        });
+        if(!result.acknowledged){
+            return res.status(401).json(`visa feedback update for user ${result.acknowledged?"success":"failed"}`);
+        }
+        return res.status(200).json(`uvisa feedback update for user ${result.acknowledged?"success":"failed"}`);
+
+    }
+    catch (error) {
+        console.error(error);
+        return res.status(500).json({ message: error.message });
+    }
+
+}
 module.exports = {
     register,
     login,
@@ -1002,7 +1041,8 @@ module.exports = {
     getRegistrationHistory,
     getApplications,
     getAllUser,
-    sendEmailNotification
+    sendEmailNotification,
     getUserInfoById,
     updateAppStatus,
+    postVisaDecision,
 }
