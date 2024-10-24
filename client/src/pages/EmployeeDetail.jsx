@@ -552,7 +552,7 @@ const EmployeeDetail = () => {
                             </Box>
                         ))}
 
-                        {formData.onboardingStatus == 'Pending' && (
+                        {/* {formData.onboardingStatus == 'Pending' && (
                             <Box sx={{ display: 'flex', justifyContent: 'center', gap: 2, mt: 4 }}>
                                 <Button
                                     variant='contained'
@@ -569,7 +569,7 @@ const EmployeeDetail = () => {
                                     Reject
                                 </Button>
                             </Box>
-                        )}
+                        )} */}
                         <ToastContainer />
                     </form>
                 </Paper>
