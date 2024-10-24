@@ -358,8 +358,8 @@ const setApplicationInput = async(req,res) =>{
     const gender = req.body.gender;
     const workauth = req.body.nonPermWorkAuth; //gc,citizen,work auth type
     const { isReferred } = req.body
-    const dlnum = req.body.dlNum;
-    const dldate = req.body.dlExpDate;
+    const dlnum = req.body.dlNum || "";//
+    const dldate = req.body.dlExpDate || "";//
     const { refFirstName, refLastName, refMiddleName, refPhone, refEmail, refRelationship } = req.body
     const { visaStartDate, visaEndDate, visaTitle } = req.body
     const emergencyContacts = req.body.emergencyContacts
@@ -373,8 +373,11 @@ const setApplicationInput = async(req,res) =>{
         }
     })
 
+
     try {
+        
         const filePromises = files.map(file => {
+            console.log(file)
             const newFileName = `${Date.now().toString()}-${file.originalname}`
             const command = new PutObjectCommand({
                 Bucket: process.env.S3_BUCKET,
@@ -382,6 +385,7 @@ const setApplicationInput = async(req,res) =>{
                 Body: file.buffer,
                 ContentType: file.mimetype,
             })
+
 
             return s3.send(command).then(() => {
                 const fileURL = `https://${process.env.S3_BUCKET}.s3.amazonaws.com/${newFileName}`
