@@ -7,8 +7,6 @@ import { getUserRoleFromCookie } from '../helpers/HelperFunctions';
 const Navbar = () => {
     const {userRole, status} = getUserRoleFromCookie();
 
-    console.log('status:', status);
-    console.log('userRole:', userRole);
 
     const dispatch = useDispatch();
     const navigate = useNavigate();

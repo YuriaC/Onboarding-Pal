@@ -45,7 +45,6 @@ export const getUserRoleFromCookie = () => {
         // Assume the token contains a "role" field
         const payload = JSON.parse(atob(token.split('.')[1])); // Decode JWT payload (example)
 
-        console.log("User role HUU:", payload.role, payload.onboardingStatus)
         if (payload.role === 'hr') {
             return {
                 userRole: 'hr',

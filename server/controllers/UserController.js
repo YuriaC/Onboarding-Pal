@@ -807,6 +807,11 @@ const getPersonalinfo = async(req,res) =>{
         //     i983Url: user.i983Url,
         //     i20Url: user.i20Url,
         // });
+        const token = generateToken(user._id, user.username, user.role, user.onboardingStatus);
+        res.cookie('auth_token', token, {
+            maxAge: 3600000,
+            sameSite: 'strict',
+                    }); 
 
         return res.status(200).json(user)
     }catch (error) {

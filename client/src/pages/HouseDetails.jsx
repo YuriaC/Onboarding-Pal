@@ -51,7 +51,6 @@ const HouseDetails = () => {
             try {
                 const userResponse = await axios.get(`${USER_ENDPOINT}/userinfo`, { withCredentials: true })
                 const userData = userResponse.data
-                console.log('userData:', userData)
                 setUserInfo({
                     id: userData._id,
                     username: userData.username,
