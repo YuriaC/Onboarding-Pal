@@ -60,11 +60,6 @@ const VisaStatusHR_all = ()=>{
         return dayDiff;
     }
 
-
-    const haveFileToReview = (user_to_check) =>{
-        return user_to_check.optStatus === "Pending" || user_to_check.eadStatus === "Pending" || user_to_check.i983Status === "Pending" || user_to_check.i20Status === "Pending";
-    }
-
     const allFileApproved = (user_to_check) =>{
         return user_to_check.optStatus === "Approved" && user_to_check.eadStatus === "Approved" && user_to_check.i983Status === "Approved" && user_to_check.i20Status === "Approved";
     }
@@ -75,22 +70,37 @@ const VisaStatusHR_all = ()=>{
         const ead = user_tocheck.eadStatus;
         const i983 = user_tocheck.i983Status;
         const i20 = user_tocheck.i20Status;
-        if(opt==="Pending" || opt === "rejected"){
+        if(opt==="Pending" || opt === "Rejected" || opt === "Not Started"){
             return "opt";
         }
-        if(opt==="Approved" && (ead === "Pending" || ead ==="rejected")){
+        if(opt==="Approved" && (ead === "Pending" || ead ==="Rejected" || ead  === "Not Started")){
             return "ead";
         }
-        if(opt==="Approved" && ead === "Approved" &&(i983 === "Pending" || i983 ==="rejected")){
+        if(opt==="Approved" && ead === "Approved" &&(i983 === "Pending" || i983 ==="Rejected" || i983  === "Not Started")){
             return "i983";
         }
-        if(opt==="Approved" && ead === "Approved" && i983 === "Approved" &&(i20 === "Pending" || i20 ==="rejected")){
+        if(opt==="Approved" && ead === "Approved" && i983 === "Approved" &&(i20 === "Pending" || i20 ==="Rejected" || i20  === "Not Started")){
             return "i20";
         }
         if(allFileApproved(user_tocheck)){
             return "alldone";
         }
 
+    }
+
+    const haveFileToReview = (user_to_check) =>{
+        if(stepStatusChecker(user_to_check)==="opt"){
+            return user_to_check.optUrl !== "";
+        }
+        if(stepStatusChecker(user_to_check)==="ead"){
+            return user_to_check.eadUrl !== "";
+        }
+        if(stepStatusChecker(user_to_check)==="i983"){
+            return user_to_check.i983Url !== "";
+        }
+        if(stepStatusChecker(user_to_check)==="i20"){
+            return user_to_check.i20Url !== "";
+        }
     }
 
     const nextstepsHandler = (user)=>{
@@ -158,7 +168,7 @@ const VisaStatusHR_all = ()=>{
         try {
             const response = await axios.post(`http://localhost:3000/api/users/emailNotify`, {
               id: user._id,
-              firstName: "balala",
+              firstName: user.firstName,
               lastName: user.lastName,
               useremail: user.email,
               notification:message_to_employee

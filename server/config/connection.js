@@ -60,23 +60,52 @@ mongoose.connect(MONGO_URI)
                     email: "test2@gmail.com",
                     password: hashedPassword,
                     role: "employee",
+                    birthday: new Date(),
+                    house: house._id,
+                    firstName: 'Test2',
+                    lastName: 'Employee2',
+                    onboardingStatus: 'Not Started',
+                    visaStartDate: startdate,
+                    visaEndDate:enddate,
+                    workAuth:"OPT",
+                    optUrl:pdfUrl,
+                  },
+                  {
+                    username: 'EmployeeTest3',
+                    email: "test3@gmail.com",
+                    password: hashedPassword,
+                    role: "employee",
+                    birthday: new Date(),
+                    house: house._id,
+                    firstName: 'Test3',
+                    lastName: 'Employee3',
+                    onboardingStatus: 'Not Started',
+                    visaStartDate: startdate,
+                    visaEndDate:enddate,
+                    workAuth:"OPT",
+                    optUrl:pdfUrl,
+                  },
+                  {
+                    username: 'EmployeeTest4',
+                    email: "test4@gmail.com",
+                    password: hashedPassword,
+                    role: "employee",
                     house: house._id,
                     birthday: new Date(),
-                    firstName: 'Test',
-                    lastName: 'Employee 2',
+                    firstName: 'Test4',
+                    lastName: 'Employee 4',
                     onboardingStatus: 'Rejected',
                     registrationHistory: {
                         email: "test2@gmail.com",
                         status: 'Registered'
                     },
-                    optUrl:pdfUrl,
                   },
                   {
                     username: 'HRTest',
                     // firstName: 'Test',
                     // lastName: 'HR',
                     // workAuth:"OPT",
-                    email: "test3@gmail.com",
+                    email: "testhr@gmail.com",
                     password: hashedPassword,
                     role: "hr",
                     // visaStartDate: startdate,
@@ -90,7 +119,7 @@ mongoose.connect(MONGO_URI)
         
         }
         if (process.env.NODE_ENV !== 'production') {
-            // seed().then(() => console.log(`Successfully seeded with 5 house and 2 users: EmployeeTest and HRTest with password: ${password}`)).catch(error => console.log('Error seeding:', error.message))
+             seed().then(() => console.log(`Successfully seeded with 5 house and 2 users: EmployeeTest and HRTest with password: ${password}`)).catch(error => console.log('Error seeding:', error.message))
         }
 
     })
