@@ -220,21 +220,6 @@ const Personal = () => {
         })
     }
 
-    const handleAddressChange = (e) => {
-        const { name, value } = e.target;
-        setFormData((prevData) => ({
-            ...prevData,
-            address: { ...prevData.address, [name]: value }
-        }));
-    };
-
-    const handleContactChange = (e) => {
-        const { name, value } = e.target;
-        setFormData((prevData) => ({
-            ...prevData,
-            contactInfo: { ...prevData.contactInfo, [name]: value }
-        }));
-    };
 
     const handleEmContactChange = (e, index) => {
         const { name, value } = e.target
@@ -242,18 +227,6 @@ const Personal = () => {
         newContacts[index][name] = value
         setFormData({...formData, emergencyContacts: newContacts})
     }
-
-    const handleEmergencyContactChange = (e, index) => {
-        const { name, value } = e.target;
-        setFormData((prevData) => {
-            const newEmergencyContact = [...prevData.emergencyContact];
-            newEmergencyContact[index] = { ...newEmergencyContact[index], [name]: value};
-            return{
-                ...prevData,
-                emergencyContact: newEmergencyContact
-            }
-        });
-    };
 
 
     const handleEditToggle = () => {
@@ -408,23 +381,6 @@ const Personal = () => {
 
     return (
         <>
-            {!isLoading ? (
-                <Paper sx={{ p: 3, width: '60vw' }}>
-                    <Typography variant='h4' sx={{ mb: 1 }}>
-                        {formData.firstName} {formData.lastName} ({formData.username})
-                    </Typography>
-                    {formData.profilePicture ? null : (
-                       <Avatar sx={{ width: 60, margin: 'auto', height: 60 }}>
-                            { formData.firstName ?formData.firstName[0]:              
-                            <FontAwesomeIcon icon={faUser} />
-                        }
-
-                        </Avatar>
-                    )}
-
-                    <form>
-                        <TextField
-
         {!isLoading ? (<Container sx={{ width: "65vw", marginTop: 8, padding: "2rem" }}>
         <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, padding: 2, boxShadow: 3, borderRadius: 2, backgroundColor: 'white' }}>
             <Typography variant="h4">Personal Information</Typography>
