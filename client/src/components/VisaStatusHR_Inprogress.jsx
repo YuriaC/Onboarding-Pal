@@ -84,12 +84,6 @@ const VisaStatusHR_inprogress = () => {
                         currDoc = docStatuses[i]
                         currDocName = docNames[i]
                     }
-                    // if (['Pending', 'Rejected'].includes(employee[currDocStatus])) {
-                    // }
-                    // if (employee[currDocStatus] === 'Not Started' && !nextDocName) {
-                    //     // nextDoc = currDocStatus
-                    //     nextDocName = docNames[i]
-                    // }
                 }
                 const userDocs = await axios.get(`${USER_ENDPOINT}/getuserdocs/${employee._id}`, { withCredentials: true })
                 const newEmployeeData = {
@@ -295,7 +289,6 @@ const VisaStatusHR_inprogress = () => {
                         <TableCell>{formatDateToMDY(user.visaEndDate)}</TableCell>
                         <TableCell sx={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{calculateDaysDifference(user.visaEndDate,today) < 0 ? 'Expired' : calculateDaysDifference(user.visaEndDate,today)}</TableCell>
                         <TableCell sx={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                            {console.log('user:', user)}
                             {user.isPermRes === 'No' && user.workAuth === 'F1(CPT/OPT)' ?
                             <>
                                 { allFileApproved(user) ? <Typography>All done!</Typography> : !user.needSubmitNext ? (<Button variant='contained' href={user.docs[user.docToReview].preview} target='_blank'>Review Document</Button>) : (<Typography>{user[user.currDoc] !== 'Rejected' ? `${user.nextDocName} waiting to be submitted` : `${user.currDocName} waiting to be resubmitted`}</Typography>) }
