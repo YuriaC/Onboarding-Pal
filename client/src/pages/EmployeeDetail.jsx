@@ -108,6 +108,7 @@ const EmployeeDetail = () => {
             carModel,
             carColor,
             ssn,
+            isPermRes,
             birthday,
             email,
             gender,
@@ -122,7 +123,6 @@ const EmployeeDetail = () => {
             visaStartDate,
             visaEndDate,
             visaTitle,
-            isPermRes,
         } = data
         const newEmContacts = []
         for (const emContact of emergencyContacts) {
@@ -162,7 +162,7 @@ const EmployeeDetail = () => {
             dob: birthday ? birthday.split('T')[0] : null,
             gender,
             permResStatus,
-            isPermRes: ['Citizen', 'Green Card'].includes(permResStatus) ? 'Yes' : 'No',
+            isPermRes,
             hasDriversLicense: data['driversLicenseNumber'] ? 'Yes' : 'No',
             dlNum: driversLicenseNumber,
             dlExpDate: driversLicenseExpDate ? driversLicenseExpDate.split('T')[0] : null,
@@ -185,7 +185,6 @@ const EmployeeDetail = () => {
             visaStartDate: visaStartDate ? visaStartDate.split('T')[0] : '',
             visaEndDate: visaEndDate ? visaEndDate.split('T')[0] : '',
             visaTitle,
-            isPermRes,
         })
     }
 
