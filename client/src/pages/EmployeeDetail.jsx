@@ -351,7 +351,7 @@ const EmployeeDetail = () => {
                         <TextField
                             fullWidth
                             label="Work Authorization"
-                            value={formData.isPermRes ? formData.permResStatus : formData.nonPermWorkAuth}
+                            value={formData.isPermRes === 'Yes' ? formData.permResStatus : formData.nonPermWorkAuth}
                             disabled
                             margin="normal"
                         />

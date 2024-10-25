@@ -60,7 +60,7 @@ const HousingMgmt = () => {
     return (
         <div>
             <h1>Housing Management</h1>
-            <Button onClick={() => navigate('/hr/addhouse')}>Add House</Button>
+            <Button onClick={() => navigate('/hr/addhouse')} sx={{ p: 2, mb: 2 }} fullWidth>Add House</Button>
 
             <TableContainer component={Paper} sx={{ mb: 3 }}>
                 <Table sx={{ minWidth: 650 }} aria-label="simple table">
