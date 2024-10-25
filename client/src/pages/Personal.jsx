@@ -434,8 +434,8 @@ const Personal = () => {
         }
     }
 
-    const profileURL = docs.profilePictureURL;
-    console.log(profileURL);
+    const profilePicCheck = docs.profilePictureURL ? docs.profilePictureURL.preview : '';  // for profile picture display
+
     return (
         <>
         {!isLoading ? (<Container maxWidth="md" sx={{ padding: "2rem" }}>
@@ -444,10 +444,13 @@ const Personal = () => {
                 {/* Basic Info Section */}
                 <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, padding: 2}} >
                 <Typography variant="h6">Basic Info</Typography>
-                    { docs.profilePictureURL === ''?
-                        <Avatar sx={{ bgcolor: "blue", margin: "0 auto 2rem auto", width: "4rem", height: "4rem"}}>{`${formData.firstName[0]}${formData.lastName[0]}`}</Avatar> :
-                        <img src={profileURL.preview} alt='profilePicture'/>
-                    }
+                {profilePicCheck ? (
+                    <img src={profilePicCheck} alt='profilePicture' />
+                ) : (
+                    <Avatar sx={{ bgcolor: "blue", margin: "0 auto 2rem auto", width: "4rem", height: "4rem"}}>
+                        {`${formData.firstName[0]}${formData.lastName[0]}`}
+                    </Avatar>
+                )}
                     {/* <img src={formData.profilePicture} alt='profilePicture'/> */}
                     {isEditing && (
                         <TextField                        
