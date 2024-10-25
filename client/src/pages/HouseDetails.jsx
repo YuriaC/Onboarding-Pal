@@ -308,7 +308,7 @@ const HouseDetails = () => {
             <Box sx={{ margin: 'auto', mt: 2 }}>
                 <Card>
                     {houseData.reports.length === 0
-                        ? <Typography>No reports have been made about this house at this time</Typography>
+                        ? <Typography variant='body1' sx={{ p: 2 }}>No reports have been made about this house at this time</Typography>
                         : (
                             <>
                                 <Button onClick={() => setIsViewingReports(!isViewingReports)}>

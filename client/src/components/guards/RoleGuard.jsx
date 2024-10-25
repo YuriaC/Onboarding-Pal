@@ -3,7 +3,7 @@ import { getUserRoleFromCookie } from '../../helpers/HelperFunctions';
 const RoleGuard = ({ role }) => {
 
 
-    const {userRole, status} = getUserRoleFromCookie();
+    const {userRole} = getUserRoleFromCookie();
     // If the user's role doesn't match the required role, redirect them to their correct home page
     // Get the url params, if the string after role/ doesn't exist, redirect them to the home page
     const currentURL = window.location.href;

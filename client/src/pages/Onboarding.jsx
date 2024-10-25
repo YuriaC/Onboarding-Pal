@@ -1,8 +1,8 @@
 import { useState, useEffect } from 'react'
 import { ToastContainer, toast } from 'material-react-toastify'
-import { alphanumRegex, USER_ENDPOINT, username } from '../constants'
+import { alphanumRegex, phoneRegex, USER_ENDPOINT, username } from '../constants'
 import axios from 'axios'
-import { Box, Button, Radio, RadioGroup, Card, CardActions, CardContent, InputLabel, Typography, CardHeader, TextField, FormControlLabel, FormControl, FormLabel, Select, MenuItem } from '@mui/material'
+import { Box, Container, Button, Radio, RadioGroup, Card, CardActions, CardContent, InputLabel, Typography, CardHeader, TextField, FormControlLabel, FormControl, FormLabel, Select, MenuItem } from '@mui/material'
 import 'material-react-toastify/dist/ReactToastify.css'
 import ErrorHelperText from '../components/ErrorHelperText';
 import { useNavigate } from 'react-router-dom'
@@ -74,12 +74,16 @@ const Onboarding = () => {
         zip: false,
         dob: false,
         visaEndDate: false,
+        cellPhone: false,
+        workPhone: false,
     })
     const helperTexts = {
         dlNum: "Driver's license number must be alphanumeric!",
         zip: 'ZIP code must have 5 digits!',
         dob: 'Birthday must be in the past!',
         visaEndDate: 'Visa end date must be in the future!',
+        cellPhone: 'Phone number must be in a proper format!',
+        workPhone: 'Phone number must be in a proper format!',
     }
 
     useEffect(() => {
@@ -255,6 +259,12 @@ const Onboarding = () => {
         if (formData.dlNum && !alphanumRegex.test(formData.dlNum)) {
             newErrorObject['dlNum'] = true
         }
+        if (!phoneRegex.test(formData.cellPhone)) {
+            newErrorObject['cellPhone'] = true
+        }
+        if (formData.workPhone && !phoneRegex.test(formData.workPhone)) {
+            newErrorObject['workPhone'] = true
+        }
         for (const key in newErrorObject) {
             if (newErrorObject[key]) {
                 toast.error('Please fix input errors!')
@@ -314,7 +324,8 @@ const Onboarding = () => {
     }
 
     return (
-        <div style={{ width: '50vw' }}>
+        <Container maxWidth="md" sx={{ marginTop: 15}}>
+            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, padding: 2, boxShadow: 3, borderRadius: 2,  backgroundColor: 'white'}}>
             <Typography variant='h4' sx={{ color: appStatus === 'Rejected' ? 'red' : 'black', mb: 1 }}>Status: {appStatus}</Typography>
             {appStatus === 'Pending' && <Typography variant='h5' sx={{ mb: 2 }}>Please wait for HR to review your application.</Typography>}
             {appStatus === 'Rejected' && (formData.hrFeedback ?
@@ -359,9 +370,9 @@ const Onboarding = () => {
                 <br />
                 <fieldset>
                     <legend>Phone Numbers</legend>
-                    <TextField label='Cell Phone Number' name='cellPhone' value={formData.cellPhone} onChange={handleChange} disabled={appStatus === 'Pending'} variant='outlined' required fullWidth error={errors.landlordPhone} sx={{ mb: 2 }} />
+                    <TextField label='Cell Phone Number' name='cellPhone' value={formData.cellPhone} onChange={handleChange} disabled={appStatus === 'Pending'} variant='outlined' required fullWidth error={errors.cellPhone} sx={{ mb: 2 }} />
                     <ErrorHelperText hasError={errors.cellPhone} message={helperTexts.cellPhone} />
-                    <TextField label='Cell Phone Number' name='workPhone' value={formData.workPhone} onChange={handleChange} disabled={appStatus === 'Pending'} variant='outlined' fullWidth error={errors.landlordPhone} sx={{ mb: 1 }} />
+                    <TextField label='Work Phone Number' name='workPhone' value={formData.workPhone} onChange={handleChange} disabled={appStatus === 'Pending'} variant='outlined' fullWidth error={errors.workPhone} sx={{ mb: 2 }} />
                     <ErrorHelperText hasError={errors.workPhone} message={helperTexts.workPhone} />
                 </fieldset>
                 <br />
@@ -542,7 +553,8 @@ const Onboarding = () => {
                 </Box>
             }
             <ToastContainer />
-        </div>
+            </Box>
+        </Container>
     )
 }
 

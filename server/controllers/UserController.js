@@ -1122,7 +1122,7 @@ const getPersonalinfoById = async(req,res) =>{
 
 const getAllUser = async(req,res) =>{
     try {
-        const users = await User.find({role:{ $ne:"hr"}},"email firstName middleName lastName preferredName workAuth visaStartDate visaEndDate optUrl eadUrl i983Url i20Url optStatus eadStatus i983Status i20Status");
+        const users = await User.find({role:{ $ne:"hr"}},"email firstName middleName lastName preferredName workAuth onboardingStatus isPermRes permResStatus visaStartDate visaEndDate optUrl eadUrl i983Url i20Url optStatus eadStatus i983Status i20Status");
         res.json(users);
       } catch (error) {
         res.status(500).json({ error: 'Failed to fetch users' });

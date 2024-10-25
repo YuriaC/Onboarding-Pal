@@ -3,8 +3,8 @@ import { emailRegex, HOUSE_ENDPOINT, phoneRegex } from '../constants'
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import axios from 'axios'
-import { resetObject } from '../helpers/HelperFunctions';
-import { TextField, Box } from '@mui/material';
+import { checkZIP, resetObject } from '../helpers/HelperFunctions';
+import { TextField, Box, Button } from '@mui/material';
 import ErrorHelperText from '../components/ErrorHelperText';
 
 const AddHouse = () => {
@@ -13,14 +13,14 @@ const AddHouse = () => {
         street: '',
         city: '',
         state: '',
-        zip: null,
+        zip: '',
         landlordName: '',
         landlordPhone: '',
         landlordEmail: '',
-        numBeds: null,
-        numMattresses: null,
-        numTables: null,
-        numChairs: null,
+        numBeds: '',
+        numMattresses: '',
+        numTables: '',
+        numChairs: '',
     })
 
     const [errors, setErrors] = useState({
@@ -48,7 +48,7 @@ const AddHouse = () => {
         for (const key in errors) {
             newErrorObject[key] = false
         }
-        if (formData.zip < 10000 || formData.zip > 999999) {
+        if (!checkZIP(formData.zip)) {
             newErrorObject['zip'] = true
         }
         if (!phoneRegex.test(formData.landlordPhone)) {
@@ -82,7 +82,7 @@ const AddHouse = () => {
                 <fieldset>
                     <legend>Address</legend>
                     <Box>
-                        <TextField label='Street' name='street' value={formData.street} variant='outlined' onChange={handleChange} fullWidth required sx={{ mb: 2 }} />
+                        <TextField label='Street' name='street' value={formData.street} variant='outlined' onChange={handleChange} fullWidth required sx={{ mb: 2, mt: 1 }} />
                         <TextField label='City' name='city' value={formData.city} variant='outlined' onChange={handleChange} fullWidth required sx={{ mb: 2 }} />
                         <TextField label='State' name='state' value={formData.state} variant='outlined' onChange={handleChange} fullWidth required sx={{ mb: 2 }} />
                         <TextField label='ZIP' name='zip' type='number' value={formData.zip} variant='outlined' onChange={handleChange} fullWidth error={errors.zip} required sx={{ mb: 2 }} />
@@ -91,7 +91,7 @@ const AddHouse = () => {
                 </fieldset>
                 <fieldset>
                     <legend>Landlord Information</legend>
-                    <TextField label='Full Name' name='landlordName' value={formData.landlordName} variant='outlined' onChange={handleChange} fullWidth required sx={{ mb: 2 }} />
+                    <TextField label='Full Name' name='landlordName' value={formData.landlordName} variant='outlined' onChange={handleChange} fullWidth required sx={{ mb: 2, mt: 1 }} />
                     <TextField label='Phone' name='landlordPhone' value={formData.landlordPhone} variant='outlined' onChange={handleChange} fullWidth error={errors.landlordPhone} required sx={{ mb: 2 }} />
                     <ErrorHelperText hasError={errors.landlordPhone} message={helperTexts.landlordPhone} />
                     <TextField label='Email' name='landlordEmail' value={formData.landlordEmail} variant='outlined' onChange={handleChange} fullWidth error={errors.landlordEmail} required sx={{ mb: 2 }} />
@@ -99,16 +99,21 @@ const AddHouse = () => {
                 </fieldset>
                 <fieldset>
                     <legend>Facility Information</legend>
-                    <label>Number of Beds:</label>
-                    <input type='number' value={formData.numBeds} name='numBeds' min={0} onChange={handleChange} required />
-                    <label>Number of Mattresses:</label>
-                    <input type='number' value={formData.numMattresses} name='numMattresses' min={0} onChange={handleChange} required />
-                    <label>Number of Tables:</label>
-                    <input type='number' value={formData.numTables} name='numTables' min={0} onChange={handleChange} required />
-                    <label>Number of Chairs:</label>
-                    <input type='number' value={formData.numChairs} name='numChairs' min={0} onChange={handleChange} required />
+                    {/* <label>Number of Beds:</label> */}
+                    {/* <input type='number' value={formData.numBeds} name='numBeds' min={0} onChange={handleChange} required /> */}
+                    <TextField label='Number of Beds' type='number' name='numBeds' value={formData.numBeds} variant='outlined' onChange={handleChange} fullWidth required sx={{ mb: 2, mt: 1 }} />
+                    {/* <label>Number of Mattresses:</label> */}
+                    {/* <input type='number' value={formData.numMattresses} name='numMattresses' min={0} onChange={handleChange} required /> */}
+                    <TextField label='Number of Mattresses' type='number' name='numMattresses' value={formData.numMattresses} variant='outlined' onChange={handleChange} fullWidth required sx={{ mb: 2 }} />
+                    {/* <label>Number of Tables:</label> */}
+                    {/* <input type='number' value={formData.numTables} name='numTables' min={0} onChange={handleChange} required /> */}
+                    <TextField label='Number of Tables' type='number' name='numTables' value={formData.numTables} variant='outlined' onChange={handleChange} fullWidth required sx={{ mb: 2, mt: 1 }} />
+                    {/* <label>Number of Chairs:</label> */}
+                    {/* <input type='number' value={formData.numChairs} name='numChairs' min={0} onChange={handleChange} required /> */}
+                    <TextField label='Number of Chairs' type='number' name='numChairs' value={formData.numChairs} variant='outlined' onChange={handleChange} fullWidth required sx={{ mb: 2, mt: 1 }} />
                 </fieldset>
-                <input type='submit' value='Submit' />
+                {/* <input type='submit' value='Submit' /> */}
+                <Button type='submit' fullWidth sx={{ p: 2, mt: 2, mb: 4 }}>Add House</Button>
             </form>
             <ToastContainer />
         </div>

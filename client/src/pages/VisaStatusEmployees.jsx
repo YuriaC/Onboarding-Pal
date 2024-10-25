@@ -2,7 +2,9 @@ import { useState, useEffect } from 'react'
 import { docNames, docStatuses, docUrls, TEST_ENDPOINT, USER_ENDPOINT } from '../constants'
 import { ToastContainer, toast } from 'react-toastify'
 import axios from 'axios'
-import { Typography, Box, Card, CardContent, CardHeader, TextField, InputLabel, Button } from '@mui/material'
+import { Container, Typography, Box, Card, CardContent, CardHeader, TextField, InputLabel, Button } from '@mui/material'
+import CheckCircleIcon from '@mui/icons-material/CheckCircle';
+import CancelIcon from '@mui/icons-material/Cancel';
 
 const VisaStatusEmployees = () => {
     // only apply to employee OPT visa status
@@ -255,9 +257,10 @@ const VisaStatusEmployees = () => {
     }
 
     return (
-        <>
-            <h2>OPT Status Page</h2>
-            {visaInfo.workAuth !== 'F1(CPT/OPT)' ? <Typography variant='h3'>Only for F1(CPT/OPT) work authorizations</Typography> : <div>
+        <Container maxWidth="md" sx={{marginTop: 15}}>
+            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, padding: 2, boxShadow: 3, borderRadius: 2, backgroundColor: 'white' }}>
+            <Typography variant='h4' sx={{ mb: 2 }}>OPT Status Page</Typography>
+            {visaInfo.workAuth !== 'F1(CPT/OPT)' ? <Typography variant='h4'>Only for F1(CPT/OPT) work authorizations</Typography> : <div>
                 {/* employees with non-OPT status or those who got all OPT documentations see the following */}
                 {!viewSection.viewOPT && 
                     <p>This page is for OPT related documentations only.</p>
@@ -265,7 +268,7 @@ const VisaStatusEmployees = () => {
 
                 {/* OPT related rendering logic */}
                 {viewSection.viewOPT && <fieldset className='opt'>
-                    <h3 className="statusSummary">Your OPT receipt status is {visaInfo.optStatus}</h3>
+                    {/* <h3 className="statusSummary">Your OPT receipt status is {visaInfo.optStatus}</h3> */}
                     {visaInfo.optStatus === 'Pending' && 
                         <p>Waiting for HR to approve your OPT Receipt</p>
                     }
@@ -273,7 +276,7 @@ const VisaStatusEmployees = () => {
                     {visaInfo.optStatus === 'Approved' &&
                         <>
                             {/* <p>Your OPT receipt has been approved!</p> */}
-                            <Typography variant='h5' sx={{ color: 'green' }}>Your OPT receipt has been approved!</Typography>
+                            <Typography variant='h5' sx={{ color: 'green', mt: 2, mb: 2 }}>Your OPT receipt has been approved!</Typography>
                             {/* <p>Please upload a copy of your OPT EAD!</p> */}
                             {/* <Typography variant='h6'>Please upload a copy of your OPT EAD!</Typography> */}
                         </>
@@ -289,6 +292,7 @@ const VisaStatusEmployees = () => {
                                     <h4>{visaInfo.hrVisaFeedBack}</h4>
                                 </div>
                             } */}
+                            <Typography variant='h5' sx={{ color: 'red', mt: 2, mb: 2 }}>Your OPT receipt has been rejected</Typography>
                             <Box sx={{ mt: 2, mb: 2 }}>
                                 <Card sx={{ backgroundColor: '#f8d7da', color: '#721c24' }}>
                                     <CardHeader title='Feedback given:' sx={{ paddingBottom: 0 }} />
@@ -311,13 +315,13 @@ const VisaStatusEmployees = () => {
 
                     {/* view uploaded OPT documentation  */}
                     {
-                        <div className="docPreview">
+                        <div className="docPreview" style={{ display: 'flex', alignItems: 'center' }}>
                             {/* documentation preview */}
                             {/* <p> Below is your submitted OPT receipt. </p> */}
 
                             {/* temporary display for testing. Subject to change */}
                             {/* <a href={visaInfo.optUrl} target="_blank">OPT Receipt Submission</a> */}
-                            <Button href={docs.optUrl?.preview} target='_blank'>View OPT Submission</Button>
+                            <Button href={docs.optUrl?.preview} target='_blank'>View OPT Submission</Button> {visaInfo.optStatus === 'Approved' ? <CheckCircleIcon color='success' /> : <CancelIcon color='error' />}
                         </div>
                     }
 
@@ -343,18 +347,20 @@ const VisaStatusEmployees = () => {
 
                 {/* EAD related rendering logic */}
                 {viewSection.viewEAD && <fieldset className='ead'>
-                    <h3 className="statusSummary">Your EAD status is {visaInfo.eadStatus}</h3>
+                    {/* <h3 className="statusSummary">Your EAD status is {visaInfo.eadStatus}</h3> */}
                     {visaInfo.eadStatus === 'Pending' && 
                         <p>Waiting for HR to approve your OPT EAD</p>
                     }
 
                     {visaInfo.eadStatus === 'Approved' && 
-                        <p>Your EAD has been approved!</p>
+                        // <p>Your EAD has been approved!</p>
+                        <Typography variant='h5' sx={{ color: 'green', mt: 2, mb: 2 }}>Your OPT EAD has been approved!</Typography>
                     }
 
                     {visaInfo.eadStatus === 'Rejected' && 
                         <>
-                            <p>Your EAD is rejected. Below is your HR's feedback</p>
+                            {/* <p>Your EAD is rejected. Below is your HR's feedback</p> */}
+                            <Typography variant='h5' sx={{ color: 'red', mt: 2, mb: 2 }}>Your OPT EAD has been rejected</Typography>
                             <Box sx={{ mt: 2, mb: 2 }}>
                                 <Card sx={{ backgroundColor: '#f8d7da', color: '#721c24' }}>
                                     <CardHeader title='Feedback given:' sx={{ paddingBottom: 0 }} />
@@ -377,13 +383,13 @@ const VisaStatusEmployees = () => {
 
                     {/* view uploaded EAD documentations */}
                     {
-                        <div className="docPreview">
+                        <div className="docPreview" style={{ display: 'flex', alignItems: 'center' }}>
                             {/* documentation preview */}
                             {/* <p> Below is your submitted EAD. </p> */}
 
                             {/* temporary display for testing. Subject to change */}
                             {/* <a href={visaInfo.eadUrl}>EAD Submission</a> */}
-                            <Button href={docs.eadUrl?.preview} target='_blank'>View OPT EAD Submission</Button>
+                            <Button href={docs.eadUrl?.preview} target='_blank'>View OPT EAD Submission</Button> {visaInfo.eadStatus === 'Approved' ? <CheckCircleIcon color='success' /> : <CancelIcon color='error' />}
                         </div>
                     }
 
@@ -411,18 +417,20 @@ const VisaStatusEmployees = () => {
 
                 {/* I983 related rendering logic */}
                 {viewSection.viewI983 && <fieldset className='i983'>
-                    <h3 className="statusSummary">Your I-983 status is {visaInfo.i983Status}</h3>
+                    {/* <h3 className="statusSummary">Your I-983 status is {visaInfo.i983Status}</h3> */}
                     {visaInfo.i983Status === 'Pending' && 
                         <p>Waitin for HR to approve and sign your I-983</p>
                     }
 
                     {visaInfo.i983Status === 'Approved' && 
-                        <p>Your form I-983 has been approved!</p>
+                        // <p>Your form I-983 has been approved!</p>
+                        <Typography variant='h5' sx={{ color: 'green', mt: 2, mb: 2 }}>Your I-983 has been approved!</Typography>
                     }
 
                     {visaInfo.i983Status === 'Rejected' && 
                         <>
-                            <p>Your form I-983 is rejected. Below is your feedback from HR</p>
+                            {/* <p>Your form I-983 is rejected. Below is your feedback from HR</p> */}
+                            <Typography variant='h5' sx={{ color: 'red', mt: 2, mb: 2 }}>Your I-983 has been rejected</Typography>
                             <Box sx={{ mt: 2, mb: 2 }}>
                                 <Card sx={{ backgroundColor: '#f8d7da', color: '#721c24' }}>
                                     <CardHeader title='Feedback given:' sx={{ paddingBottom: 0 }} />
@@ -447,13 +455,13 @@ const VisaStatusEmployees = () => {
 
                     {/* view uploaded I-983 documentations */}
                     {
-                        <div className="docPreview">
+                        <div className="docPreview" style={{ display: 'flex', alignItems: 'center' }}>
                             {/* documentation preview */}
                             {/* <p> Below is your submitted form I-983. </p> */}
 
                             {/* temporary display for testing. Subject to change */}
                             {/* <a href={visaInfo.i983Url}>I-983 Submission</a> */}
-                            <Button href={docs.i983Url?.preview} target='_blank'>View I-983 Submission</Button>
+                            <Button href={docs.i983Url?.preview} target='_blank'>View I-983 Submission</Button> {visaInfo.i983Status === 'Approved' ? <CheckCircleIcon color='success' /> : <CancelIcon color='error' />}
                         </div>
                     }
 
@@ -478,19 +486,21 @@ const VisaStatusEmployees = () => {
 
 
                 {/* I20 related rendering logic */}
-                {viewSection.viewI20 && <fieldset className='i20'>
-                    <h3 className="statusSummary">Your I-20 status is {visaInfo.i20Status}</h3>
+                {viewSection.viewI20 && <fieldset className='i20' style={{ marginBottom: '1rem' }}>
+                    {/* <h3 className="statusSummary">Your I-20 status is {visaInfo.i20Status}</h3> */}
                     {visaInfo.i20Status === 'Pending' &&
                         <p>Waiting for HR to approve your I-20</p>
                     }
 
                     {visaInfo.i20Status === 'Approved' &&
-                        <p>All documents have been approved</p>
+                        // <p>All documents have been approved</p>
+                        <Typography variant='h5' sx={{ color: 'green', mt: 2, mb: 2 }}>All documents been approved!</Typography>
                     }
 
                     {visaInfo.i20Status === 'Rejected' && 
                         <>
-                            <p>Your form I-983 is rejected. Below is your HR's feedback</p>
+                            {/* <p>Your form I-983 is rejected. Below is your HR's feedback</p> */}
+                            <Typography variant='h5' sx={{ color: 'red', mt: 2, mb: 2 }}>Your I-20 has been rejected</Typography>
                             <Box sx={{ mt: 2, mb: 2 }}>
                                 <Card sx={{ backgroundColor: '#f8d7da', color: '#721c24' }}>
                                     <CardHeader title='Feedback given:' sx={{ paddingBottom: 0 }} />
@@ -513,19 +523,20 @@ const VisaStatusEmployees = () => {
 
                     {/* view uploaded I-20 documentations */}
                     {
-                        <div className="docPreview">
+                        <div className="docPreview" style={{ display: 'flex', alignItems: 'center' }}>
                             {/* documentation preview */}
                             {/* <p> Below is your submitted form I-20. </p> */}
 
                             {/* temporary display for testing. Subject to change */}
                             {/* <a href={visaInfo.i20Url}>I-20 Submission</a> */}
-                            <Button href={docs.i20Url?.preview} target='_blank'>View I-20 Submission</Button>
+                            <Button href={docs.i20Url?.preview} target='_blank'>View I-20 Submission</Button> {visaInfo.i20Status === 'Approved' ? <CheckCircleIcon color='success' /> : <CancelIcon color='error' />}
                         </div>
                     }
                 </fieldset>}
                 <ToastContainer />
             </div>}
-        </>
+            </Box>
+        </Container>
     )
 }
 

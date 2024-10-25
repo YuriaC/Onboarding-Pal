@@ -124,8 +124,8 @@ const Hiring = () => {
                                                     Copy Link
                                                 </Button>
                                             </TableCell>
-                                                <TableCell align="right">
-                                                {entry.registrationHistory.status === 'Pending' && <Button onClick={() => handleResendRegistration(entry)}>Resend Link</Button>}
+                                            <TableCell align="right">
+                                                {entry.registrationHistory.status === 'Pending' ? <Button onClick={() => handleResendRegistration(entry)}>Resend Link</Button> : 'None'}
                                             </TableCell>
                                         </TableRow>
                                     ))}

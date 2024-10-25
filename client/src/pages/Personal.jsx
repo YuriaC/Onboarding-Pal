@@ -4,7 +4,7 @@ import axios from 'axios';
 import { USER_ENDPOINT, username } from '../constants';
 import { toast, ToastContainer } from 'material-react-toastify';
 import 'material-react-toastify/dist/ReactToastify.css'
-import { Box, Card, CardActions, CardContent, Typography, Button } from '@mui/material'
+import { Container, TextField, Box, Card, CardActions, CardContent, Typography, Button } from '@mui/material'
 
 const Personal = () => {
     //const [isEditing, setIsEditing] = useState(false);
@@ -246,7 +246,47 @@ const Personal = () => {
     };
 
 
-
+    // return (
+    //     <Container maxWidth="md" sx={{padding: "2rem"}}>
+    //         <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, padding: 2, boxShadow: 3, borderRadius: 2,  backgroundColor: 'white'}}>
+    //         <h2>Personal Information</h2>
+    //         <div className="section">
+    //             <h3>Name</h3>
+    //             {isEditing ? (
+    //                 <div>
+    //                     <img src={formData.profilePicture} alt='profilePicture' width={100} height={100} />
+    //                     <input type='file' name='profilePicture' onChange={handleChange} accept='image/*' />
+    //                     <input type="text" name="firstName" placeholder="First Name" value={formData.firstName} onChange={handleChange} />
+    //                     <input type="text" name="lastName" placeholder="Last Name" value={formData.lastName} onChange={handleChange} />
+    //                     <input type="text" name="middleName" placeholder="Middle Name" value={formData.middleName} onChange={handleChange} />
+    //                     <input type="text" name="preferredName" placeholder="Preferred Name" value={formData.preferredName} onChange={handleChange} />
+    //                     <input type="email" name="email" placeholder="email" value={formData.email} onChange={handleChange} />
+    //                     <input type="text" name="ssn" placeholder="ssn" value={formData.ssn} onChange={handleChange} />
+    //                     <input type="text" name="dob" placeholder="Date of Birth" value={formData.dob} onChange={handleChange} />
+    //                     <select name="gender" value={formData.gender} onChange={handleChange}>
+    //                         <option value="Male">Male</option>
+    //                         <option value="Female">Female</option>
+    //                         <option value="Other">Other</option>
+    //                     </select>
+    //                 </div>
+    //             ) : (
+    //                 <div>
+    //                     <img src={formData.profilePicture} alt='profilePicture' width={100} height={100} />
+    //                     <input type="text" name="firstName" placeholder="First Name" value={formData.firstName} disabled />
+    //                     <input type="text" name="lastName" placeholder="Last Name" value={formData.lastName} disabled />
+    //                     <input type="text" name="middleName" placeholder="Middle Name" value={formData.middleName} disabled />
+    //                     <input type="text" name="preferredName" placeholder="Preferred Name" value={formData.preferredName} disabled />
+    //                     <input type="email" name="email" placeholder="email" value={formData.email} disabled />
+    //                     <input type="text" name="ssn" placeholder="ssn" value={formData.ssn} disabled />
+    //                     <input type="text" name="dob" placeholder="Date of Birth" value={formData.dob} disabled />
+    //                     <select name="gender" value={formData.gender} disabled>
+    //                         <option value="Male">Male</option>
+    //                         <option value="Female">Female</option>
+    //                         <option value="Other">Other</option>
+    //                     </select>
+    //                 </div>
+    //             )}
+    //         </div>
 
     return (
         <div className="personal-information">
@@ -296,7 +336,44 @@ const Personal = () => {
                 )}
             </div>
 
+    //         <div className="section">
+    //             <h3>Address</h3>
+    //             {isEditing ? (
+    //                 <div>
+    //                     <input type="text" name="building" placeholder="Building/Apt #" value={formData.address.building || ''} onChange={handleAddressChange} />
+    //                     <input type="text" name="street" placeholder="Street Name" value={formData.address.street || ''} onChange={handleAddressChange} />
+    //                     <input type="text" name="city" placeholder="City" value={formData.address.city || ''} onChange={handleAddressChange} />
+    //                     <input type="text" name="state" placeholder="State" value={formData.address.state || ''} onChange={handleAddressChange} />
+    //                     <input type="text" name="zip" placeholder="Zip Code" value={formData.address.zip || ''} onChange={handleAddressChange} />
+    //                 </div>
+    //             ) : (
+    //                 <div>
+    //                     <input type="text" name="building" placeholder="Building/Apt #" value={formData.address.building || ''} disabled={true} />
+    //                     <input type="text" name="street" placeholder="Street Name" value={formData.address.street || ''} disabled={true} />
+    //                     <input type="text" name="city" placeholder="City" value={formData.address.city || ''} disabled={true} />
+    //                     <input type="text" name="state" placeholder="State" value={formData.address.state || ''} disabled={true} />
+    //                     <input type="text" name="zip" placeholder="Zip Code" value={formData.address.zip || ''} disabled={true} />
+    //                 </div>
+    //             )}
+    //         </div>
 
+    //         <div className='section'>
+    //             <h3>Employment Status</h3>
+    //             {
+    //                 isEditing ?
+    //                     <div>
+    //                         <input type='text' name='visaTitle' placeholder='Visa Title' value={formData.employment.visaTitle || ''} onChange={handleEmployeeChange} />
+    //                         <input type='text' name='startDate' placeholder='Start Date' value={formData.employment.startDate || ''} onChange={handleEmployeeChange} />
+    //                         <input type='text' name='endDate' placeholder='End Date' value={formData.employment.endDate || ''} onChange={handleEmployeeChange} />
+    //                     </div>
+    //                     :
+    //                     <div>
+    //                         <input type='text' name='visaTitle' placeholder='Visa Title' value={formData.employment.visaTitle || ''} disabled={true} />
+    //                         <input type='text' name='startDate' placeholder='Start Date' value={formData.employment.startDate || ''} disabled={true} />
+    //                         <input type='text' name='endDate' placeholder='End Date' value={formData.employment.endDate || ''} disabled={true} />
+    //                     </div>
+    //             }
+    //         </div>
 
             <div className="section">
                 <h3>Contact Info</h3>
@@ -314,7 +391,63 @@ const Personal = () => {
                         <button onClick={() => { handleEditToggle('contactInfo') }}>{editSections.includes('contactInfo') ? 'Cancel' : 'Edit'}</button>
                     </div>
                 )}
-            </div>
+                {['firstName', 'lastName', 'middleName', 'preferredName', 'email', 'ssn', 'dob'].map((field) => (
+                    <TextField
+                        key={field}
+                        name={field}
+                        label={field.charAt(0).toUpperCase() + field.slice(1)}
+                        value={formData[field]}
+                        onChange={handleChange}
+                        fullWidth
+                        disabled={!isEditing}
+                    />
+                ))}
+                <TextField
+                    select
+                    name="gender"
+                    label="Gender"
+                    value={formData.gender}
+                    onChange={handleChange}
+                    disabled={!isEditing}
+                    fullWidth
+                >
+                    {['Male', 'Female', 'Other'].map(gender => (
+                        <option key={gender} value={gender}>{gender}</option>
+                    ))}
+                </TextField>
+            </Box>
+                    
+                {/* Contact Info Section */}
+                <Typography variant="h6">Contact Info</Typography>
+                <Box>
+                    {['cellPhone', 'workPhone'].map((field) => (
+                        <TextField
+                            key={field}
+                            name={field}
+                            label={field.charAt(0).toUpperCase() + field.slice(1)}
+                            value={formData.contactInfo[field] || ''}
+                            onChange={handleContactChange}
+                            fullWidth
+                            disabled={!isEditing}
+                        />
+                    ))}
+                </Box>
+
+                {/* Address Section */}
+                <Typography variant="h6">Address</Typography>
+                <Box>
+                    {['building', 'street', 'city', 'state', 'zip'].map((field) => (
+                        <TextField
+                            key={field}
+                            name={field}
+                            label={field.charAt(0).toUpperCase() + field.slice(1)}
+                            value={formData.address[field] || ''}
+                            onChange={handleAddressChange}
+                            fullWidth
+                            disabled={!isEditing}
+                        />
+                    ))}
+                </Box>
 
             <div className="section">
                 <h3>Address</h3>
@@ -427,45 +560,30 @@ const Personal = () => {
                         {editSections.includes('documents') && <button onClick={() => { handleSave('documents') }}>Save</button>}
                     </div>
                 ) : (
-                    <div>
+                    <Box>
                         {Object.keys(formData.documents).length > 0 ? (
                             <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, mb: '2rem' }}>
                                 {Object.keys(formData.documents).map((key) => {
-                                    const docs = formData.documents
-                                    const doc = docs[key]
-                                    let fileName
-                                    switch (key) {
-                                        case 'profilePictureURL':
-                                            fileName = 'Profile Picture'
-                                            break
-                                        case 'driversLicenseCopy_url':
-                                            fileName = "Driver's License"
-                                            break
-                                        case 'optUrl':
-                                            fileName = 'OPT Receipt'
-                                            break
-                                    }
+                                    const doc = formData.documents[key];
                                     return (
-                                        <>
-                                            <Card key={`${key}-download`} sx={{ minWidth: 275 }}>
-                                                <CardContent>
-                                                    <Typography variant='h6'>{fileName}</Typography>
-                                                </CardContent>
-                                                <CardActions sx={{ justifyContent: 'center' }}>
-                                                    <Button href={doc.download} download>
-                                                        Download
-                                                    </Button>
-                                                    <Button onClick={() => window.open(doc.preview, '_blank')}>
-                                                        Preview
-                                                    </Button>
-                                                </CardActions>
-                                            </Card>
-                                        </>
-                                    )
+                                        <Card key={`${key}-download`} sx={{ minWidth: 275 }}>
+                                            <CardContent>
+                                                <Typography variant='h6'>{doc.name}</Typography>
+                                            </CardContent>
+                                            <CardActions sx={{ justifyContent: 'center' }}>
+                                                <Button href={doc.download} download>
+                                                    Download
+                                                </Button>
+                                                <Button onClick={() => window.open(doc.preview, '_blank')}>
+                                                    Preview
+                                                </Button>
+                                            </CardActions>
+                                        </Card>
+                                    );
                                 })}
                             </Box>
                         ) : (
-                            <p>No documents uploaded</p>
+                            <Typography>No documents uploaded</Typography>
                         )}
                         <button onClick={() => { handleEditToggle('documents') }}>{editSections.includes('documents') ? 'Cancel' : 'Edit'}</button>
 
@@ -479,6 +597,6 @@ const Personal = () => {
             <ToastContainer />
         </div>
     );
-};
+}
 
 export default Personal;
