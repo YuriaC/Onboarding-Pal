@@ -305,42 +305,60 @@ const VisaStatusHR_all = ()=>{
         );
     return (
         <>
-            <div style={{ marginBottom: '10px' }}>
+            <Box sx={{ margin: '0 auto 1rem auto', padding: '1rem 0 0 .5rem', display: 'flex', flexDirection: 'row', gap: 1}}>
                 <TextField
                     type="text"
                     name="firstName"
+                    label="First Name"
+                    variant='outlined'
                     placeholder="First Name"
                     value={search.firstName}
                     onChange={handleInputChange}
+                    InputLabelProps={{
+                        shrink: true,
+                    }}
+                    style={{background: "white"}}
                 />
                 <TextField
                     type="text"
                     name="lastName"
+                    label="Last Name"
+                    variant='outlined'
                     placeholder="Last Name"
                     value={search.lastName}
                     onChange={handleInputChange}
-                    style={{ marginLeft: '10px' }}
+                    InputLabelProps={{
+                        shrink: true,
+                    }}
+                    style={{background: "white"}}
                 />
                 <TextField
                     type="text"
                     name="preferredName"
+                    label="Preferred Name"
+                    variant='outlined'
                     placeholder="Preferred Name"
                     value={search.preferredName}
                     onChange={handleInputChange}
-                    style={{ marginLeft: '10px' }}
+                    InputLabelProps={{
+                        shrink: true,
+                    }}
+                    style={{background: "white"}}
                 />
-             </div>
+             </Box>
              <Typography>{filteredEmployees.length === 0 ? 'No records found' : filteredEmployees.length === 1 ? 'One record found' : 'Multiple records found'}</Typography>
             <Box sx={{ 
-                width: '120%', 
                 height: '400px', 
                 margin: 'auto',
-                padding: '10px', 
+                padding: '.5rem', 
             }}>
             <TableContainer component={Paper}>
             <Table sx={{
                     width: '90%', // Set a smaller minimum width
                     overflow: 'visible', // Ensure no scrollbars
+                    height: '40vh',
+                    borderRadius: '5px',
+                    boxShadow: '3px'
                     }}  aria-label="simple table">
                 <TableHead>
                 <TableRow>
@@ -412,7 +430,6 @@ const VisaStatusHR_all = ()=>{
             </TableContainer>
             </Box>
         </>
-        
     )
 }
 

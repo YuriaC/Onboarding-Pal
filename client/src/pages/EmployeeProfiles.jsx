@@ -3,8 +3,7 @@ import axios from 'axios';
 import { useDispatch, useSelector } from 'react-redux';
 import { setSearchTerm } from '../store/user/searchTerm';
 import './EmployeeProfiles.css';
-import { TextField, Typography } from '@mui/material';
-
+import { Container, Box, Button, TextField, CircularProgress, Typography } from '@mui/material'; // Material UI components
 
 const EmployeeProfiles = () => {
     const [displayEmployee, setDsiayEmployee] = useState([]);
@@ -32,7 +31,9 @@ const EmployeeProfiles = () => {
 
 
     return (
-        <div className="employee-profiles">
+        // <div className="employee-profiles">
+        <Container sx={{padding: "2rem", width: '60vw'}}>
+            <Box sx={{ display: 'flex', flexDirection: 'column', padding: 2, boxShadow: 3, borderRadius: 2, backgroundColor: 'white' }}>
             <h2>Employee Profiles</h2>
 
             <div className="employee-summary">
@@ -40,11 +41,16 @@ const EmployeeProfiles = () => {
             </div>
 
             <TextField
-                placeholder="Search by name..."
+                label = "Search Bar"
+                variant='outlined'
+                placeholder="Search Employee by Name..."
                 value={searchTermState}
                 onChange={(e)=>{searchEmployee(e.target.value)}}
                 className="search-bar"
-                sx={{ mb: 2 }}
+                sx={{ mb: 6, margin:"0 auto 2rem auto", width: '70%', boxShadow: 1}}
+                InputLabelProps={{
+                    shrink: true,
+                }}           
             />
 
             <Typography>{displayEmployee.length === 0 ? 'No records found' : displayEmployee.length === 1 ? 'One record found' : 'Multiple records found'}</Typography>
@@ -75,7 +81,9 @@ const EmployeeProfiles = () => {
                     ))
                 )}
             </div>
-        </div>
+        {/* </div> */}
+        </Box>
+        </Container>
     );
 };
 

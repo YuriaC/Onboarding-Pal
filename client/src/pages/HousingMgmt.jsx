@@ -14,7 +14,7 @@ import {
     TableContainer,
     TableHead,
     TableRow,
-
+    Box,
 } from '@mui/material'
 
 const HousingMgmt = () => {
@@ -58,7 +58,7 @@ const HousingMgmt = () => {
     }
 
     return (
-        <div>
+        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, padding: 2, boxShadow: 3, borderRadius: 2, backgroundColor: 'white' }}>
             <h1>Housing Management</h1>
             <Button onClick={() => navigate('/hr/addhouse')} sx={{ p: 2, mb: 2 }} fullWidth>Add House</Button>
 
@@ -97,7 +97,7 @@ const HousingMgmt = () => {
                 </Table>
             </TableContainer>
             <ToastContainer />
-        </div>
+        </Box>
     )
 }
 
