@@ -1,10 +1,10 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import './Personal.css';
 import axios from 'axios';
 import { toast, ToastContainer } from 'material-react-toastify';
 import { useNavigate } from 'react-router-dom'
 import 'material-react-toastify/dist/ReactToastify.css';
-import { Avatar, Select, MenuItem, InputLabel, Container, TextField, Box, Card, CardActions, CardContent, Typography, Button } from '@mui/material';
+import { Avatar, Select, MenuItem, InputLabel, FormControl, Dialog, DialogTitle, DialogActions, Radio, FormControlLabel, FormLabel, RadioGroup, Container, TextField, Box, Card, CardActions, CardContent, Typography, Button } from '@mui/material';
 import { isEmail, isAddress, checkZIP, checkSSN, isAlphabetic, isAlphaNumeric } from '../helpers/HelperFunctions';
 import { alphanumRegex, phoneRegex, USER_ENDPOINT } from '../constants';
 import ErrorHelperText from '../components/ErrorHelperText';
@@ -12,6 +12,8 @@ import ErrorHelperText from '../components/ErrorHelperText';
 const Personal = () => {
     const navigate = useNavigate()
 
+    const profilePictureRef = useRef(null)
+    const optReceiptRef = useRef(null)
     const [isEditing, setIsEditing] = useState(false);
     const [formData, setFormData] = useState({
         firstName: '',
@@ -19,7 +21,7 @@ const Personal = () => {
         middleName: '',
         username: '',
         preferredName: '',
-        profilePicture: null,
+        profilePicture: '',
         profilePictureURL: '',
         optReceipt: null,
         dlCopy: null,
@@ -36,6 +38,7 @@ const Personal = () => {
         isPermRes: '',
         workPhone: '',
         visaTitle: '',
+        nonPermWorkAuth: '',
         visaStartDate: '',
         visaEndDate: '',
         emergencyContacts: [{
@@ -49,10 +52,11 @@ const Personal = () => {
         }],
     });
 
+    const [openDialogue, setOpenDialogue] = useState(false)
     const [formDataClone, setFormDataClone] = useState({});
     const [isLoading, setIsLoading] = useState(true)
     const [docs, setDocs] = useState([]);  // for containing files from AWS 
-    const [files, setfiles] = useState([]);
+    // const [files, setfiles] = useState([]);
     const [emCounter, setEmCounter] = useState(1)
 
     // fetch uploaded file from AWS
@@ -84,6 +88,7 @@ const Personal = () => {
             visaEndDate,
             emergencyContacts,
             profilePictureURL,
+            visaTitle,
         } = data
         const newEmContacts = []
         for (const emContact of emergencyContacts) {
@@ -120,6 +125,7 @@ const Personal = () => {
             cellPhone,
             workPhone,
             isPermRes,
+            nonPermWorkAuth: workAuth,
             permResStatus,
             workAuth,
             visaStartDate: visaStartDate ? visaStartDate.split('T')[0] : '',
@@ -130,6 +136,7 @@ const Personal = () => {
             city: address.split(', ')[1],
             state,
             zip,
+            visaTitle,
         })
     }
 
@@ -215,16 +222,28 @@ const Personal = () => {
     }
 
     const handleEditToggle = () => {
+        // if (isEditing) {
+        //     const confirmDiscard = window.confirm("Discard changes?");
+        //     if (confirmDiscard) {
+        //         setFormData(formDataClone);
+        //         setIsEditing(false);
+        //     }
+        // } else {
+        //     setIsEditing(true);
+        // }
         if (isEditing) {
-            const confirmDiscard = window.confirm("Discard changes?");
-            if (confirmDiscard) {
-                setFormData(formDataClone);
-                setIsEditing(false);
-            }
-        } else {
-            setIsEditing(true);
+            setOpenDialogue(true)
+        }
+        else {
+            setIsEditing(true)
         }
     };
+
+    const handleDiscard = () => {
+        setFormData(formDataClone);
+        setIsEditing(false);
+        setOpenDialogue(false)
+    }
 
     const addEmergencyContact = (e) => {
         e.preventDefault()
@@ -273,6 +292,10 @@ const Personal = () => {
         return formData;
     }
 
+    const handleClose = () => {
+        setOpenDialogue(false)
+    }
+
 
     const handleSubmit = async (e) => {
         e.preventDefault();   
@@ -299,12 +322,12 @@ const Personal = () => {
         if (!isAddress(formData.street)) {
             newErrorObject['street'] = true
         }
-        if (!isAlphabetic(formData.city)) {
-            newErrorObject['city'] = true
-        }
-        if (!isAlphabetic(formData.state)) {
-            newErrorObject['state'] = true
-        }
+        // if (!isAlphaNumeric(formData.city)) {
+        //     newErrorObject['city'] = true
+        // }
+        // if (!isAlphaNumeric(formData.state)) {
+        //     newErrorObject['state'] = true
+        // }
         if (!checkZIP(formData.zip)) {
             newErrorObject['zip'] = true
         }
@@ -381,7 +404,7 @@ const Personal = () => {
                     </Avatar>
                 )}
                     {/* <img src={formData.profilePicture} alt='profilePicture'/> */}
-                    {isEditing && (
+                    {/* {isEditing && (
                         <TextField                        
                             type='file'
                             name='profilePicture'
@@ -394,7 +417,7 @@ const Personal = () => {
                                 shrink: true,
                             }}
                         />
-                    )}
+                    )} */}
                     {['firstName', 'lastName', 'middleName', 'preferredName', 'email', 'ssn'].map((field) => (
                         <div key={field}>
                         <TextField
@@ -404,8 +427,10 @@ const Personal = () => {
                             onChange={handleChange}
                             error={errors[field]}
                             fullWidth
+                            required={['firstName', 'lastName', 'email', 'ssn'].includes(field)}
                             disabled={!isEditing}
                             sx={{ mb: 2 }}
+                            type={field === 'ssn' ? 'password' : 'text'}
                         />
                         <ErrorHelperText 
                             hasError={errors[field]} 
@@ -414,7 +439,8 @@ const Personal = () => {
                         />
                         </div>
                     ))}
-
+                    <Typography gutterBottom>Profile Picture</Typography>
+                    <TextField type='file' ref={profilePictureRef} name='profilePicture' onChange={handleChange} disabled={!isEditing} accept='image/*' variant='outlined' fullWidth sx={{ mb: 2 }} />
                         <TextField 
                             label='Date of Birth' 
                             type='date' 
@@ -470,20 +496,84 @@ const Personal = () => {
                 {/* Employment Status Section */}
                 <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, padding: 2}}>
                     <Typography variant="h6" marginTop={-4}>Employment</Typography>
-                    <TextField name="permResStatus" label="U.S. Residency Status" 
-                            value={formData.isPermRes === 'undefined' ? "Non-Resident" : "Resident"} 
-                            disabled 
-                            fullWidth 
-                            variant="outlined"
-                            InputLabelProps={{
-                                shrink: true,
-                            }} />
-                    <TextField name="workAuth" label="Work Authorization" value={formData.workAuth} disabled fullWidth variant="outlined"
-                            InputLabelProps={{
-                                shrink: true,
-                            }}/>
-                    <TextField label='Visa Start Date' type='date' name='visaStartDate' value={formData.visaStartDate} onChange={handleChange} disabled={!isEditing} variant='outlined' required fullWidth />
-                    <TextField label='Visa End Date' type='date' name='visaEndDate' value={formData.visaEndDate} onChange={handleChange} disabled={!isEditing} variant='outlined' error={errors.visaEndDate} required fullWidth />
+                    <FormControl fullWidth margin="normal">
+                            <FormLabel>Are you a permanent resident? *</FormLabel>
+                            <RadioGroup row value={formData.isPermRes} name='isPermRes' required onChange={handleChange}>
+                                <FormControlLabel
+                                    value="Yes"
+                                    control={<Radio />}
+                                    label="Yes"
+                                    disabled={!isEditing}
+                                />
+                                <FormControlLabel
+                                    value="No"
+                                    control={<Radio />}
+                                    label="No"
+                                    disabled={!isEditing}
+                                />
+                            </RadioGroup>
+                        </FormControl>
+                        {formData.isPermRes === 'No' ? (
+                            <>
+                                <InputLabel>What is your work authorization? *</InputLabel>
+                                <Select name='nonPermWorkAuth' label='Work Authorization' value={formData.nonPermWorkAuth} onChange={handleChange} required disabled={!isEditing} fullWidth sx={{ mb: 2 }}>
+                                    <MenuItem value='H1-B'>H1-B</MenuItem>
+                                    <MenuItem value='L2'>L2</MenuItem>
+                                    <MenuItem value='F1(CPT/OPT)'>F1(CPT/OPT)</MenuItem>
+                                    <MenuItem value='H4'>H4</MenuItem>
+                                    <MenuItem value='Other'>Other</MenuItem>
+                                </Select>
+                                {formData.nonPermWorkAuth === 'F1(CPT/OPT)' &&
+                                <>
+                                    <Typography gutterBottom>Upload Your OPT Receipt *</Typography>
+                                    <TextField type='file' ref={optReceiptRef} name='optReceipt' onChange={handleChange} disabled={!isEditing} required variant='outlined' fullWidth sx={{ mb: 2 }} />
+                                </>
+                                }
+                                {formData.nonPermWorkAuth === 'Other' &&
+                                    <>
+                                        <TextField label='Visa Title' name='visaTitle' value={formData.visaTitle} onChange={handleChange} disabled={!isEditing} fullWidth sx={{ mb: 2 }} />
+                                    </>
+                                }
+                                <TextField
+                                    fullWidth
+                                    name='visaStartDate'
+                                    label="Visa Start Date"
+                                    value={formData.visaStartDate}
+                                    disabled={!isEditing}
+                                    onChange={handleChange}
+                                    type={formData.visaStartDate? 'date' : 'text'}
+                                    margin="normal"
+                                />
+                                <TextField
+                                    fullWidth
+                                    name='visaEndDate'
+                                    label="Visa End Date"
+                                    value={formData.visaEndDate}
+                                    disabled={!isEditing}
+                                    onChange={handleChange}
+                                    type={formData.visaEndDate? 'date' : 'text'}
+                                    margin="normal"
+                                />
+                            </>
+                        ) : (
+                            <FormControl fullWidth margin="normal">
+                                <FormLabel>What kind of permanent resident?</FormLabel>
+                                <RadioGroup row value={formData.permResStatus} name='permResStatus' onChange={handleChange}>
+                                    <FormControlLabel
+                                        value="Citizen"
+                                        control={<Radio />}
+                                        label="Citizen"
+                                        disabled={!isEditing}
+                                    />
+                                    <FormControlLabel
+                                        value="Green Card"
+                                        control={<Radio />}
+                                        label="Green Card"
+                                        disabled={!isEditing}
+                                    />
+                                </RadioGroup>
+                            </FormControl>
+                        )}
                     <ErrorHelperText hasError={errors.visaEndDate} message={helperTexts.visaEndDate} />
                 </Box>
 
@@ -560,6 +650,13 @@ const Personal = () => {
 
                 <Button variant="outlined" onClick={handleEditToggle}>{isEditing ? 'Cancel' : 'Edit'}</Button>
                 {isEditing && <Button variant="contained" onClick={handleSubmit}>Save</Button>}
+                <Dialog open={openDialogue}>
+                    <DialogTitle>Do you want to discard your changes for this section?</DialogTitle>
+                    <DialogActions>
+                        <Button onClick={handleDiscard} color='error'>Yes</Button>
+                        <Button onClick={handleClose} color='primary'>No</Button>
+                    </DialogActions>
+                </Dialog>
                 <ToastContainer />
             </Box>
         </Container>
