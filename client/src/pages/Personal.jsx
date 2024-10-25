@@ -428,7 +428,7 @@ const Personal = () => {
                             error={errors[field]}
                             fullWidth
                             required={['firstName', 'lastName', 'email', 'ssn'].includes(field)}
-                            disabled={!isEditing}
+                            disabled={!isEditing || field === 'email'}
                             sx={{ mb: 2 }}
                             type={field === 'ssn' ? 'password' : 'text'}
                         />
@@ -579,7 +579,7 @@ const Personal = () => {
 
                 {/* Emergency Contact Section */}
                 <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, padding: 2}}>
-                    <Typography variant="h6" marginTop={-2} marginBottom={-2}>Emergency Contact</Typography>
+                    <Typography variant="h6" marginTop={-2} marginBottom={-2}>Emergency Contact{formData.emergencyContacts.length > 1 ? 's' : ''}</Typography>
                     {formData.emergencyContacts.map((contact, index) => (
                         <div key={index} style={{ marginTop: '1rem' }}>
                             <TextField label="First Name" name='firstName' value={contact.firstName} variant='outlined' onChange={(e) => handleEmContactChange(e, index)} fullWidth disabled={!isEditing} required sx={{ mb: 2 }} />
