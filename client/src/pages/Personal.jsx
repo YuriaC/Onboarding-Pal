@@ -1,27 +1,71 @@
-import { useState, useEffect } from 'react';
-import './Personal.css';
-import axios from 'axios';
-import { toast, ToastContainer } from 'material-react-toastify';
-import { useNavigate, useParams } from 'react-router-dom'
-import 'material-react-toastify/dist/ReactToastify.css';
-import { Avatar, Select, MenuItem, InputLabel, Container, TextField, Box, Card, CardActions, CardContent, Typography, Button } from '@mui/material';
+import { useState, useEffect, useRef } from 'react'
+import axios from 'axios'
+import { toast, ToastContainer } from 'react-toastify'
 import { isEmail, isAddress, checkZIP, checkSSN, isAlphabetic, isAlphaNumeric } from '../helpers/HelperFunctions';
-import { alphanumRegex, phoneRegex, USER_ENDPOINT, username } from '../constants';
+import {
+    Avatar,
+    Box,
+    TextField,
+    RadioGroup,
+    FormControl,
+    FormLabel,
+    FormControlLabel,
+    Radio,
+    Typography,
+    Paper,
+    Card,
+    CardActions,
+    CardContent,
+    Button,
+    Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle,
+    InputLabel,
+    MenuItem,
+    Select,
+} from '@mui/material'
+import { alphanumRegex, phoneRegex, USER_ENDPOINT } from '../constants';
 import ErrorHelperText from '../components/ErrorHelperText';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import { faUser } from '@fortawesome/free-solid-svg-icons'
 
 const Personal = () => {
-    const navigate = useNavigate()
-    const { employeeId } = useParams()
 
-    const [isEditing, setIsEditing] = useState(false);
+    const profilePictureRef = useRef(null)
+    const optReceiptRef = useRef(null)
+    const [isLoading, setIsLoading] = useState(true)
     const [formData, setFormData] = useState({
         firstName: '',
         lastName: '',
         middleName: '',
         username: '',
         preferredName: '',
-        profilePicture: null,
-        profilePictureURL: '',
+        profilePicture: '',
+        optReceipt: null,
+        building: '',
+        street: '',
+        city: '',
+        state: '',
+        zip: '',
+        ssn: '',
+        dob: '',
+        gender: '',
+        cellPhone: '',
+        workPhone: '',
+        isPermRes: '',
+        permResStatus: '',
+        nonPermWorkAuth: '',
+        visaStartDate: '',
+        visaEndDate: '',
+        visaTitle: '',
+        email: '',
+        emergencyContacts: [],
+    })
+    const [newFormData, setNewFormData] = useState({
+        firstName: '',
+        lastName: '',
+        middleName: '',
+        username: '',
+        preferredName: '',
+        profilePicture: '',
         optReceipt: null,
         dlCopy: null,
         building: '',
@@ -33,106 +77,16 @@ const Personal = () => {
         dob: '',
         gender: '',
         cellPhone: '',
-        permResStatus: '',
-        isPermRes: '',
         workPhone: '',
-        visaTitle: '',
+        isPermRes: '',
+        permResStatus: '',
+        nonPermWorkAuth: '',
         visaStartDate: '',
         visaEndDate: '',
-        emergencyContacts: [{
-            firstName: '',
-            lastName: '',
-            middleName: '',
-            phone: '',
-            emEmail: '',
-            relationship: '',
-            counter: 0,
-        }],
-    });
-
-    const [formDataClone, setFormDataClone] = useState({});
-    const [isLoading, setIsLoading] = useState(true)
-    const [docs, setDocs] = useState([]);  // for containing files from AWS 
-    const [files, setfiles] = useState([]);
-    const [emCounter, setEmCounter] = useState(1)
-
-    // fetch uploaded file from AWS
-    const getDocs = async () => {
-        const response = await axios.get(`${USER_ENDPOINT}/getuserdocs`, {
-            withCredentials: true,
-        })
-        setDocs(response.data);
-    }
-
-    const setDataToForm = (data) => {
-        const {
-            username,
-            firstName,
-            lastName,
-            middleName,
-            preferredName,
-            email,
-            ssn,
-            birthday,
-            gender,
-            cellPhone,
-            workPhone,
-            address,
-            isPermRes,
-            permResStatus,
-            workAuth,
-            visaStartDate,
-            visaEndDate,
-            emergencyContacts,
-            profilePictureURL,
-        } = data
-        const newEmContacts = []
-        for (const emContact of emergencyContacts) {
-            const { firstName, lastName, middleName, cellPhone, email, relationship } = emContact
-            newEmContacts.push({
-                firstName,
-                lastName,
-                middleName,
-                phone: cellPhone,
-                emEmail: email,
-                relationship,
-            })
-        }
-        const stateAndZip = address.split(', ')[2]
-        const lastSpaceIndex = stateAndZip.lastIndexOf(' ')
-        const state = stateAndZip.substring(0, lastSpaceIndex)
-        const zip = stateAndZip.substring(lastSpaceIndex + 1)
-        const buildingAndStreet = address.split(', ')[0]
-        const firstSpaceIndex = buildingAndStreet.indexOf(' ')
-        const building = buildingAndStreet.substring(0, firstSpaceIndex)
-        const street = buildingAndStreet.substring(firstSpaceIndex + 1)
-        setFormData({
-            ...formData,
-            username,
-            firstName: firstName.charAt(0).toUpperCase() + firstName.slice(1),
-            lastName: lastName.charAt(0).toUpperCase() + lastName.slice(1),
-            middleName,
-            preferredName,
-            email,
-            ssn,
-            dob: birthday.split('T')[0],
-            gender,
-            profilePictureURL,
-            cellPhone,
-            workPhone,
-            isPermRes,
-            permResStatus,
-            workAuth,
-            visaStartDate: visaStartDate ? visaStartDate.split('T')[0] : '',
-            visaEndDate: visaEndDate ? visaEndDate.split('T')[0] : '',
-            emergencyContacts: newEmContacts,
-            building,
-            street,
-            city: address.split(', ')[1],
-            state,
-            zip,
-        })
-    }
+        visaTitle: '',
+        email: '',
+        emergencyContacts: [],
+    })
 
     const [errors, setErrors] = useState({
         firstName: false,
@@ -171,10 +125,20 @@ const Personal = () => {
         email: 'Email must be in a proper format!',
     }
 
-    useEffect(() => {
-        setFormDataClone(JSON.parse(JSON.stringify(formData)));
-    }, [isEditing])
+    const [editSections, setEditSections] = useState({
+        nameSection: false,
+        addressSection: false,
+        contactSection: false,
+        employmentSection: false,
+        emergencySection: false,
+    })
 
+    const [openDialogue, setOpenDialogue] = useState(false)
+
+    const [changed, setChanged] = useState(false)
+    const [submitted, setSubmitted] = useState(false)
+
+    const [discardSection, setDiscardSection] = useState('')
 
     useEffect(() => {
         const fetchData = async () => {
@@ -183,13 +147,18 @@ const Personal = () => {
             })
                 .then(response => {
                     const { data } = response
-                    const { onboardingStatus } = data
-                    if (onboardingStatus !== 'Approved') {
-                        return navigate('/onboarding')
-                    }
-                    setDataToForm(data);
-                    getDocs();
-                    toast.success('Successfully fetched user data and files!')
+                    axios.get(`${USER_ENDPOINT}/getuserdocs`, {
+                        withCredentials: true,
+                    }).then(docsResponse => {
+                        console.log('docsResponse:', docsResponse)
+                        const profilePicture = docsResponse.data.profilePictureURL?.preview ? docsResponse.data.profilePictureURL?.preview : ''
+                        const newData = {
+                            ...data,
+                            profilePicture,
+                            docs: docsResponse.data,
+                        }
+                        setDataToForm(newData)
+                    })
                 })
                 .catch(error => {
                     toast.error(`Error fetching user info! Error: ${error.message}`)
@@ -198,38 +167,276 @@ const Personal = () => {
             setIsLoading(false)
         }
         fetchData()
-    }, [])
+    }, [submitted])
+
+    const setDataToForm = (data) => {
+        const {
+            firstName,
+            lastName,
+            middleName,
+            username,
+            preferredName,
+            address,
+            cellPhone,
+            workPhone,
+            profilePicture,
+            ssn,
+            birthday,
+            email,
+            gender,
+            permResStatus,
+            emergencyContacts,
+            workAuth,
+            visaStartDate,
+            visaEndDate,
+            visaTitle,
+            docs,
+        } = data
+        const newEmContacts = []
+        for (const emContact of emergencyContacts) {
+            const { firstName, lastName, middleName, cellPhone, email, relationship } = emContact
+            newEmContacts.push({
+                firstName,
+                lastName,
+                middleName,
+                phone: cellPhone,
+                emEmail: email,
+                relationship,
+            })
+        }
+        const stateAndZip = address ? address.split(', ')[2] : ''
+        const lastSpaceIndex = address ? stateAndZip.lastIndexOf(' ') : 0
+        const state = address ? stateAndZip.substring(0, lastSpaceIndex) : ''
+        const zip = address ? stateAndZip.substring(lastSpaceIndex + 1) : ''
+        const buildingAndStreet = address ? address.split(', ')[0] : ''
+        const firstSpaceIndex = address ? buildingAndStreet.indexOf(' ') : 0
+        const building = address ? buildingAndStreet.substring(0, firstSpaceIndex) : ''
+        const street = address ? buildingAndStreet.substring(firstSpaceIndex + 1) : ''
+        const newData = {
+            ...formData,
+            firstName,
+            lastName,
+            middleName,
+            username,
+            preferredName,
+            profilePicture,
+            cellPhone,
+            workPhone,
+            ssn,
+            email,
+            dob: birthday ? birthday.split('T')[0] : null,
+            gender,
+            permResStatus,
+            isPermRes: ['Citizen', 'Green Card'].includes(permResStatus) ? 'Yes' : 'No',
+            hasDriversLicense: data['driversLicenseNumber'] ? 'Yes' : 'No',
+            emergencyContacts: newEmContacts,
+            building,
+            street,
+            city: address ? address.split(', ')[1] : '',
+            state,
+            zip,
+            nonPermWorkAuth: workAuth,
+            visaStartDate: visaStartDate ? visaStartDate.split('T')[0] : '',
+            visaEndDate: visaEndDate ? visaEndDate.split('T')[0] : '',
+            visaTitle,
+            docs,
+        }
+        setFormData(newData)
+        setNewFormData(newData)
+    }
+
+    const toggleEditSection = (section) => {
+        const newEditSections = editSections
+        newEditSections[section] = !newEditSections[section]
+        setEditSections(newEditSections)
+        setChanged(!changed)
+    }
+
+    const cancelEdit = (section) => {
+        setOpenDialogue(true)
+        setDiscardSection(section)
+    }
+
+    const handleClose = () => {
+        setOpenDialogue(false)
+    }
+
+    const handleDiscard = () => {
+        setOpenDialogue(false)
+        setEditSections({
+            ...editSections,
+            [discardSection]: false,
+        })
+        if (discardSection === 'nameSection') {
+            const { firstName, lastName, middleName, preferredName, ssn, dob, gender } = formData
+            // profilePictureRef.current.value = ''
+            setNewFormData({
+                ...newFormData,
+                firstName,
+                lastName,
+                middleName,
+                preferredName,
+                ssn,
+                dob,
+                gender,
+            })
+        }
+        else if (discardSection === 'addressSection') {
+            const { building, street, city, state, zip } = formData
+            setNewFormData({
+                ...newFormData,
+                building,
+                street,
+                city,
+                state,
+                zip,
+            })
+        }
+        else if (discardSection === 'contactSection') {
+            const { cellPhone, workPhone } = formData
+            setNewFormData({
+                ...newFormData,
+                cellPhone,
+                workPhone,
+            })
+        }
+        else if (discardSection === 'employmentSection') {
+            const { permResStatus, isPermRes, visaEndDate, visaStartDate, visaTitle, nonPermWorkAuth } = formData
+            console.log('formData:', formData)
+            console.log('newFormData:', newFormData)
+            // optReceiptRef.current.value = ''
+            setNewFormData({
+                ...newFormData,
+                visaTitle,
+                permResStatus,
+                nonPermWorkAuth,
+                visaEndDate,
+                visaStartDate,
+                isPermRes,
+            })
+        }
+        else if (discardSection === 'emergencySection') {
+            const { emergencyContacts } = formData
+            setNewFormData({
+                ...newFormData,
+                emergencyContacts,
+            })
+        }
+    }
+
+    const saveEdit = async (section) => {
+        const newErrorObject = {}
+        for (const key in errors) {
+            newErrorObject[key] = false
+        }
+        if (!isAlphabetic(formData.firstName)) {
+            newErrorObject['firstName'] = true
+        }
+        // if (formData.middleName && !isAlphabetic(formData.middleName)) {
+        //     newErrorObject['middleName'] = true
+        // }
+        // if (!isAlphabetic(formData.lastName)) {
+        //     newErrorObject['lastName'] = true
+        // }
+        // if (!isEmail(formData.email)) {
+        //     newErrorObject['email'] = true
+        // }
+        // if (!isAlphaNumeric(formData.building)) {
+        //     newErrorObject['building'] = true
+        // }
+        // if (!isAddress(formData.street)) {
+        //     newErrorObject['street'] = true
+        // }
+        // if (!isAlphabetic(formData.city)) {
+        //     newErrorObject['city'] = true
+        // }
+        // if (!isAlphabetic(formData.state)) {
+        //     newErrorObject['state'] = true
+        // }
+        // if (!checkZIP(formData.zip)) {
+        //     newErrorObject['zip'] = true
+        // }
+        // if (new Date(formData.dob) > new Date()) {
+        //     newErrorObject['dob'] = true
+        // }
+        // if (new Date(formData.visaEndDate) < new Date()) {
+        //     newErrorObject['visaEndDate'] = true
+        // }
+        // if (!phoneRegex.test(formData.cellPhone)) {
+        //     newErrorObject['cellPhone'] = true
+        // }
+        // if (formData.workPhone && !phoneRegex.test(formData.workPhone)) {
+        //     newErrorObject['workPhone'] = true
+        // }
+        // formData.emergencyContacts.map((contact) => {
+        //     if (!isAlphabetic(contact.firstName)) {
+        //         newErrorObject['emFirstName'] = true
+        //     }
+        //     if (contact.middleName && !isAlphabetic(contact.middleName)) {
+        //         newErrorObject['emMiddleName'] = true
+        //     }
+        //     if (!isAlphabetic(contact.lastName)) {
+        //         newErrorObject['emLastName'] = true
+        //     }
+        //     if (!phoneRegex.test(contact.phone)) {
+        //         newErrorObject['emPhone'] = true
+        //     }
+        //     if (!isEmail(contact.emEmail)) {
+        //         newErrorObject['emEmail'] = true
+        //     }
+        // })
+        for (const key in newErrorObject) {
+            if (newErrorObject[key]) {
+                toast.error('Please fix input errors!')
+                return setErrors(newErrorObject)
+            }
+        }
+        setErrors(newErrorObject)
+
+        const data = createFormData(newFormData)
+        console.log('newFormData:', newFormData)
+        // data.append('file', newFormData.profilePicture)
+        // data.append('file', newFormData.optReceipt)
+
+        try {
+            await axios.post(`${USER_ENDPOINT}/updateProfile`, data, {
+                headers: {
+                    'Content-Type': 'multipart/form-data',
+                },
+                withCredentials: true,
+            })
+            setSubmitted(!submitted)
+            toast.success('Successfully updated user profile.')
+        }
+        catch (error) {
+            toast.error(`Error submitting application! Error: ${error.response.data}`)
+        }
+        const newForm = JSON.parse(JSON.stringify(formData))
+        setEditSections({
+            ...editSections,
+            [section]: false,
+        })
+        console.log('newForm:', newForm)
+    }
 
     const handleChange = (e) => {
         const { type, name, value } = e.target
-        setFormData({
-            ...formData,
+        setNewFormData({
+            ...newFormData,
             [name]: type === 'file' ? e.target.files[0] : value,
         })
     }
 
     const handleEmContactChange = (e, index) => {
         const { name, value } = e.target
-        const newContacts = [...formData.emergencyContacts]
+        const newContacts = [...newFormData.emergencyContacts]
         newContacts[index][name] = value
-        setFormData({...formData, emergencyContacts: newContacts})
+        setNewFormData({...newFormData, emergencyContacts: newContacts})
     }
-
-    const handleEditToggle = () => {
-        if (isEditing) {
-            const confirmDiscard = window.confirm("Discard changes?");
-            if (confirmDiscard) {
-                setFormData(formDataClone);
-                setIsEditing(false);
-            }
-        } else {
-            setIsEditing(true);
-        }
-    };
 
     const addEmergencyContact = (e) => {
         e.preventDefault()
-        const newContacts = [...formData.emergencyContacts]
+        const newContacts = [...newFormData.emergencyContacts]
         newContacts.push({
                 firstName: '',
                 lastName: '',
@@ -237,23 +444,21 @@ const Personal = () => {
                 phone: '',
                 emEmail: '',
                 relationship: '',
-                counter: emCounter,
         })
-        setEmCounter(prev => prev + 1)
-        setFormData({
-            ...formData,
+        setNewFormData({
+            ...newFormData,
             emergencyContacts: newContacts,
         })
     }
 
     const removeEmergencyContact = (e, index) => {
         e.preventDefault()
-        if (formData.emergencyContacts.length === 1) {
+        if (newFormData.emergencyContacts.length === 1) {
             return
         }
-        const newContacts = formData.emergencyContacts.filter((_, i) => i !== index)
-        setFormData({
-            ...formData,
+        const newContacts = newFormData.emergencyContacts.filter((_, i) => i !== index)
+        setNewFormData({
+            ...newFormData,
             emergencyContacts: newContacts
         })
     }
@@ -274,300 +479,353 @@ const Personal = () => {
         return formData;
     }
 
-
-    const handleSubmit = async (e) => {
-        e.preventDefault();   
-
-        const newErrorObject = {}
-        for (const key in errors) {
-            newErrorObject[key] = false
-        }
-        if (!isAlphabetic(formData.firstName)) {
-            newErrorObject['firstName'] = true
-        }
-        if (formData.middleName && !isAlphabetic(formData.middleName)) {
-            newErrorObject['middleName'] = true
-        }
-        if (!isAlphabetic(formData.lastName)) {
-            newErrorObject['lastName'] = true
-        }
-        if (!isEmail(formData.email)) {
-            newErrorObject['email'] = true
-        }
-        if (!isAlphaNumeric(formData.building)) {
-            newErrorObject['building'] = true
-        }
-        if (!isAddress(formData.street)) {
-            newErrorObject['street'] = true
-        }
-        if (!isAlphabetic(formData.city)) {
-            newErrorObject['city'] = true
-        }
-        if (!isAlphabetic(formData.state)) {
-            newErrorObject['state'] = true
-        }
-        if (!checkZIP(formData.zip)) {
-            newErrorObject['zip'] = true
-        }
-        if (new Date(formData.dob) > new Date()) {
-            newErrorObject['dob'] = true
-        }
-        if (new Date(formData.visaEndDate) < new Date()) {
-            newErrorObject['visaEndDate'] = true
-        }
-        if (!phoneRegex.test(formData.cellPhone)) {
-            newErrorObject['cellPhone'] = true
-        }
-        if (formData.workPhone && !phoneRegex.test(formData.workPhone)) {
-            newErrorObject['workPhone'] = true
-        }
-        formData.emergencyContacts.map((contact) => {
-            if (!isAlphabetic(contact.firstName)) {
-                newErrorObject['emFirstName'] = true
-            }
-            if (contact.middleName && !isAlphabetic(contact.middleName)) {
-                newErrorObject['emMiddleName'] = true
-            }
-            if (!isAlphabetic(contact.lastName)) {
-                newErrorObject['emLastName'] = true
-            }
-            if (!phoneRegex.test(contact.phone)) {
-                newErrorObject['emPhone'] = true
-            }
-            if (!isEmail(contact.emEmail)) {
-                newErrorObject['emEmail'] = true
-            }
-        })
-        for (const key in newErrorObject) {
-            if (newErrorObject[key]) {
-                toast.error('Please fix input errors!')
-                return setErrors(newErrorObject)
-            }
-        }
-        setErrors(newErrorObject)
-
-        const data = createFormData(formData)
-
-        try {
-            await axios.post(`${USER_ENDPOINT}/updateProfile`, data, {
-                headers: {
-                    'Content-Type': 'multipart/form-data',
-                },
-                withCredentials: true,
-            })
-            setIsEditing(false);
-            getDocs();
-            toast.success('Successfully updated user profile.')
-        }
-        catch (error) {
-            toast.error(`Error submitting application! Error: ${error.response.data}`)
-        }
-    }
-
-    const profilePicCheck = docs.profilePictureURL ? docs.profilePictureURL.preview : '';  // for profile picture display
-
     return (
         <>
-        {!isLoading ? (<Container sx={{ width: "65vw", marginTop: 8, padding: "2rem" }}>
-        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, padding: 2, boxShadow: 3, borderRadius: 2, backgroundColor: 'white' }}>
-            <Typography variant="h4">Personal Information</Typography>
-                {/* Basic Info Section */}
-                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, padding: 2}} >
-                <Typography variant="h6">Basic Info</Typography>
-                {profilePicCheck ? (
-                    <img src={profilePicCheck} alt='profilePicture' />
-                ) : (
-                    <Avatar sx={{ bgcolor: "blue", margin: "0 auto 2rem auto", width: "4rem", height: "4rem"}}>
-                        {`${formData.firstName[0]}${formData.lastName[0]}`}
-                    </Avatar>
-                )}
-                    {/* <img src={formData.profilePicture} alt='profilePicture'/> */}
-                    {isEditing && (
-                        <TextField                        
-                            type='file'
-                            name='profilePicture'
-                            onChange={handleChange}
-                            accept='image/*'
-                            fullWidth
-                            label="Upload New Profile Picture" 
-                            variant="outlined"
-                            InputLabelProps={{
-                                shrink: true,
-                            }}
-                        />
+            {!isLoading ? (
+                <Paper sx={{ p: 3, width: '60vw' }}>
+                    <Typography variant='h4' sx={{ mb: 1 }}>
+                        {formData.firstName} {formData.lastName} ({formData.username})
+                    </Typography>
+                    {formData.profilePicture ? <img src={formData.profilePicture} alt={'Profile Picture'} style={{ maxWidth: '10rem', maxHeight: '10rem' }} /> : (
+                       <Avatar sx={{  width: 60, margin: 'auto', height: 60 }}>
+                            { formData.firstName ?formData.firstName[0]:              
+
+                            <FontAwesomeIcon icon={faUser} />
+                        }
+
+                        </Avatar>
                     )}
-                    {['firstName', 'lastName', 'middleName', 'preferredName', 'email', 'ssn'].map((field) => (
-                        <div key={field}>
+
+                    <form>
                         <TextField
-                            name={field}
-                            label={field.charAt(0).toUpperCase() + field.slice(1)}
-                            value={formData[field]}
-                            onChange={handleChange}
-                            error={errors[field]}
                             fullWidth
-                            disabled={!isEditing}
-                            sx={{ mb: 2 }}
+                            name='firstName'
+                            label="First Name"
+                            value={newFormData.firstName}
+                            disabled={!editSections.nameSection}
+                            onChange={handleChange}
+                            margin="normal"
                         />
-                        <ErrorHelperText 
-                            hasError={errors[field]} 
-                            message={['firstName', 'lastName', 'middleName', 'preferredName'].includes(field) ? helperTexts['name'] : helperTexts[field]}
-                            marginTop="10rem" 
+                        <TextField
+                            fullWidth
+                            name='lastName'
+                            label="Last Name"
+                            value={newFormData.lastName}
+                            disabled={!editSections.nameSection}
+                            onChange={handleChange}
+                            margin="normal"
                         />
-                        </div>
-                    ))}
-
-                        <TextField 
-                            label='Date of Birth' 
-                            type='date' 
-                            name='dob' 
-                            value={formData.dob} 
-                            onChange={handleChange} 
-                            disabled={!isEditing} 
-                            required 
-                            variant='outlined' 
-                            error={errors.dob} 
+                        <TextField
+                            fullWidth
+                            name='middleName'
+                            label="Middle Name"
+                            value={newFormData.middleName}
+                            disabled={!editSections.nameSection}
+                            onChange={handleChange}
+                            margin="normal"
                         />
-                        <ErrorHelperText hasError={errors.dob} message={helperTexts.dob} />
+                        <TextField
+                            fullWidth
+                            name='preferredName'
+                            label="Preferred Name"
+                            value={newFormData.preferredName}
+                            disabled={!editSections.nameSection}
+                            onChange={handleChange}
+                            margin="normal"
+                        />
+                        <Typography gutterBottom>Profile Picture</Typography>
+                        <TextField type='file' ref={profilePictureRef} name='profilePicture' onChange={handleChange} disabled={!editSections.nameSection} accept='image/*' variant='outlined' fullWidth sx={{ mb: 2 }} />
+                        <TextField
+                            fullWidth
+                            label="Email"
+                            value={newFormData.email}
+                            disabled
+                            type="email"
+                            margin="normal"
+                        />
+                        <TextField
+                            fullWidth
+                            label="SSN"
+                            name='ssn'
+                            value={newFormData.ssn}
+                            disabled={!editSections.nameSection}
+                            onChange={handleChange}
+                            type="password"
+                            margin="normal"
+                        />
+                        <TextField
+                            fullWidth
+                            name='dob'
+                            label="Date of Birth"
+                            value={newFormData.dob}
+                            disabled={!editSections.nameSection}
+                            onChange={handleChange}
+                            type='date'
+                            margin="normal"
+                        />
+                        <InputLabel>Gender</InputLabel>
+                        <Select name='gender' label='Gender' value={newFormData.gender} onChange={handleChange} disabled={!editSections.nameSection} fullWidth sx={{ mb: 2 }}>
+                            <MenuItem value='Male'>Male</MenuItem>
+                            <MenuItem value='Female'>Female</MenuItem>
+                            <MenuItem value='I do not wish to answer'>I do not wish to answer</MenuItem>
+                        </Select>
+                        {!editSections.nameSection ? <Button onClick={() => toggleEditSection('nameSection')}>Edit</Button> : (
+                            <Box sx={{ display: 'flex', flexDirection: 'row' }}>
+                                <Button onClick={() => cancelEdit('nameSection')}>Cancel</Button>
+                                <Button onClick={() => saveEdit('nameSection')}>Save</Button>
+                            </Box>
+                        )}
 
-                    <TextField
-                        select
-                        name="gender"
-                        label="Gender"
-                        value={formData.gender}
-                        onChange={handleChange}
-                        disabled={!isEditing}
-                        fullWidth
-                    >
-                        {['Male', 'Female', 'I do not wish to answer'].map(gender => (
-                            <MenuItem key={gender} value={gender}>{gender}</MenuItem>
-                        ))}
-                    </TextField>
-                </Box>
-                    
-                {/* Contact Info Section */}
-                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, padding: 2}}>
-                <Typography variant="h6" marginTop={-2}>Contact Info</Typography>
-                    <TextField label='Cell Phone Number' name='cellPhone' value={formData.cellPhone} onChange={handleChange} disabled={!isEditing} variant='outlined' required fullWidth error={errors.cellPhone} />                    
-                    <ErrorHelperText hasError={errors.cellPhone} message={helperTexts.cellPhone} />
-                    <TextField label='Work Phone Number' name='workPhone' value={formData.workPhone} onChange={handleChange} disabled={!isEditing} variant='outlined' fullWidth error={errors.workPhone} />
-                    <ErrorHelperText hasError={errors.workPhone} message={helperTexts.workPhone} />
-                </Box>
+                        <Typography variant="h6" margin="normal">Address</Typography>
+                        <TextField
+                            fullWidth
+                            name='building'
+                            onChange={handleChange}
+                            label="Building/Apartment #"
+                            value={newFormData.building}
+                            disabled={!editSections.addressSection}
+                            margin="normal"
+                        />
+                        <TextField
+                            fullWidth
+                            label="Street Name"
+                            name='street'
+                            onChange={handleChange}
+                            value={newFormData.street}
+                            disabled={!editSections.addressSection}
+                            margin="normal"
+                        />
+                        <TextField
+                            fullWidth
+                            label="City"
+                            name='city'
+                            onChange={handleChange}
+                            value={newFormData.city}
+                            disabled={!editSections.addressSection}
+                            margin="normal"
+                        />
+                        <TextField
+                            fullWidth
+                            label="State"
+                            name='state'
+                            onChange={handleChange}
+                            value={newFormData.state}
+                            disabled={!editSections.addressSection}
+                            margin="normal"
+                        />
+                        <TextField
+                            fullWidth
+                            label="ZIP"
+                            name='zip'
+                            onChange={handleChange}
+                            value={newFormData.zip}
+                            disabled={!editSections.addressSection}
+                            type="number"
+                            margin="normal"
+                        />
+                        {!editSections.addressSection ? <Button onClick={() => toggleEditSection('addressSection')}>Edit</Button> : (
+                            <Box sx={{ display: 'flex', flexDirection: 'row' }}>
+                                <Button onClick={() => cancelEdit('addressSection')}>Cancel</Button>
+                                <Button onClick={() => saveEdit('addressSection')}>Save</Button>
+                            </Box>
+                        )}
 
-                {/* Address Section */}
-                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, padding: 2}}>
-                <Typography variant="h6" marginTop={-2}>Address</Typography>
-                    <TextField label='Building/Apartment Number' name='building' value={formData.building} onChange={handleChange} error={errors.building} disabled={!isEditing} required fullWidth />
-                    <ErrorHelperText hasError={errors.building} message={helperTexts.building} />
-                    <TextField label='Street' name='street' value={formData.street} onChange={handleChange} disabled={!isEditing} error={errors.street} required fullWidth />
-                    <ErrorHelperText hasError={errors.street} message={helperTexts.address} />
-                    <TextField label='City' name='city' value={formData.city} onChange={handleChange} disabled={!isEditing} error={errors.city} required fullWidth />
-                    <ErrorHelperText hasError={errors.city} message={helperTexts.location} />
-                    <TextField label='State' name='city' value={formData.state} onChange={handleChange} disabled={!isEditing} error={errors.state} required fullWidth />
-                    <ErrorHelperText hasError={errors.zip} message={helperTexts.location} />
-                    <TextField label='ZIP' name='zip' type='number' value={formData.zip} variant='outlined' onChange={handleChange} fullWidth error={errors.zip} disabled={!isEditing} required />
-                    <ErrorHelperText hasError={errors.zip} message={helperTexts.zip} />
-                </Box>
+                        <Typography variant="h6" margin="normal">Phone Numbers</Typography>
+                        <TextField
+                            fullWidth
+                            label="Cell Phone Number"
+                            name='cellPhone'
+                            value={newFormData.cellPhone}
+                            disabled={!editSections.contactSection}
+                            onChange={handleChange}
+                            type="tel"
+                            margin="normal"
+                        />
+                        <TextField
+                            fullWidth
+                            name='workPhone'
+                            label="Work Phone Number"
+                            value={newFormData.workPhone}
+                            disabled={!editSections.contactSection}
+                            onChange={handleChange}
+                            type="tel"
+                            margin="normal"
+                        />
+                        {!editSections.contactSection ? <Button onClick={() => toggleEditSection('contactSection')}>Edit</Button> : (
+                            <Box sx={{ display: 'flex', flexDirection: 'row' }}>
+                                <Button onClick={() => cancelEdit('contactSection')}>Cancel</Button>
+                                <Button onClick={() => saveEdit('contactSection')}>Save</Button>
+                            </Box>
+                        )}
 
-                {/* Employment Status Section */}
-                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, padding: 2}}>
-                    <Typography variant="h6" marginTop={-4}>Employment Status</Typography>
-                    <TextField name="permResStatus" label="U.S. Residency Status" 
-                            value={formData.isPermRes === 'undefined' ? "Non-Resident" : "Resident"} 
-                            disabled 
-                            fullWidth 
-                            variant="outlined"
-                            InputLabelProps={{
-                                shrink: true,
-                            }} />
-                    <TextField name="workAuth" label="Work Authorization" value={formData.workAuth} disabled fullWidth variant="outlined"
-                            InputLabelProps={{
-                                shrink: true,
-                            }}/>
-                    <TextField label='Visa Start Date' type='date' name='visaStartDate' value={formData.visaStartDate} onChange={handleChange} disabled={!isEditing} variant='outlined' required fullWidth />
-                    <TextField label='Visa End Date' type='date' name='visaEndDate' value={formData.visaEndDate} onChange={handleChange} disabled={!isEditing} variant='outlined' error={errors.visaEndDate} required fullWidth />
-                    <ErrorHelperText hasError={errors.visaEndDate} message={helperTexts.visaEndDate} />
-                </Box>
+                        <Typography variant="h6" margin="normal">Employment</Typography>
+                        <FormControl fullWidth margin="normal">
+                            <FormLabel>Are you a permanent resident?</FormLabel>
+                            <RadioGroup row value={newFormData.isPermRes} name='isPermRes' onChange={handleChange}>
+                                <FormControlLabel
+                                    value="Yes"
+                                    control={<Radio />}
+                                    label="Yes"
+                                    disabled={!editSections.employmentSection}
+                                />
+                                <FormControlLabel
+                                    value="No"
+                                    control={<Radio />}
+                                    label="No"
+                                    disabled={!editSections.employmentSection}
+                                />
+                            </RadioGroup>
+                        </FormControl>
+                        {newFormData.isPermRes === 'No' ? (
+                            <>
+                                <InputLabel>What is your work authorization?</InputLabel>
+                                <Select name='nonPermWorkAuth' value={newFormData.nonPermWorkAuth} onChange={handleChange} disabled={!editSections.employmentSection} fullWidth sx={{ mb: 2 }}>
+                                    <MenuItem value='H1-B'>H1-B</MenuItem>
+                                    <MenuItem value='L2'>L2</MenuItem>
+                                    <MenuItem value='F1(CPT/OPT)'>F1(CPT/OPT)</MenuItem>
+                                    <MenuItem value='H4'>H4</MenuItem>
+                                    <MenuItem value='Other'>Other</MenuItem>
+                                </Select>
+                                {newFormData.nonPermWorkAuth === 'F1(CPT/OPT)' &&
+                                <>
+                                    <Typography gutterBottom>Upload Your OPT Receipt *</Typography>
+                                    <TextField type='file' ref={optReceiptRef} name='optReceipt' onChange={handleChange} disabled={!editSections.employmentSection} required variant='outlined' fullWidth sx={{ mb: 2 }} />
+                                </>
+                                }
+                                {newFormData.nonPermWorkAuth === 'Other' &&
+                                    <>
+                                        <TextField label='Visa Title' name='visaTitle' value={newFormData.visaTitle} onChange={handleChange} disabled={!editSections.employmentSection} fullWidth sx={{ mb: 2 }} />
+                                    </>
+                                }
+                                <TextField
+                                    fullWidth
+                                    name='visaStartDate'
+                                    label="Visa Start Date"
+                                    value={newFormData.visaStartDate}
+                                    disabled={!editSections.employmentSection}
+                                    onChange={handleChange}
+                                    type={newFormData.visaStartDate? 'date' : 'text'}
+                                    margin="normal"
+                                />
+                                <TextField
+                                    fullWidth
+                                    name='visaEndDate'
+                                    label="Visa End Date"
+                                    value={newFormData.visaEndDate}
+                                    disabled={!editSections.employmentSection}
+                                    onChange={handleChange}
+                                    type={newFormData.visaEndDate? 'date' : 'text'}
+                                    margin="normal"
+                                />
+                            </>
+                        ) : (
+                            <FormControl fullWidth margin="normal">
+                                <FormLabel>What kind of permanent resident?</FormLabel>
+                                <RadioGroup row value={newFormData.permResStatus} name='permResStatus' onChange={handleChange}>
+                                    <FormControlLabel
+                                        value="Citizen"
+                                        control={<Radio />}
+                                        label="Citizen"
+                                        disabled={!editSections.employmentSection}
+                                    />
+                                    <FormControlLabel
+                                        value="Green Card"
+                                        control={<Radio />}
+                                        label="Green Card"
+                                        disabled={!editSections.employmentSection}
+                                    />
+                                </RadioGroup>
+                            </FormControl>
+                        )}
+                        {!editSections.employmentSection ? <Button onClick={() => toggleEditSection('employmentSection')}>Edit</Button> : (
+                            <Box sx={{ display: 'flex', flexDirection: 'row' }}>
+                                <Button onClick={() => cancelEdit('employmentSection')}>Cancel</Button>
+                                <Button onClick={() => saveEdit('employmentSection')}>Save</Button>
+                            </Box>
+                        )}
 
-                {/* Emergency Contact Section */}
-                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, padding: 2}}>
-                    <Typography variant="h6" marginTop={-2} marginBottom={-2}>Emergency Contact</Typography>
-                    {formData.emergencyContacts.map((contact, index) => (
+                        <Typography variant="h6" margin="normal">Emergency Contact{newFormData.emergencyContacts.length > 1 ? 's' : ''}</Typography>
+                        {newFormData.emergencyContacts.map((contact, index) => (
                         <div key={index} style={{ marginTop: '1rem' }}>
-                            <TextField label="First Name" name='firstName' value={contact.firstName} variant='outlined' onChange={(e) => handleEmContactChange(e, index)} fullWidth disabled={!isEditing} required sx={{ mb: 2 }} />
-                            <ErrorHelperText hasError={errors.emFirstName} message={helperTexts.name} />
-                            <TextField label="Last Name" name='lastName' value={contact.lastName} variant='outlined' onChange={(e) => handleEmContactChange(e, index)} fullWidth disabled={!isEditing} required sx={{ mb: 2 }} />
-                            <ErrorHelperText hasError={errors.emLastName} message={helperTexts.name} />
-                            <TextField label="Middle Name" name='middleName' value={contact.middleName} variant='outlined' onChange={(e) => handleEmContactChange(e, index)} fullWidth disabled={!isEditing} sx={{ mb: 2 }} />
-                            <ErrorHelperText hasError={errors.emMiddleName} message={helperTexts.name} />
-                            <TextField label="Phone" name='phone' value={contact.phone} variant='outlined' onChange={(e) => handleEmContactChange(e, index)} fullWidth disabled={!isEditing} required sx={{ mb: 2 }} />
-                            <ErrorHelperText hasError={errors.emPhone} message={helperTexts.cellPhone} />
-                            <TextField label="Email" name='emEmail' value={contact.emEmail} variant='outlined' onChange={(e) => handleEmContactChange(e, index)} fullWidth disabled={!isEditing} required sx={{ mb: 2 }} />
-                            <ErrorHelperText hasError={errors.emEmail} message={helperTexts.email} />
-                            <TextField label="Relationship to You" name='relationship' value={contact.relationship} variant='outlined' onChange={(e) => handleEmContactChange(e, index)} fullWidth disabled={!isEditing} required sx={{ mb: 2 }} />
-                            {formData.emergencyContacts.length !== 1 && isEditing &&
-                                <Button onClick={(e) => removeEmergencyContact(e, index)} disabled={!isEditing}>Remove Contact</Button>
+                            <TextField label="First Name" name='firstName' value={contact.firstName} variant='outlined' onChange={(e) => handleEmContactChange(e, index)} fullWidth disabled={!editSections.emergencySection} required sx={{ mb: 2 }} />
+                            <TextField label="Last Name" name='lastName' value={contact.lastName} variant='outlined' onChange={(e) => handleEmContactChange(e, index)} fullWidth disabled={!editSections.emergencySection} required sx={{ mb: 2 }} />
+                            <TextField label="Middle Name" name='middleName' value={contact.middleName} variant='outlined' onChange={(e) => handleEmContactChange(e, index)} fullWidth disabled={!editSections.emergencySection} sx={{ mb: 2 }} />
+                            <TextField label="Phone" name='phone' value={contact.phone} variant='outlined' onChange={(e) => handleEmContactChange(e, index)} fullWidth disabled={!editSections.emergencySection} required sx={{ mb: 2 }} />
+                            <TextField label="Email" name='emEmail' value={contact.emEmail} variant='outlined' onChange={(e) => handleEmContactChange(e, index)} fullWidth disabled={!editSections.emergencySection} required sx={{ mb: 2 }} />
+                            <TextField label="Relationship to You" name='relationship' value={contact.relationship} variant='outlined' onChange={(e) => handleEmContactChange(e, index)} fullWidth disabled={!editSections.emergencySection} required sx={{ mb: 2 }} />
+                            {newFormData.emergencyContacts.length !== 1 && editSections.emergencySection &&
+                                <Button onClick={(e) => removeEmergencyContact(e, index)} disabled={!editSections.emergencySection}>Remove Contact</Button>
                             }
                             <br />
                         </div>
                     ))}
-                    {isEditing && <Button onClick={addEmergencyContact} disabled={!isEditing}>Add Contact</Button>}
-                </Box>
+                    {editSections.emergencySection && <Button onClick={addEmergencyContact} disabled={!editSections.emergencySection}>Add Contact</Button>}
+                        {!editSections.emergencySection ? <Button onClick={() => toggleEditSection('emergencySection')}>Edit</Button> : (
+                            <Box sx={{ display: 'flex', flexDirection: 'row' }}>
+                                <Button onClick={() => cancelEdit('emergencySection')}>Cancel</Button>
+                                <Button onClick={() => saveEdit('emergencySection')}>Save</Button>
+                            </Box>
+                        )}
 
-                {/* Documents Section */}
-                <Typography variant="h6">Documents</Typography>
-                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, mb: '2rem' }}>
-                    {Object.keys(docs).map((key) => {
-                        const doc = docs[key]
-                        let fileName
-                        switch (key) {
-                            case 'profilePictureURL':
-                                fileName = 'Profile Picture'
-                                break
-                            case 'driversLicenseCopy_url':
-                                fileName = "Driver's License"
-                                break
-                            case 'optUrl':
-                                fileName = 'OPT Receipt'
-                                break
-                            case 'eadUrl':
-                                fileName = 'OPT EAD'
-                                break
-                            case 'i983Url':
-                                fileName = 'I-983 Form'
-                                break
-                            case 'i20Url':
-                                fileName = 'I-20 Form'
-                                break
-                            default:
-                                fileName = 'Unknown Upload';
-                        }
-                        return (
-                            <Card key={`${key}-download`} sx={{ minWidth: 275 }}>
-                                <CardContent>
-                                    <Typography variant='h6'>{fileName}</Typography>
-                                </CardContent>
-                                <CardActions sx={{ justifyContent: 'center' }}>
-                                    <Button href={doc.download} download>
-                                        Download
-                                    </Button>
-                                    <Button onClick={() => window.open(doc.preview, '_blank')}>
-                                        Preview
-                                    </Button>
-                                </CardActions>
-                            </Card>
-                        )
-                    })}
-                </Box>
+                        <Typography variant="h6">Documents</Typography>
+                            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, mb: '2rem' }}>
+                                {newFormData.docs && Object.keys(newFormData.docs).map((key) => {
+                                    const doc = newFormData.docs[key]
+                                    let fileName
+                                    switch (key) {
+                                        case 'profilePictureURL':
+                                            fileName = 'Profile Picture'
+                                            break
+                                        case 'driversLicenseCopy_url':
+                                            fileName = "Driver's License"
+                                            break
+                                        case 'optUrl':
+                                            fileName = 'OPT Receipt'
+                                            break
+                                        case 'eadUrl':
+                                            fileName = 'OPT EAD'
+                                            break
+                                        case 'i983Url':
+                                            fileName = 'I-983 Form'
+                                            break
+                                        case 'i20Url':
+                                            fileName = 'I-20 Form'
+                                            break
+                                        default:
+                                            fileName = 'Unknown Upload';
+                                    }
+                                    return (
+                                        <Card key={`${key}-download`} sx={{ minWidth: 275 }}>
+                                            <CardContent>
+                                                <Typography variant='h6'>{fileName}</Typography>
+                                            </CardContent>
+                                            <CardActions sx={{ justifyContent: 'center' }}>
+                                                <Button href={doc.download} download>
+                                                    Download
+                                                </Button>
+                                                <Button onClick={() => window.open(doc.preview, '_blank')}>
+                                                    Preview
+                                                </Button>
+                                            </CardActions>
+                                        </Card>
+                                    )
+                                })}
+                            </Box>
 
-                <Button variant="outlined" onClick={handleEditToggle}>{isEditing ? 'Cancel' : 'Edit'}</Button>
-                {isEditing && <Button variant="contained" onClick={handleSubmit}>Save</Button>}
-                <ToastContainer />
-            </Box>
-        </Container>
-    ) : (
-        'Loading...'
-    )}
-    </>
+                        <ToastContainer />
+                    </form>
+                    <Dialog open={openDialogue}>
+                        <DialogTitle>Do you want to discard your changes for this section?</DialogTitle>
+                        <DialogActions>
+                            <Button onClick={handleDiscard} color='error'>Yes</Button>
+                            <Button onClick={handleClose} color='primary'>No</Button>
+                        </DialogActions>
+                    </Dialog>
+                </Paper>
+            ) : (
+                'Loading...'
+            )}
+        </>
     )
 }
 

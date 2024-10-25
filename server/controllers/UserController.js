@@ -671,7 +671,7 @@ const getUserDocs = async (req, res) => {
         })
 
         const user = await User.findOne({ username: username }).lean().exec()
-        console.log(user)
+        // console.log(user)
         if (!user) {
             return res.status(404).json('User not found!')
         }
@@ -1222,11 +1222,15 @@ const updateUserProfile = async (req, res) => {
     const workPhone = req.body.workPhone
     const ssn = req.body.ssn;
     const dob = req.body.dob;
+    const { isPermRes, permResStatus, nonPermWorkAuth } = req.body
     const gender = req.body.gender;
     const { visaStartDate, visaEndDate } = req.body
     const emergencyContacts = req.body.emergencyContacts
 
+    console.log('files:', files)
+
     let profilePictureURL = '';
+    let optReceiptURL = ''
     // let driversLicenseCopy_url = '';
     // let optUrl = '';
     // let eadUrl = '';
@@ -1258,12 +1262,9 @@ const updateUserProfile = async (req, res) => {
                     case 'profilePicture':
                         profilePictureURL = fileURL
                         break
-                    // case 'optReceipt':
-                    //     optReceiptURL = fileURL
-                    //     break
-                    // case 'dlCopy':
-                    //     dlCopyURL = fileURL
-                    //     break
+                    case 'optReceipt':
+                        optReceiptURL = fileURL
+                        break
                     // case 'ead':
                     //     eadUrl = fileURL;
                     //     break;
@@ -1324,8 +1325,12 @@ const updateUserProfile = async (req, res) => {
                     "birthday": dob,
                     "gender": gender,
                     "emergencyContacts": emergencyContactIds,
-                    "visaStartDate": visaStartDate || undefined,
-                    "visaEndDate": visaEndDate || undefined,
+                    "visaStartDate": visaStartDate || '',
+                    "visaEndDate": visaEndDate || '',
+                    "optUrl": optReceiptURL,
+                    "workAuth": nonPermWorkAuth,
+                    "isPermRes": isPermRes,
+                    "permResStatus": permResStatus,
                 }
             }
         );
