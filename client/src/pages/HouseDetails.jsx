@@ -4,7 +4,7 @@ import axios from 'axios'
 import { COMMENT_ENDPOINT, HOUSE_ENDPOINT, REPORT_ENDPOINT, USER_ENDPOINT } from '../constants'
 import { toast, ToastContainer } from 'material-react-toastify'
 import 'material-react-toastify/dist/ReactToastify.css'
-import { Card, CardContent, Typography, List, ListItem, ListItemText, Box, Button, TextField, Accordion, AccordionDetails, AccordionSummary, Pagination } from '@mui/material'
+import { Card, CardContent, Typography, List, ListItem, ListItemText, Box, Button, Select, MenuItem, TextField, Accordion, AccordionDetails, AccordionSummary, Pagination } from '@mui/material'
 import PhoneIcon from '@mui/icons-material/Phone'
 import EmailIcon from '@mui/icons-material/Email'
 import DirectionsCarIcon from '@mui/icons-material/DirectionsCar'
@@ -187,6 +187,24 @@ const HouseDetails = () => {
         navigate(`/hr/employee-profiles/${employeeId}`)
     }
 
+    const handleStatusChange = async (e, reportId) => {
+        e.preventDefault()
+        try {
+            await axios.put(`${REPORT_ENDPOINT}/updatestatus/${reportId}`, {
+                newStatus: e.target.value
+            })
+            setSubmitted(!submitted)
+            toast.success('Successfully updated report status!')
+        }
+        catch (error) {
+            toast.error(`Error updating report status! Error: ${error.message}`)
+        }
+    }
+
+    const handleStatusClick = (e) => {
+        e.stopPropagation()
+    }
+
     return (
         <div style={{ width: '80vw' }}>
             <Box sx={{ margin: 'auto', mt: 5 }}>
@@ -219,11 +237,11 @@ const HouseDetails = () => {
                             <Typography variant='body1' color='textPrimary'>
                                 {houseData.landlordName}
                             </Typography>
-                            <Typography variant='body1' color='textPrimary'>
+                            <Typography variant='body1' color='textPrimary' sx={{ display: 'flex', alignItems: 'center' }}>
                                 <PhoneIcon />
                                 {houseData.landlordPhone}
                             </Typography>
-                            <Typography variant='body1' color='textPrimary'>
+                            <Typography variant='body1' color='textPrimary' sx={{ display: 'flex', alignItems: 'center' }}>
                                 <EmailIcon />
                                 {houseData.landlordEmail}
                             </Typography>
@@ -323,11 +341,17 @@ const HouseDetails = () => {
                                                 <Accordion key={index} sx={{ minWidth: '60vw' }}>
                                                     <AccordionSummary>
                                                         <Box sx={{ width: '100%' }}>
-                                                            <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
+                                                            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                                                                 <Typography sx={{ fontWeight: 'bold' }}>{report.title}</Typography>
                                                                 <Typography color='text.secondary'>Creator: {report.createdBy}</Typography>
                                                                 <Typography color='text.secondary'>{report.timestamp}</Typography>
-                                                                <Typography>Status: {report.status}</Typography>
+                                                                <Box>
+                                                                    <Select name='status' value={report.status} onClick={handleStatusClick} onChange={(e) => handleStatusChange(e, report._id)}>
+                                                                        <MenuItem value='Open'>Open</MenuItem>
+                                                                        <MenuItem value='In Progress'>In Progress</MenuItem>
+                                                                        <MenuItem value='Closed'>Closed</MenuItem>
+                                                                    </Select>
+                                                                </Box>
                                                             </Box>
                                                             <Box>
                                                                 <Typography variant='body2'>Description: {report.description}</Typography>

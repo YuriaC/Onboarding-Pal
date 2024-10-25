@@ -48,7 +48,25 @@ const getReports = async (request, response) => {
     }
 }
 
+const updateStatus = async (req, res) => {
+    const { reportId } = req.params
+    const { newStatus } = req.body
+    try {
+        const report = await Report.findById(reportId).exec()
+        if (!report) {
+            res.status(404).json('Report not found!')
+        }
+        report.status = newStatus
+        await report.save()
+        res.status(200).json(report)
+    }
+    catch (error) {
+        res.status(500).json(error)
+    }
+}
+
 module.exports = {
     addReport,
     getReports,
+    updateStatus,
 }

@@ -3,7 +3,7 @@ import axios from 'axios'
 import { COMMENT_ENDPOINT, REPORT_ENDPOINT, USER_ENDPOINT } from '../constants'
 import { toast, ToastContainer } from 'material-react-toastify'
 import 'material-react-toastify/dist/ReactToastify.css'
-import { Container, Card, CardContent, Typography, List, ListItem, ListItemText, Box, Button, TextField, Accordion, AccordionDetails, AccordionSummary, ListItemIcon } from '@mui/material'
+import { Container, Card, CardContent, Typography, List, ListItem, InputLabel, Select, MenuItem, ListItemText, Box, Button, TextField, Accordion, AccordionDetails, AccordionSummary, ListItemIcon } from '@mui/material'
 import PhoneIcon from '@mui/icons-material/Phone'
 import { useNavigate } from 'react-router-dom'
 
@@ -183,9 +183,27 @@ const Housing = () => {
             })
     }
 
+    const handleStatusChange = async (e, reportId) => {
+        e.preventDefault()
+        try {
+            await axios.put(`${REPORT_ENDPOINT}/updatestatus/${reportId}`, {
+                newStatus: e.target.value
+            })
+            setSubmitted(!submitted)
+            toast.success('Successfully updated report status!')
+        }
+        catch (error) {
+            toast.error(`Error updating report status! Error: ${error.message}`)
+        }
+    }
+
+    const handleStatusClick = (e) => {
+        e.stopPropagation()
+    }
+
     return (
-        <Container maxWidth="md" sx={{ marginTop: 15}}>
-            <Box sx={{ margin: 'auto', mt: 5 }}>
+        <Container sx={{ marginTop: 8, width: '80vw' }}>
+            <Box sx={{ mt: 5 }}>
                 <Card>
                     <CardContent>
                         <Typography variant='h4' sx={{ mb: '2rem' }}>
@@ -268,11 +286,17 @@ const Housing = () => {
                                                 <Accordion key={index} sx={{ minWidth: '60vw' }}>
                                                     <AccordionSummary>
                                                         <Box sx={{ width: '100%' }}>
-                                                            <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
+                                                            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                                                                 <Typography sx={{ fontWeight: 'bold' }}>{report.title}</Typography>
                                                                 <Typography color='text.secondary'>{report.createdBy}</Typography>
                                                                 <Typography color='text.secondary'>{report.timestamp}</Typography>
-                                                                <Typography>Status: {report.status}</Typography>
+                                                                <Box>
+                                                                    <Select name='status' value={report.status} onClick={handleStatusClick} onChange={(e) => handleStatusChange(e, report._id)}>
+                                                                        <MenuItem value='Open'>Open</MenuItem>
+                                                                        <MenuItem value='In Progress'>In Progress</MenuItem>
+                                                                        <MenuItem value='Closed'>Closed</MenuItem>
+                                                                    </Select>
+                                                                </Box>
                                                             </Box>
                                                             <Box>
                                                                 <Typography variant='body2'>{report.description}</Typography>

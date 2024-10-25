@@ -28,7 +28,7 @@ const EmployeeDetail = () => {
         middleName: '',
         username: '',
         preferredName: '',
-        profilePicture: null,
+        profilePicture: '',
         optReceipt: null,
         dlCopy: null,
         building: '',

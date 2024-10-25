@@ -38,7 +38,7 @@ const register = async (req,res) =>{
     const email = sanitizeInput(req.body.email);
     const password = sanitizeInput(req.body.password);
     try{
-        const duplicate = await User.findOne({ username }).lean().exec();
+        let duplicate = await User.findOne({ username }).lean().exec();
         if (duplicate) {
             return res.status(409).json({ message: 'Username already exists' });
         }
@@ -73,10 +73,10 @@ const register = async (req,res) =>{
         
         /* If we're creating the user right here */
         //add new employee to the house
-        await House.updateOne(
-            {_id:randomHouse[0]._id},{
-            $push:{"employees":existingUser._id}//push into the employee array
-        });
+        // await House.updateOne(
+        //     {_id:randomHouse[0]._id},{
+        //     $push:{"employees":existingUser._id}//push into the employee array
+        // });
         // generate JWT token
         const token = generateToken(existingUser._id.toString(), username, existingUser.role);
         
