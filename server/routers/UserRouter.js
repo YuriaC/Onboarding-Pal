@@ -46,5 +46,5 @@ userRouter.post('/register', userController.register)
     .post('/postVisaDecision',userController.postVisaDecision)
     .put('/uploadworkdoc/:employeeId', authenticateJWT, AWSCredentialsMiddleware, userController.uploadNewWorkDoc)
     .put('/updateworkauthstatus/:employeeId', authenticateJWT, isHR, userController.updateWorkAuthStatus)
-    
+    .post('/updateProfile', authenticateJWT, AWSCredentialsMiddleware, userController.updateUserProfile)  // for Personal Page
 module.exports = userRouter;
