@@ -191,6 +191,7 @@ const Personal = () => {
             visaEndDate,
             visaTitle,
             docs,
+            isPermRes,
         } = data
         const newEmContacts = []
         for (const emContact of emergencyContacts) {
@@ -227,7 +228,7 @@ const Personal = () => {
             dob: birthday ? birthday.split('T')[0] : null,
             gender,
             permResStatus,
-            isPermRes: ['Citizen', 'Green Card'].includes(permResStatus) ? 'Yes' : 'No',
+            isPermRes,
             hasDriversLicense: data['driversLicenseNumber'] ? 'Yes' : 'No',
             emergencyContacts: newEmContacts,
             building,

@@ -122,6 +122,7 @@ const EmployeeDetail = () => {
             visaStartDate,
             visaEndDate,
             visaTitle,
+            isPermRes,
         } = data
         const newEmContacts = []
         for (const emContact of emergencyContacts) {
@@ -184,6 +185,7 @@ const EmployeeDetail = () => {
             visaStartDate: visaStartDate ? visaStartDate.split('T')[0] : '',
             visaEndDate: visaEndDate ? visaEndDate.split('T')[0] : '',
             visaTitle,
+            isPermRes,
         })
     }
 
@@ -351,7 +353,7 @@ const EmployeeDetail = () => {
                         <TextField
                             fullWidth
                             label="Work Authorization"
-                            value={formData.isPermRes === 'Yes' ? formData.permResStatus : formData.nonPermWorkAuth}
+                            value={formData.isPermRes === 'Yes' ? formData.permResStatus : formData.nonPermWorkAuth !== 'Other' ? formData.nonPermWorkAuth : formData.visaTitle ? formData.visaTitle : 'Other (Unspecified)'}
                             disabled
                             margin="normal"
                         />

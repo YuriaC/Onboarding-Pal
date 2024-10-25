@@ -1119,9 +1119,9 @@ const getPersonalinfoById = async(req,res) =>{
     }
 } 
 
-const getAllUser = async(req,res) =>{
+const getAllUser = async(req, res) =>{
     try {
-        const users = await User.find({role:{ $ne:"hr"}},"email firstName middleName lastName preferredName workAuth onboardingStatus isPermRes permResStatus visaStartDate visaEndDate optUrl eadUrl i983Url i20Url optStatus eadStatus i983Status i20Status");
+        const users = await User.find({role:{ $ne:"hr"}},"email firstName middleName lastName preferredName workAuth onboardingStatus isPermRes permResStatus visaStartDate visaEndDate visaTitle optUrl eadUrl i983Url i20Url optStatus eadStatus i983Status i20Status");
         res.json(users);
       } catch (error) {
         res.status(500).json({ error: 'Failed to fetch users' });
@@ -1224,7 +1224,7 @@ const updateUserProfile = async (req, res) => {
     const dob = req.body.dob;
     const { isPermRes, permResStatus, nonPermWorkAuth } = req.body
     const gender = req.body.gender;
-    const { visaStartDate, visaEndDate } = req.body
+    const { visaStartDate, visaEndDate, visaTitle } = req.body
     const emergencyContacts = req.body.emergencyContacts
 
     console.log('files:', files)
@@ -1331,6 +1331,7 @@ const updateUserProfile = async (req, res) => {
                     "workAuth": nonPermWorkAuth,
                     "isPermRes": isPermRes,
                     "permResStatus": permResStatus,
+                    "visaTitle": visaTitle,
                 }
             }
         );

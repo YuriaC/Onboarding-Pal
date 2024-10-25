@@ -366,7 +366,7 @@ const VisaStatusHR_all = ()=>{
                             <TableCell>{user.firstName}</TableCell>
                             <TableCell>{user.middleName}</TableCell>
                             <TableCell>{user.lastName}</TableCell>
-                            <TableCell>{user.isPermRes === 'Yes' ? user.permResStatus : user.workAuth}</TableCell>
+                            <TableCell>{user.isPermRes === 'Yes' ? user.permResStatus : user.workAuth !== 'Other' ? user.workAuth : user.visaTitle ? user.visaTitle : 'Other (Unspecified)'}</TableCell>
                             <TableCell>{formatDateToMDY(user.visaStartDate)}</TableCell> 
                             <TableCell>{formatDateToMDY(user.visaEndDate)}</TableCell>
                             <TableCell sx={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{calculateDaysDifference(user.visaEndDate,today) < 0 ? 'Expired' : calculateDaysDifference(user.visaEndDate,today)}</TableCell>
@@ -389,9 +389,9 @@ const VisaStatusHR_all = ()=>{
                                     return (
                                         <>
                                             <Box>
-                                                <Button href={user.approvedDocs[docUrl].preview} target='_blank'>Preview {urlToName(docUrl)}</Button>
+                                                <Button href={user.approvedDocs[docUrl]?.preview} target='_blank'>Preview {urlToName(docUrl)}</Button>
 
-                                                <Button href={user.approvedDocs[docUrl].download}>Download {urlToName(docUrl)}</Button>
+                                                <Button href={user.approvedDocs[docUrl]?.download}>Download {urlToName(docUrl)}</Button>
                                             </Box>
                                         </>
                                     )

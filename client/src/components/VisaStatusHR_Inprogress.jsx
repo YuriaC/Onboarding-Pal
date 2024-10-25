@@ -284,7 +284,7 @@ const VisaStatusHR_inprogress = () => {
                         <TableCell sx={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{user.firstName}</TableCell>
                         <TableCell sx={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{user.middleName}</TableCell>
                         <TableCell sx={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{user.lastName}</TableCell>
-                        <TableCell sx={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{user.isPermRes === 'Yes' ? user.permResStatus : user.workAuth}</TableCell>
+                        <TableCell sx={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{user.isPermRes === 'Yes' ? user.permResStatus : user.workAuth !== 'Other' ? user.workAuth : user.visaTitle ? user.visaTitle : 'Other (Unspecified)'}</TableCell>
                         <TableCell>{formatDateToMDY(user.visaStartDate)}</TableCell>
                         <TableCell>{formatDateToMDY(user.visaEndDate)}</TableCell>
                         <TableCell sx={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{calculateDaysDifference(user.visaEndDate,today) < 0 ? 'Expired' : calculateDaysDifference(user.visaEndDate,today)}</TableCell>

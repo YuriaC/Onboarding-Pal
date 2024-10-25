@@ -63,7 +63,7 @@ const EmployeeProfiles = () => {
                             ) : (
                                 <>
                                     {employee.workAuth === 'Other' ? (
-                                        <p>Work Authorization: {employee.visaTitle}</p>
+                                        <p>Work Authorization: {employee.visaTitle ? employee.visaTitle : 'Other (Unspecified)'}</p>
                                     ) : (
                                         <p>Work Authorization: {employee.workAuth}</p>
                                     )}
