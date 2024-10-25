@@ -329,7 +329,7 @@ const HouseDetails = () => {
                         ? <Typography variant='body1' sx={{ p: 2 }}>No reports have been made about this house at this time</Typography>
                         : (
                             <>
-                                <Button onClick={() => setIsViewingReports(!isViewingReports)} fullWidth sx={{ p: 2 }}>
+                                <Button onClick={() => setIsViewingReports(!isViewingReports)} fullWidth sx={{ p: 2, mb: 2 }}>
                                     View{userInfo.role === 'employee' ? ' Your ' : ' '}Reports
                                 </Button>
                                 {isViewingReports &&
