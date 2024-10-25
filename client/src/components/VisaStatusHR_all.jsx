@@ -350,7 +350,7 @@ const VisaStatusHR_all = ()=>{
             <Box sx={{ 
                 height: '400px', 
                 margin: 'auto',
-                padding: '.5rem', 
+                padding: '.5rem',
             }}>
             <TableContainer component={Paper}>
             <Table sx={{
@@ -407,7 +407,7 @@ const VisaStatusHR_all = ()=>{
                                     return (
                                         <>
                                             <Box>
-                                                <Button href={user.approvedDocs[docUrl]?.preview} target='_blank'>Preview {urlToName(docUrl)}</Button>
+                                                <Button href={user.approvedDocs[docUrl]?.preview} target='_blank' sx={{ width: '10rem', justifyContent: 'start' }}>Preview {urlToName(docUrl)}</Button>
 
                                                 <Button href={user.approvedDocs[docUrl]?.download}>Download {urlToName(docUrl)}</Button>
                                             </Box>
