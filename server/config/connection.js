@@ -122,9 +122,9 @@ mongoose.connect(MONGO_URI)
                     // optUrl:pdfUrl,
                   }
             ])
-            const user = await User.findOne({}).lean().exec()
-            house.employees.push(user._id)
-            await house.save()
+            // const user = await User.findOne({}).lean().exec()
+            // house.employees.push(user._id)
+            // await house.save()
         
         }
         if (process.env.NODE_ENV !== 'production') {
