@@ -23,7 +23,7 @@ const Login = () => {
 
  
     return (
-        <Container maxWidth="sm" sx={{ marginTop: 15}}>
+        <Container sx={{ width: '25vw', marginTop: 15}}>
             <Box
                 component="form"
                 onSubmit={userLogin}

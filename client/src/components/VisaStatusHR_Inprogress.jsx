@@ -251,15 +251,17 @@ const VisaStatusHR_inprogress = () => {
     return (
         <>
             <Box sx={{ 
-                width: '90%',
                 height: '400px', 
                 margin: 'auto', 
-                padding: '10px', 
+                padding: '1rem', 
             }}>
             <TableContainer component={Paper}>
             <Table sx={{
                     maxWidth: 'none', // Disable height constraints
                     overflow: 'visible', // Ensure no scrollbars
+                    height: '40vh',
+                    borderRadius: '5px',
+                    boxShadow: '3px'
                     }}  aria-label="simple table">
                 <TableHead>
                     <TableRow>
