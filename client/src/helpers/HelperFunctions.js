@@ -5,6 +5,7 @@
  * @param {Object} obj - The object to be reset
  * @returns {Object} A new object with string properties set to '' and number properties set to 0
  */
+import validator from "validator";
 
 export const resetObject = (obj) => {
 
@@ -70,4 +71,20 @@ export const isNumeric = (str) => {
 
 export const checkZIP = (str) => {
     return str.length === 5 && isNumeric(str)
+}
+
+export const checkSSN = (str) => {
+    return str.length === 9 && isNumeric(str)
+}
+
+export const isAlphabetic = (str) => {
+    return /^[a-zA-Z]+$/i.test(str)
+}
+
+export const isAlphaNumeric = (str) => {
+    return /^[a-zA-Z0-9]+$/i.test(str);
+}
+
+export const isEmail = (str) => {
+    return validator.isEmail(str);
 }
