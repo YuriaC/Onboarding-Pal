@@ -285,14 +285,14 @@ const VisaStatusHR_all = ()=>{
                 />
              </div>
             <Box sx={{ 
-                width: '120%', 
-                height: '400px', 
+                width: '90%', 
+                minHeight: '300px', 
                 margin: 'auto', 
                 padding: '20px', 
             }}>
             <TableContainer component={Paper}>
             <Table sx={{
-                    maxWidth: 'none', // Disable height constraints
+                    width: '90%', // Set a smaller minimum width
                     overflow: 'visible', // Ensure no scrollbars
                     }}  aria-label="simple table">
                 <TableHead>
@@ -324,7 +324,6 @@ const VisaStatusHR_all = ()=>{
                             <TableCell>{formatDateToMDY(user.visaEndDate)}</TableCell>
                             <TableCell>{calculateDaysDifference(user.visaEndDate,today)}</TableCell>
                             <TableCell>{nextstepsHandler(user)}
-                                {/* { haveFileToReview(user) && (<button onClick={()=>viewFileHandler(user)}>{} Submitted File</button>)} */}
                                 { !allFileApproved(user) && (<button onClick={()=>notificationHandler(user)}>Send Notification</button>)}
                             </TableCell>
                             <TableCell>
@@ -342,23 +341,12 @@ const VisaStatusHR_all = ()=>{
                                         </>
                                     )
                                 })}
-                                {/* {user.optUrl &&  (<button onClick={()=>viewFileHandler(user)}>{} OPT Receipt</button>)}
-                                {user.optUrl &&  (<button onClick={()=>downloadPdf(user.optUrl)}>Download OPT PDF</button>)}
-
-                                {user.eadUrl &&  (<button onClick={()=>viewFileHandler(user)}>{} EAD </button>)}
-                                {user.eadUrl &&  (<button onClick={()=>downloadPdf(user.eadUrl)}>Download EAD PDF</button>)}
-
-                                {user.i983Url &&  (<button onClick={()=>viewFileHandler(user)}>{} I983</button>)}
-                                {user.i983Url &&  (<button onClick={()=>downloadPdf(user.i983Url)}>Download I983 PDF</button>)}
-
-                                {user.i20Url &&  (<button onClick={()=>viewFileHandler(user)}>{} I20</button>)}
-                                {user.i20Url &&  (<button onClick={()=>downloadPdf(user.i20Url)}>Download I20 PDF</button>)} */}
                             </TableCell>
                         </TableRow>
                     ))
                     ) : (
                     <TableRow>
-                        <TableCell colSpan="2" style={{ textAlign: 'center' }}>
+                        <TableCell colSpan="9" style={{ textAlign: 'center' }}>
                         No results found.
                         </TableCell>
                     </TableRow>
@@ -368,7 +356,6 @@ const VisaStatusHR_all = ()=>{
             </Table>
             </TableContainer>
             </Box>
-            
         </>
         
     )

@@ -195,9 +195,13 @@ const EmployeeDetail = () => {
                     <Typography variant='h4' sx={{ mb: 1 }}>
                         {formData.firstName} {formData.lastName} ({formData.username})
                     </Typography>
-                    {formData.profilePicture ? <img src={formData.profilePicture} style={{ maxWidth: '8rem', maxHeight: '8rem', marginTop: '0rem' }} /> : (
-                        <Avatar sx={{ width: 60, height: 60, margin:'auto'}}>
+                    {formData.profilePicture ? null : (
+                       <Avatar sx={{  width: 60, margin: 'auto', height: 60 }}>
+                            { formData.firstName ?formData.firstName[0]:              
+
                             <FontAwesomeIcon icon={faUser} />
+                        }
+
                         </Avatar>
                     )}
 
