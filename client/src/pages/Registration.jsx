@@ -50,7 +50,7 @@ const Registration = () => {
             minNumbers: 1,
             minSymbols: 1
         })) {
-            errors.password = 'Password must be at least 8 characters long, and include at least 1 lowercase letter,\n 1 uppercase letter, 1 number, and 1 symbol.';
+            errors.password = 'Password must have:\nAt least 8 characters\nAt least 1 lowercase letter\nAt least 1 uppercase letter\nAt least 1 number\nAt least 1 symbol.';
         }
 
         if (form.password !== form.repeatPassword) {
@@ -116,6 +116,7 @@ const Registration = () => {
                     <TextField
                         fullWidth
                         required
+                        // disabled
                         label="Email"
                         value={form.email}
                         onChange={(e) => setForm({ ...form, email: e.target.value })}
@@ -137,8 +138,11 @@ const Registration = () => {
                         helperText={
                             formErrors.password && (
                                 <>
-                                    {formErrors.password.slice(0, formErrors.password.length / 2)} <br />
-                                    {formErrors.password.slice(formErrors.password.length / 2)}
+                                    {/* {formErrors.password.slice(0, formErrors.password.length / 2)} <br /> */}
+                                    {/* {formErrors.password.slice(formErrors.password.length / 2)} */}
+                                    {formErrors.password.split('\n').map((str) => (
+                                        <p key={str} style={{ margin: 0 }}>{str}</p>
+                                    ))}
                                 </>
                             )
                         }

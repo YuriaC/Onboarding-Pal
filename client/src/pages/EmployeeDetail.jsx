@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { useNavigate, useParams } from 'react-router-dom'
+import { useParams } from 'react-router-dom'
 import { USER_ENDPOINT } from '../constants'
 import axios from 'axios'
 import { toast, ToastContainer } from 'react-toastify'

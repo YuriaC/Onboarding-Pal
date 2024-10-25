@@ -124,7 +124,7 @@ const VisaStatusHR_inprogress = () => {
             const year = dateobj.getFullYear();
             return `${month}/${day}/${year}`;
         }
-        return "not applicable"
+        return "N/A"
         
     }
 
@@ -137,7 +137,7 @@ const VisaStatusHR_inprogress = () => {
             const dayDiff = Math.ceil(timeDiff / (1000 * 60 * 60 * 24));
             return dayDiff;
         }
-        return "not applicable"
+        return "N/A"
     }
 
     const allFileApproved = (user_to_check) =>{
@@ -257,10 +257,10 @@ const VisaStatusHR_inprogress = () => {
     return (
         <>
             <Box sx={{ 
-                width: '120%', 
+                width: '100%',
                 height: '400px', 
                 margin: 'auto', 
-                padding: '20px', 
+                padding: '10px', 
             }}>
             <TableContainer component={Paper}>
             <Table sx={{
@@ -312,11 +312,12 @@ const VisaStatusHR_inprogress = () => {
                                 {!allFileApproved(user) ? <div>
                                     { user.needSubmitNext ? (<Button onClick={ () => notificationHandler(user) }>Send Notification</Button>) :
                                         <>
-                                            <Button onClick={(e) => handleApprove(e, index)} sx={{ backgroundColor: 'green', color: 'white' }} fullWidth>Approve</Button>
-                                            <Button onClick={(e) => updateReject(e, index)} sx={{ backgroundColor: 'red', color: 'white' }} fullWidth>Reject</Button>
+                                            <Button onClick={(e) => handleApprove(e, index)} sx={{ backgroundColor: 'green', color: 'white', width: '5rem' }} fullWidth>Approve</Button>
+                                            <Button onClick={(e) => updateReject(e, index)} sx={{ backgroundColor: 'red', color: 'white', width: '5rem' }} fullWidth>Reject</Button>
                                             {user.isRejecting &&
                                                 <form onSubmit={(e) => handleReject(e, index)}>
-                                                    <TextField label='Feedback' value={feedbacks[index]} onChange={(e) => updateFeedback(e, index)} fullWidth></TextField>
+                                                    <TextField sx={{ mt: 2 }} label='Feedback' value={feedbacks[index]} onChange={(e) => updateFeedback(e, index)} fullWidth></TextField>
+                                                    <br />
                                                     <Button type='submit'>Submit Feedback</Button>
                                                 </form>
                                             }

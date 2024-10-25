@@ -324,7 +324,7 @@ const Onboarding = () => {
     }
 
     return (
-        <Container maxWidth="md" sx={{ marginTop: 15}}>
+        <Container maxWidth="md" sx={{ marginTop: 8 }}>
             <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, padding: 2, boxShadow: 3, borderRadius: 2,  backgroundColor: 'white'}}>
             <Typography variant='h4' sx={{ color: appStatus === 'Rejected' ? 'red' : 'black', mb: 1 }}>Status: {appStatus}</Typography>
             {appStatus === 'Pending' && <Typography variant='h5' sx={{ mb: 2 }}>Please wait for HR to review your application.</Typography>}
@@ -416,16 +416,6 @@ const Onboarding = () => {
                     }
                     {formData.isPermRes === 'No' &&
                         <>
-                            {/* <br />
-                            <label>What is your work authorization? </label>
-                            <select name='nonPermWorkAuth' value={formData.nonPermWorkAuth} onChange={handleChange} disabled={appStatus === 'Pending'} required>
-                                <option value='' disabled selected>Select work auth</option>
-                                <option value='H1-B'>H1-B</option>
-                                <option value='L2'>L2</option>
-                                <option value='F1(CPT/OPT)'>F1(CPT/OPT)</option>
-                                <option value='H4'>H4</option>
-                                <option value='Other'>Other</option>
-                            </select> */}
                             <InputLabel>What is your work authorization?</InputLabel>
                             <Select name='nonPermWorkAuth' value={formData.nonPermWorkAuth} onChange={handleChange} disabled={appStatus === 'Pending'} fullWidth sx={{ mb: 2 }}>
                                 <MenuItem value='H1-B'>H1-B</MenuItem>
@@ -442,9 +432,8 @@ const Onboarding = () => {
                             }
                             {formData.nonPermWorkAuth === 'Other' &&
                                 <>
-                                    <br />
-                                    <label>Visa title: </label>
-                                    <input type='text' name='visaTitle' value={formData.visaTitle} onChange={handleChange} disabled={appStatus === 'Pending'} />
+                                    {/* <input type='text' name='visaTitle' value={formData.visaTitle} onChange={handleChange} disabled={appStatus === 'Pending'} /> */}
+                                    <TextField label='Visa Title' name='visaTitle' value={formData.visaTitle} onChange={handleChange} disabled={appStatus === 'Pending'} fullWidth sx={{ mb: 2 }} />
                                 </>
                             }
                             <TextField label='Visa Start Date' type='date' name='visaStartDate' value={formData.visaStartDate} onChange={handleChange} disabled={appStatus === 'Pending'} variant='outlined' fullWidth sx={{ mb: 2 }} />

@@ -34,7 +34,7 @@ const Application = () => {
         lastName: '',
         middleName: '',
         preferredName: '',
-        profilePicture: null,
+        profilePicture: '',
         optReceipt: null,
         dlCopy: null,
         building: '',
@@ -79,7 +79,16 @@ const Application = () => {
             })
                 .then(response => {
                     const { data } = response
-                    setDataToForm(data)
+                    axios.get(`${USER_ENDPOINT}/getuserdocs/${employeeId}`, {
+                        withCredentials: true,
+                    }).then(docsResponse => {
+                        const profilePicture = docsResponse.data.profilePictureURL?.preview ? docsResponse.data.profilePictureURL?.preview : ''
+                        const newData = {
+                            ...data,
+                            profilePicture,
+                        }
+                        setDataToForm(newData)
+                    })
                 })
                 .catch(error => {
                     toast.error(`Error fetching user info! Error: ${error.message}`)
@@ -117,6 +126,7 @@ const Application = () => {
             visaStartDate,
             visaEndDate,
             visaTitle,
+            profilePicture,
         } = data
         const newEmContacts = []
         for (const emContact of emergencyContacts) {
@@ -149,6 +159,7 @@ const Application = () => {
             carMake,
             carModel,
             carColor,
+            profilePicture,
             ssn,
             email,
             dob: birthday ? birthday.split('T')[0] : null,
@@ -216,7 +227,7 @@ const Application = () => {
         <>
             {!isLoading ? (
                 <Paper sx={{ p: 3, width: '60vw' }}>
-                    <Typography variant='h4' sx={{ color: formData.onboardingStatus === 'Rejected' ? 'red' : formData.onboardingStatus === 'Approved' ? 'green' : 'black' }}>
+                    <Typography variant='h4' sx={{ color: formData.onboardingStatus === 'Rejected' ? 'red' : formData.onboardingStatus === 'Approved' ? 'green' : 'black', mb: 2 }}>
                         Status: {formData.onboardingStatus}
                     </Typography>
                     {formData.onboardingStatus === 'Rejected' &&
@@ -232,8 +243,8 @@ const Application = () => {
                         </Box>
                     }
 
-                    {formData.profilePicture ? null : (
-                        <Avatar sx={{ width: 60, margin: 'auto',     height: 60 }}>
+                    {formData.profilePicture ? <img src={formData.profilePicture} style={{ maxWidth: '8rem', maxHeight: '8rem', marginTop: '0rem' }} /> : (
+                        <Avatar sx={{ width: 60, margin: 'auto', height: 60 }}>
                             <FontAwesomeIcon icon={faUser} />
                         </Avatar>
                     )}

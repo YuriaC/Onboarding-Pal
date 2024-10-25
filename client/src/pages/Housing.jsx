@@ -5,9 +5,11 @@ import { toast, ToastContainer } from 'material-react-toastify'
 import 'material-react-toastify/dist/ReactToastify.css'
 import { Container, Card, CardContent, Typography, List, ListItem, ListItemText, Box, Button, TextField, Accordion, AccordionDetails, AccordionSummary, ListItemIcon } from '@mui/material'
 import PhoneIcon from '@mui/icons-material/Phone'
+import { useNavigate } from 'react-router-dom'
 
 const Housing = () => {
 
+    const navigate = useNavigate()
     const [houseData, setHouseData] = useState({
         address: '',
         employees: [],
@@ -38,6 +40,10 @@ const Housing = () => {
     useEffect(() => {
         axios.get(`${USER_ENDPOINT}/userinfo`, { withCredentials: true })
             .then(response => {
+                const { onboardingStatus } = response.data
+                if (onboardingStatus !== 'Approved') {
+                    return navigate('/onboarding')
+                }
                 const { house } = response.data
                 console.log('response.data:', response.data)
                 setUserInfo({
@@ -248,7 +254,7 @@ const Housing = () => {
             <Box sx={{ margin: 'auto', mt: 2 }}>
                 <Card>
                     {houseData.reports.length === 0
-                        ? <Typography>You haven&apos;t made any reports for this house</Typography>
+                        ? <Typography sx={{ p: 2 }}>You haven&apos;t made any reports for this house</Typography>
                         : (
                             <>
                                 <Button onClick={() => setIsViewingReports(!isViewingReports)}>

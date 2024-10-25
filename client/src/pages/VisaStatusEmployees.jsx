@@ -28,7 +28,7 @@ const VisaStatusEmployees = () => {
         hrVisaFeedBack: ''
     })
     
-    const [files, setFiles] = useState([])
+    // const [files, setFiles] = useState([])
 
     const [docStatusInfo, setDocStatusInfo] = useState({})
     // const [employeeInfo, setEmployeeInfo] = useState({})
@@ -38,8 +38,8 @@ const VisaStatusEmployees = () => {
 
     const [fileToSubmit, setFileToSubmit] = useState()
     
-    const testGetURL = `${TEST_ENDPOINT}/visa`;
-    const testPostURL = `${TEST_ENDPOINT}/postVisa`;
+    // const testGetURL = `${TEST_ENDPOINT}/visa`;
+    // const testPostURL = `${TEST_ENDPOINT}/postVisa`;
 
     const deploymentURL = `${USER_ENDPOINT}/userinfo`
 
@@ -132,13 +132,13 @@ const VisaStatusEmployees = () => {
             })
     }, [changed])
 
-    const handleFileChange = (e) => {
-        const { name, files } = e.target;
-        setFiles(prevFiles => ({
-            ...prevFiles,
-            [name]: files // Store files using input tag name as key
-        }));
-    };
+    // const handleFileChange = (e) => {
+    //     const { name, files } = e.target;
+    //     setFiles(prevFiles => ({
+    //         ...prevFiles,
+    //         [name]: files // Store files using input tag name as key
+    //     }));
+    // };
 
     const buildFormData = (formData, data, parentKey) => {
         if (data && typeof data === 'object' && !(data instanceof FileList)) {
@@ -158,44 +158,44 @@ const VisaStatusEmployees = () => {
         }
     };
     
-    const generateFormData = (data, files) => {
-        const formData = new FormData();
-        buildFormData(formData, data);  // sync data from visaInfo state
+    // const generateFormData = (data, files) => {
+    //     const formData = new FormData();
+    //     buildFormData(formData, data);  // sync data from visaInfo state
         
-        Object.keys(files).forEach(key => {
-            buildFormData(formData, files[key], key);  // Append files under their respective form field name
-        });
+    //     Object.keys(files).forEach(key => {
+    //         buildFormData(formData, files[key], key);  // Append files under their respective form field name
+    //     });
 
-        // formData.append('username', username)
-        return formData;
-    }
+    //     // formData.append('username', username)
+    //     return formData;
+    // }
 
-    const viewToggler = (formName) => {  // helper function that updates view after submissions
-        let updatedStatus = {};
-        let toggleView = '';
+    // const viewToggler = (formName) => {  // helper function that updates view after submissions
+    //     let updatedStatus = {};
+    //     let toggleView = '';
 
-        switch (formName) {
-            case "eadSubmit":
-                updatedStatus = {"eadStatus" : "Pending"};
-                // TO-DO: url update
-                toggleView = 'viewEAD';
-                break;
-            case "i983Submit":
-                updatedStatus = {"i983Status" : "Pending"};
-                toggleView = 'viewI983';
-                break;
-            case "i20Submit":
-                updatedStatus = {"i20Status" : "Pending"};
-                toggleView = 'viewI20';
-                break;
+    //     switch (formName) {
+    //         case "eadSubmit":
+    //             updatedStatus = {"eadStatus" : "Pending"};
+    //             // TO-DO: url update
+    //             toggleView = 'viewEAD';
+    //             break;
+    //         case "i983Submit":
+    //             updatedStatus = {"i983Status" : "Pending"};
+    //             toggleView = 'viewI983';
+    //             break;
+    //         case "i20Submit":
+    //             updatedStatus = {"i20Status" : "Pending"};
+    //             toggleView = 'viewI20';
+    //             break;
             
-            default:
-                console.error('Invalid form submission');
-                return ['', ''];  // Exit if formName does not match
-        }
+    //         default:
+    //             console.error('Invalid form submission');
+    //             return ['', ''];  // Exit if formName does not match
+    //     }
 
-        return [updatedStatus, toggleView]
-    }
+    //     return [updatedStatus, toggleView]
+    // }
       
     const createFormData = (data) => {
         const formData = new FormData();
@@ -321,7 +321,7 @@ const VisaStatusEmployees = () => {
 
                             {/* temporary display for testing. Subject to change */}
                             {/* <a href={visaInfo.optUrl} target="_blank">OPT Receipt Submission</a> */}
-                            <Button href={docs.optUrl?.preview} target='_blank'>View OPT Submission</Button> {visaInfo.optStatus === 'Approved' ? <CheckCircleIcon color='success' /> : <CancelIcon color='error' />}
+                            <Button href={docs.optUrl?.preview} target='_blank'>View OPT Submission</Button> {visaInfo.optStatus === 'Approved' ? <CheckCircleIcon color='success' /> : visaInfo.optStatus === 'Rejected' ? <CancelIcon color='error' /> : <></>}
                         </div>
                     }
 
@@ -389,7 +389,7 @@ const VisaStatusEmployees = () => {
 
                             {/* temporary display for testing. Subject to change */}
                             {/* <a href={visaInfo.eadUrl}>EAD Submission</a> */}
-                            <Button href={docs.eadUrl?.preview} target='_blank'>View OPT EAD Submission</Button> {visaInfo.eadStatus === 'Approved' ? <CheckCircleIcon color='success' /> : <CancelIcon color='error' />}
+                            <Button href={docs.eadUrl?.preview} target='_blank'>View OPT EAD Submission</Button> {visaInfo.eadStatus === 'Approved' ? <CheckCircleIcon color='success' /> : visaInfo.eadStatus === 'Rejected' ? <CancelIcon color='error' /> : <></>}
                         </div>
                     }
 
@@ -397,13 +397,13 @@ const VisaStatusEmployees = () => {
                     {visaInfo.eadStatus === 'Approved' && visaInfo.i983Status === 'Not Started' &&
                         <form id='i983Submit' onSubmit={handleSubmit}>
                             {/* <label htmlFor="i983">Please download and fill out the I-983 form. </label> <br></br> */}
-                            <Typography>Please download and fill out the I-983 form</Typography>
+                            <Typography sx={{ mt: 2 }}>Please download and fill out the I-983 form</Typography>
                             <Button href={docs['Empty Template']?.download}>Download Empty Template</Button>
                             <Button href={docs['Sample Template']?.download}>Download Sample Template</Button>
                             {/* download form  */}
                             {/* <input type="file" name="i983" id="i983" onChange={handleFileChange} required/>
                             <button type="submit">Submit</button>  */}
-                            <Box>
+                            <Box sx={{ mt: 2 }}>
                                 {/* <form onSubmit={handleSubmit}> */}
                                     <InputLabel>Please upload a copy of your filled-out I-983</InputLabel>
                                     <TextField type='file' onChange={handleChange} fullWidth sx={{ mb: 2 }} required></TextField>
@@ -419,7 +419,7 @@ const VisaStatusEmployees = () => {
                 {viewSection.viewI983 && <fieldset className='i983'>
                     {/* <h3 className="statusSummary">Your I-983 status is {visaInfo.i983Status}</h3> */}
                     {visaInfo.i983Status === 'Pending' && 
-                        <p>Waitin for HR to approve and sign your I-983</p>
+                        <p>Waiting for HR to approve and sign your I-983</p>
                     }
 
                     {visaInfo.i983Status === 'Approved' && 
@@ -441,8 +441,8 @@ const VisaStatusEmployees = () => {
                                     </CardContent>
                                 </Card>
                             </Box>
-                            <Button href={docs['Empty Template'].download}>Download Empty Template</Button>
-                            <Button href={docs['Sample Template'].download}>Download Sample Template</Button>
+                            <Button href={docs['Empty Template']?.download}>Download Empty Template</Button>
+                            <Button href={docs['Sample Template']?.download}>Download Sample Template</Button>
                             <Box>
                                 <form onSubmit={handleSubmit}>
                                     <InputLabel>Please reupload your {docStatusInfo.currDocName} again</InputLabel>
@@ -461,7 +461,7 @@ const VisaStatusEmployees = () => {
 
                             {/* temporary display for testing. Subject to change */}
                             {/* <a href={visaInfo.i983Url}>I-983 Submission</a> */}
-                            <Button href={docs.i983Url?.preview} target='_blank'>View I-983 Submission</Button> {visaInfo.i983Status === 'Approved' ? <CheckCircleIcon color='success' /> : <CancelIcon color='error' />}
+                            <Button href={docs.i983Url?.preview} target='_blank'>View I-983 Submission</Button> {visaInfo.i983Status === 'Approved' ? <CheckCircleIcon color='success' /> : visaInfo.i983Status === 'Rejected' ? <CancelIcon color='error' /> : <></>}
                         </div>
                     }
 
@@ -494,7 +494,7 @@ const VisaStatusEmployees = () => {
 
                     {visaInfo.i20Status === 'Approved' &&
                         // <p>All documents have been approved</p>
-                        <Typography variant='h5' sx={{ color: 'green', mt: 2, mb: 2 }}>All documents been approved!</Typography>
+                        <Typography variant='h5' sx={{ color: 'green', mt: 2, mb: 2 }}>All documents have been approved!</Typography>
                     }
 
                     {visaInfo.i20Status === 'Rejected' && 
@@ -529,7 +529,7 @@ const VisaStatusEmployees = () => {
 
                             {/* temporary display for testing. Subject to change */}
                             {/* <a href={visaInfo.i20Url}>I-20 Submission</a> */}
-                            <Button href={docs.i20Url?.preview} target='_blank'>View I-20 Submission</Button> {visaInfo.i20Status === 'Approved' ? <CheckCircleIcon color='success' /> : <CancelIcon color='error' />}
+                            <Button href={docs.i20Url?.preview} target='_blank'>View I-20 Submission</Button> {visaInfo.i20Status === 'Approved' ? <CheckCircleIcon color='success' /> : visaInfo.i20Status === 'Rejected' ? <CancelIcon color='error' /> : <></>}
                         </div>
                     }
                 </fieldset>}
