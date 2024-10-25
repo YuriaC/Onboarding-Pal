@@ -81,6 +81,10 @@ export const isAlphabetic = (str) => {
     return /^[a-zA-Z]+$/i.test(str)
 }
 
+export const isAddress = (str) => {
+    return /^[a-zA-Z0-9. ]*$/i.test(str)
+}
+
 export const isAlphaNumeric = (str) => {
     return /^[a-zA-Z0-9]+$/i.test(str);
 }

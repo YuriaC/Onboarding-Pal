@@ -5,7 +5,7 @@ import { toast, ToastContainer } from 'material-react-toastify';
 import { useNavigate, useParams } from 'react-router-dom'
 import 'material-react-toastify/dist/ReactToastify.css';
 import { Avatar, Select, MenuItem, InputLabel, Container, TextField, Box, Card, CardActions, CardContent, Typography, Button } from '@mui/material';
-import { isEmail, checkZIP, checkSSN, isAlphabetic, isAlphaNumeric } from '../helpers/HelperFunctions';
+import { isEmail, isAddress, checkZIP, checkSSN, isAlphabetic, isAlphaNumeric } from '../helpers/HelperFunctions';
 import { alphanumRegex, phoneRegex, USER_ENDPOINT, username } from '../constants';
 import ErrorHelperText from '../components/ErrorHelperText';
 
@@ -31,11 +31,6 @@ const Personal = () => {
         ssn: '',
         dob: '',
         gender: '',
-        building: '',
-        street: '',
-        city: '',
-        state: '',
-        zip: '',
         cellPhone: '',
         permResStatus: '',
         isPermRes: '',
@@ -52,7 +47,6 @@ const Personal = () => {
             relationship: '',
             counter: 0,
         }],
-        onboardingStatus: '',
     });
 
     const [formDataClone, setFormDataClone] = useState({});
@@ -88,7 +82,6 @@ const Personal = () => {
             visaStartDate,
             visaEndDate,
             emergencyContacts,
-            onboardingStatus,
         } = data
         const newEmContacts = []
         for (const emContact of emergencyContacts) {
@@ -125,7 +118,6 @@ const Personal = () => {
             isPermRes,
             permResStatus,
             workAuth,
-            onboardingStatus,
             visaStartDate: visaStartDate ? visaStartDate.split('T')[0] : '',
             visaEndDate: visaEndDate ? visaEndDate.split('T')[0] : '',
             emergencyContacts: newEmContacts,
@@ -263,18 +255,6 @@ const Personal = () => {
         });
     };
 
-    const handleEmployeeChange = (e) => {
-        const { name, value } = e.target;
-        setFormData((prevData) => {
-            return {
-                ...prevData,
-                employment: {
-                    ...prevData.employment,
-                    [name]: value
-                }
-            }
-        })
-    }
 
     const handleEditToggle = () => {
         if (isEditing) {
@@ -332,25 +312,8 @@ const Personal = () => {
       const createFormData = (data) => {
         const formData = new FormData();
         buildFormData(formData, data);
-        formData.append('username', username)
-        formData.append('onboardingStatus', 'Pending')
         return formData;
     }
-
-    const handleSave = async () => {
-        const data = generateFormData(formData, files);
-        try {
-            await axios.post(deploymentPOST, data, {
-                headers: {
-                    'Content-Type': 'multipart/form-data',  // for file transfer
-                },
-                withCredentials: true,
-            })
-        }
-        catch (err) {
-            console.error(`Error submitting changes! Error: ${err}`)
-        }
-    };
 
     const handleSubmit = async (e) => {
         e.preventDefault()
@@ -374,7 +337,7 @@ const Personal = () => {
         if (!isAlphaNumeric(formData.building)) {
             newErrorObject['building'] = true
         }
-        if (!isAlphabetic(formData.street)) {
+        if (!isAddress(formData.street)) {
             newErrorObject['street'] = true
         }
         if (!isAlphabetic(formData.city)) {
@@ -432,9 +395,9 @@ const Personal = () => {
                 },
                 withCredentials: true,
             })
-            toast.success('Successfully updated user profile.')
             setIsEditing(false);
-            // getDocs();
+            getDocs();
+            toast.success('Successfully updated user profile.')
         }
         catch (error) {
             toast.error(`Error submitting application! Error: ${error.response.data}`)
@@ -445,7 +408,7 @@ const Personal = () => {
 
     return (
         <>
-        {!isLoading ? (<Container maxWidth="md" sx={{ padding: "2rem" }}>
+        {!isLoading ? (<Container sx={{ width: "65vw", marginTop: 8, padding: "2rem" }}>
         <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, padding: 2, boxShadow: 3, borderRadius: 2, backgroundColor: 'white' }}>
             <Typography variant="h4">Personal Information</Typography>
                 {/* Basic Info Section */}
@@ -606,23 +569,32 @@ const Personal = () => {
                             case 'optUrl':
                                 fileName = 'OPT Receipt'
                                 break
+                            case 'eadUrl':
+                                fileName = 'OPT EAD'
+                                break
+                            case 'i983Url':
+                                fileName = 'I-983 Form'
+                                break
+                            case 'i20Url':
+                                fileName = 'I-20 Form'
+                                break
+                            default:
+                                fileName = 'Unknown Upload';
                         }
                         return (
-                            <>
-                                <Card key={`${key}-download`} sx={{ minWidth: 275 }}>
-                                    <CardContent>
-                                        <Typography variant='h6'>{fileName}</Typography>
-                                    </CardContent>
-                                    <CardActions sx={{ justifyContent: 'center' }}>
-                                        <Button href={doc.download} download>
-                                            Download
-                                        </Button>
-                                        <Button onClick={() => window.open(doc.preview, '_blank')}>
-                                            Preview
-                                        </Button>
-                                    </CardActions>
-                                </Card>
-                            </>
+                            <Card key={`${key}-download`} sx={{ minWidth: 275 }}>
+                                <CardContent>
+                                    <Typography variant='h6'>{fileName}</Typography>
+                                </CardContent>
+                                <CardActions sx={{ justifyContent: 'center' }}>
+                                    <Button href={doc.download} download>
+                                        Download
+                                    </Button>
+                                    <Button onClick={() => window.open(doc.preview, '_blank')}>
+                                        Preview
+                                    </Button>
+                                </CardActions>
+                            </Card>
                         )
                     })}
                 </Box>
