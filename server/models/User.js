@@ -30,7 +30,7 @@ const UserSchema = new Schema({
     visaStartDate: { type: Date, default: null },
     visaEndDate: { type: Date, default: null },
     permResStatus: { type: String, default: null },
-    isPermRes: { type: String, default: '' },
+    isPermRes: { type: String, default: "" },
     driversLicenseNumber: { type: String, default: "" },
     driversLicenseExpDate: { type: Date, default: null },
     driversLicenseCopy_url: { type: String, default: "" },

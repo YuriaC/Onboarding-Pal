@@ -329,21 +329,21 @@ const HouseDetails = () => {
                         ? <Typography variant='body1' sx={{ p: 2 }}>No reports have been made about this house at this time</Typography>
                         : (
                             <>
-                                <Button onClick={() => setIsViewingReports(!isViewingReports)}>
+                                <Button onClick={() => setIsViewingReports(!isViewingReports)} fullWidth sx={{ p: 2 }}>
                                     View{userInfo.role === 'employee' ? ' Your ' : ' '}Reports
                                 </Button>
                                 {isViewingReports &&
                                 <>
                                     <List>
-                                        {currReports.map((report, index) => {
+                                        {currReports.map((report) => {
 
                                             return (
-                                                <Accordion key={index} sx={{ minWidth: '60vw' }}>
+                                                <Accordion key={report._id} sx={{ minWidth: '60vw' }}>
                                                     <AccordionSummary>
                                                         <Box sx={{ width: '100%' }}>
                                                             <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                                                                 <Typography sx={{ fontWeight: 'bold' }}>{report.title}</Typography>
-                                                                <Typography color='text.secondary'>Creator: {report.createdBy}</Typography>
+                                                                <Typography color='text.secondary'>{report.createdBy}</Typography>
                                                                 <Typography color='text.secondary'>{report.timestamp}</Typography>
                                                                 <Box>
                                                                     <Select name='status' value={report.status} onClick={handleStatusClick} onChange={(e) => handleStatusChange(e, report._id)}>
@@ -415,7 +415,7 @@ const HouseDetails = () => {
                                         count={Math.ceil(houseData.reports.length / reportsPerPage)}
                                         page={reportsPage}
                                         onChange={(_, value) => setReportsPage(value)}
-                                        sx={{ display: 'flex', justifyContent: 'center', mt: 2, mb: 2 }}
+                                        sx={{ display: 'flex', justifyContent: 'center', mt: 2, mb: 6 }}
                                     />
                                 </>
                                 }

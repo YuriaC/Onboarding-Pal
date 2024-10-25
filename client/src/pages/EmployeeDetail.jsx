@@ -73,7 +73,16 @@ const EmployeeDetail = () => {
             })
                 .then(response => {
                     const { data } = response
-                    setDataToForm(data)
+                    axios.get(`${USER_ENDPOINT}/getuserdocs/${employeeId}`, {
+                        withCredentials: true,
+                    }).then(docsResponse => {
+                        const profilePicture = docsResponse.data.profilePictureURL?.preview ? docsResponse.data.profilePictureURL?.preview : ''
+                        const newData = {
+                            ...data,
+                            profilePicture,
+                        }
+                        setDataToForm(newData)
+                    })
                 })
                 .catch(error => {
                     toast.error(`Error fetching user info! Error: ${error.message}`)
@@ -94,6 +103,7 @@ const EmployeeDetail = () => {
             address,
             cellPhone,
             workPhone,
+            profilePicture,
             carMake,
             carModel,
             carColor,
@@ -140,6 +150,7 @@ const EmployeeDetail = () => {
             middleName,
             username,
             preferredName,
+            profilePicture,
             cellPhone,
             workPhone,
             carMake,
@@ -187,6 +198,7 @@ const EmployeeDetail = () => {
                     {formData.profilePicture ? null : (
                        <Avatar sx={{  width: 60, margin: 'auto', height: 60 }}>
                             { formData.firstName ?formData.firstName[0]:              
+
                             <FontAwesomeIcon icon={faUser} />
                         }
 

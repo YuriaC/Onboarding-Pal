@@ -1,29 +1,19 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect } from 'react';
+import './Personal.css';
+import axios from 'axios';
+import { toast, ToastContainer } from 'material-react-toastify';
 import { useNavigate, useParams } from 'react-router-dom'
-import { USER_ENDPOINT } from '../constants'
-import axios from 'axios'
-import { toast, ToastContainer } from 'react-toastify'
-import {
-    Avatar,
-    Box,
-    TextField,
-    RadioGroup,
-    FormControl,
-    FormLabel,
-    FormControlLabel,
-    Radio,
-    Typography,
-    Paper,
-} from '@mui/material'
-
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faUser } from '@fortawesome/free-solid-svg-icons'
+import 'material-react-toastify/dist/ReactToastify.css';
+import { Avatar, Select, MenuItem, InputLabel, Container, TextField, Box, Card, CardActions, CardContent, Typography, Button } from '@mui/material';
+import { isEmail, checkZIP, checkSSN, isAlphabetic, isAlphaNumeric } from '../helpers/HelperFunctions';
+import { alphanumRegex, phoneRegex, USER_ENDPOINT, username } from '../constants';
+import ErrorHelperText from '../components/ErrorHelperText';
 
 const Personal = () => {
-
     const navigate = useNavigate()
     const { employeeId } = useParams()
-    const [isLoading, setIsLoading] = useState(true)
+
+    const [isEditing, setIsEditing] = useState(false);
     const [formData, setFormData] = useState({
         firstName: '',
         lastName: '',
@@ -41,83 +31,64 @@ const Personal = () => {
         ssn: '',
         dob: '',
         gender: '',
-        carMake: '',
-        carModel: '',
-        carColor: '',
+        building: '',
+        street: '',
+        city: '',
+        state: '',
+        zip: '',
         cellPhone: '',
-        workPhone: '',
-        isPermRes: '',
         permResStatus: '',
-        nonPermWorkAuth: '',
-        hasDriversLicense: '',
-        isReferred: '',
-        dlNum: '',
-        dlExpDate: '',
-        refFirstName: '',
-        refLastName: '',
-        refMiddleName: '',
-        refPhone: '',
-        refEmail: '',
-        refRelationship: '',
+        isPermRes: '',
+        workPhone: '',
+        visaTitle: '',
         visaStartDate: '',
         visaEndDate: '',
-        visaTitle: '',
-        email: '',
-        emergencyContacts: [],
-        hrFeedback: '',
+        emergencyContacts: [{
+            firstName: '',
+            lastName: '',
+            middleName: '',
+            phone: '',
+            emEmail: '',
+            relationship: '',
+            counter: 0,
+        }],
         onboardingStatus: '',
-    })
+    });
 
-    useEffect(() => {
-        const fetchData = async () => {
-            await axios.get(`${USER_ENDPOINT}/userinfo/${employeeId}`, {
-                withCredentials: true,
-            })
-                .then(response => {
-                    const { data } = response
-                    const { onboardingStatus } = data
-                    if (onboardingStatus !== 'Approved') {
-                        return navigate('/onboarding')
-                    }
-                    setDataToForm(data)
-                })
-                .catch(error => {
-                    toast.error(`Error fetching user info! Error: ${error.message}`)
-                })
-            
-            setIsLoading(false)
-        }
-        fetchData()
-    }, [])
+    const [formDataClone, setFormDataClone] = useState({});
+    const [isLoading, setIsLoading] = useState(true)
+    const [docs, setDocs] = useState([]);  // for containing files from AWS 
+    const [files, setfiles] = useState([]);
+    const [emCounter, setEmCounter] = useState(1)
+
+    // fetch uploaded file from AWS
+    const getDocs = async () => {
+        const response = await axios.get(`${USER_ENDPOINT}/getuserdocs`, {
+            withCredentials: true,
+        })
+        setDocs(response.data);
+    }
 
     const setDataToForm = (data) => {
         const {
             firstName,
             lastName,
             middleName,
-            username,
             preferredName,
-            address,
-            cellPhone,
-            workPhone,
-            carMake,
-            carModel,
-            carColor,
+            email,
             ssn,
             birthday,
-            email,
             gender,
+            cellPhone,
+            workPhone,
+            address,
+            isPermRes,
             permResStatus,
-            driversLicenseNumber,
-            driversLicenseExpDate,
-            referer,
-            emergencyContacts,
-            hrFeedback,
-            onboardingStatus,
             workAuth,
             visaStartDate,
             visaEndDate,
-            visaTitle,
+            emergencyContacts,
+            onboardingStatus,
         } = data
         const newEmContacts = []
         for (const emContact of emergencyContacts) {
@@ -131,57 +102,346 @@ const Personal = () => {
                 relationship,
             })
         }
-        const stateAndZip = address ? address.split(', ')[2] : ''
-        const lastSpaceIndex = address ? stateAndZip.lastIndexOf(' ') : 0
-        const state = address ? stateAndZip.substring(0, lastSpaceIndex) : ''
-        const zip = address ? stateAndZip.substring(lastSpaceIndex + 1) : ''
-        const buildingAndStreet = address ? address.split(', ')[0] : ''
-        const firstSpaceIndex = address ? buildingAndStreet.indexOf(' ') : 0
-        const building = address ? buildingAndStreet.substring(0, firstSpaceIndex) : ''
-        const street = address ? buildingAndStreet.substring(firstSpaceIndex + 1) : ''
+        const stateAndZip = address.split(', ')[2]
+        const lastSpaceIndex = stateAndZip.lastIndexOf(' ')
+        const state = stateAndZip.substring(0, lastSpaceIndex)
+        const zip = stateAndZip.substring(lastSpaceIndex + 1)
+        const buildingAndStreet = address.split(', ')[0]
+        const firstSpaceIndex = buildingAndStreet.indexOf(' ')
+        const building = buildingAndStreet.substring(0, firstSpaceIndex)
+        const street = buildingAndStreet.substring(firstSpaceIndex + 1)
         setFormData({
             ...formData,
-            firstName,
-            lastName,
+            firstName: firstName.charAt(0).toUpperCase() + firstName.slice(1),
+            lastName: lastName.charAt(0).toUpperCase() + lastName.slice(1),
             middleName,
-            username,
             preferredName,
+            email,
+            ssn,
+            dob: birthday.split('T')[0],
+            gender,
             cellPhone,
             workPhone,
-            carMake,
-            carModel,
-            carColor,
-            ssn,
-            email,
-            dob: birthday ? birthday.split('T')[0] : null,
-            gender,
+            isPermRes,
             permResStatus,
-            isPermRes: ['Citizen', 'Green Card'].includes(permResStatus) ? 'Yes' : 'No',
-            hasDriversLicense: data['driversLicenseNumber'] ? 'Yes' : 'No',
-            dlNum: driversLicenseNumber,
-            dlExpDate: driversLicenseExpDate ? driversLicenseExpDate.split('T')[0] : null,
-            isReferred: referer ? 'Yes' : 'No',
+            workAuth,
+            onboardingStatus,
+            visaStartDate: visaStartDate ? visaStartDate.split('T')[0] : '',
+            visaEndDate: visaEndDate ? visaEndDate.split('T')[0] : '',
             emergencyContacts: newEmContacts,
             building,
             street,
-            city: address ? address.split(', ')[1] : '',
+            city: address.split(', ')[1],
             state,
             zip,
-            onboardingStatus,
-            hrFeedback: onboardingStatus === 'Rejected' ? hrFeedback : '',
-            refFirstName: referer ? referer.firstName : '',
-            refLastName: referer ? referer.lastName : '',
-            refPhone: referer ? referer.cellPhone : '',
-            refEmail: referer ? referer.email : '',
-            refMiddleName: referer ? referer.middleName : '',
-            refRelationship: referer ? referer.relationship : '',
-            nonPermWorkAuth: workAuth,
-            visaStartDate: visaStartDate ? visaStartDate.split('T')[0] : '',
-            visaEndDate: visaEndDate ? visaEndDate.split('T')[0] : '',
-            visaTitle,
         })
     }
 
+    const [errors, setErrors] = useState({
+        firstName: false,
+        middleName: false,
+        preferredName: false,
+        lastName: false,
+        email: false,
+        ssn: false,
+        dob: false,
+        building: false,
+        street: false,
+        city: false,
+        state: false,
+        zip: false,
+        visaEndDate: false,
+        cellPhone: false,
+        workPhone: false,
+        emFirstName: false,
+        emLastName: false,
+        emMiddleName: false,
+        emPhone: false,
+        emEmail: false,
+    })
+
+    const helperTexts = {
+        name: "Name must contain only English characters.", 
+        dlNum: "Driver's license number must be alphanumeric!",
+        building: "Building Adress can only contain alphanumeric characters!",
+        ssn: "SSN must be 9-digit long",
+        address: "Street/ City/ State entry must be english characters!",
+        zip: 'ZIP code must have 5 digits!',
+        dob: 'Birthday must be in the past!',
+        visaEndDate: 'Visa end date must be in the future!',
+        cellPhone: 'Phone number must be in a proper format!',
+        workPhone: 'Phone number must be in a proper format!',
+        email: 'Email must be in a proper format!',
+    }
+
+    useEffect(() => {
+        setFormDataClone(JSON.parse(JSON.stringify(formData)));
+    }, [isEditing])
+
+
+    useEffect(() => {
+        const fetchData = async () => {
+            await axios.get(`${USER_ENDPOINT}/userinfo`, {
+                withCredentials: true,
+            })
+                .then(response => {
+                    const { data } = response
+                    const { onboardingStatus } = data
+                    if (onboardingStatus !== 'Approved') {
+                        return navigate('/onboarding')
+                    }
+                    setDataToForm(data);
+                    getDocs();
+                    toast.success('Successfully fetched user data and files!')
+                })
+                .catch(error => {
+                    toast.error(`Error fetching user info! Error: ${error.message}`)
+                })
+            
+            setIsLoading(false)
+        }
+        fetchData()
+    }, [])
+
+
+    // useEffect(() => {
+    //     axios.get(`${USER_ENDPOINT}/userinfo/${employeeId}`, {
+    //         withCredentials: true,
+    //     })
+    //     .then(response => {
+    //         console.log('response.data:', response.data)  // debug
+    //         setDataToForm(response.data)
+    //         getDocs();
+    //         toast.success('Successfully fetched user data and files!')
+    //     })
+    //     .catch(error => {
+    //         console.log('error:', error)
+    //         toast.error(`Error fetching user files! Error ${error.message}`)
+    //     })
+    // }, [])
+
+    const handleChange = (e) => {
+        const { type, name, value } = e.target
+        setFormData({
+            ...formData,
+            [name]: type === 'file' ? e.target.files[0] : value,
+        })
+    }
+
+    const handleAddressChange = (e) => {
+        const { name, value } = e.target;
+        setFormData((prevData) => ({
+            ...prevData,
+            address: { ...prevData.address, [name]: value }
+        }));
+    };
+
+    const handleContactChange = (e) => {
+        const { name, value } = e.target;
+        setFormData((prevData) => ({
+            ...prevData,
+            contactInfo: { ...prevData.contactInfo, [name]: value }
+        }));
+    };
+
+    const handleEmContactChange = (e, index) => {
+        const { name, value } = e.target
+        const newContacts = [...formData.emergencyContacts]
+        newContacts[index][name] = value
+        setFormData({...formData, emergencyContacts: newContacts})
+    }
+
+    const handleEmergencyContactChange = (e, index) => {
+        const { name, value } = e.target;
+        setFormData((prevData) => {
+            const newEmergencyContact = [...prevData.emergencyContact];
+            newEmergencyContact[index] = { ...newEmergencyContact[index], [name]: value};
+            return{
+                ...prevData,
+                emergencyContact: newEmergencyContact
+            }
+        });
+    };
+
+    const handleEmployeeChange = (e) => {
+        const { name, value } = e.target;
+        setFormData((prevData) => {
+            return {
+                ...prevData,
+                employment: {
+                    ...prevData.employment,
+                    [name]: value
+                }
+            }
+        })
+    }
+
+    const handleEditToggle = () => {
+        if (isEditing) {
+            const confirmDiscard = window.confirm("Discard changes?");
+            if (confirmDiscard) {
+                setFormData(formDataClone);
+                setIsEditing(false);
+            }
+        } else {
+            setIsEditing(true);
+        }
+    };
+
+    const addEmergencyContact = (e) => {
+        e.preventDefault()
+        const newContacts = [...formData.emergencyContacts]
+        newContacts.push({
+                firstName: '',
+                lastName: '',
+                middleName: '',
+                phone: '',
+                emEmail: '',
+                relationship: '',
+                counter: emCounter,
+        })
+        setEmCounter(prev => prev + 1)
+        setFormData({
+            ...formData,
+            emergencyContacts: newContacts,
+        })
+    }
+
+    const removeEmergencyContact = (e, index) => {
+        e.preventDefault()
+        if (formData.emergencyContacts.length === 1) {
+            return
+        }
+        const newContacts = formData.emergencyContacts.filter((_, i) => i !== index)
+        setFormData({
+            ...formData,
+            emergencyContacts: newContacts
+        })
+    }
+
+    const buildFormData = (formData, data, parentKey) => {
+        if (data && typeof data === 'object' && !(data instanceof File)) {
+          Object.keys(data).forEach(key => {
+            buildFormData(formData, data[key], parentKey ? `${parentKey}[${key}]` : key);
+          });
+        } else {
+          formData.append(parentKey, data);
+        }
+      };
+
+      const createFormData = (data) => {
+        const formData = new FormData();
+        buildFormData(formData, data);
+        formData.append('username', username)
+        formData.append('onboardingStatus', 'Pending')
+        return formData;
+    }
+
+    const handleSave = async () => {
+        const data = generateFormData(formData, files);
+        try {
+            await axios.post(deploymentPOST, data, {
+                headers: {
+                    'Content-Type': 'multipart/form-data',  // for file transfer
+                },
+                withCredentials: true,
+            })
+        }
+        catch (err) {
+            console.error(`Error submitting changes! Error: ${err}`)
+        }
+    };
+
+    const handleSubmit = async (e) => {
+        e.preventDefault()
+        const newErrorObject = {}
+
+        for (const key in errors) {
+            newErrorObject[key] = false
+        }
+        if (!isAlphabetic(formData.firstName)) {
+            newErrorObject['firstName'] = true
+        }
+        if (formData.middleName && !isAlphabetic(formData.middleName)) {
+            newErrorObject['middleName'] = true
+        }
+        if (!isAlphabetic(formData.lastName)) {
+            newErrorObject['lastName'] = true
+        }
+        if (!isEmail(formData.email)) {
+            newErrorObject['email'] = true
+        }
+        if (!isAlphaNumeric(formData.building)) {
+            newErrorObject['building'] = true
+        }
+        if (!isAlphabetic(formData.street)) {
+            newErrorObject['street'] = true
+        }
+        if (!isAlphabetic(formData.city)) {
+            newErrorObject['city'] = true
+        }
+        if (!isAlphabetic(formData.state)) {
+            newErrorObject['state'] = true
+        }
+        if (!checkZIP(formData.zip)) {
+            newErrorObject['zip'] = true
+        }
+        if (new Date(formData.dob) > new Date()) {
+            newErrorObject['dob'] = true
+        }
+        if (new Date(formData.visaEndDate) < new Date()) {
+            newErrorObject['visaEndDate'] = true
+        }
+        if (!phoneRegex.test(formData.cellPhone)) {
+            newErrorObject['cellPhone'] = true
+        }
+        if (formData.workPhone && !phoneRegex.test(formData.workPhone)) {
+            newErrorObject['workPhone'] = true
+        }
+        formData.emergencyContacts.map((contact) => {
+            if (!isAlphabetic(contact.firstName)) {
+                newErrorObject['emFirstName'] = true
+            }
+            if (contact.middleName && !isAlphabetic(contact.middleName)) {
+                newErrorObject['emMiddleName'] = true
+            }
+            if (!isAlphabetic(contact.lastName)) {
+                newErrorObject['emLastName'] = true
+            }
+            if (!phoneRegex.test(contact.phone)) {
+                newErrorObject['emPhone'] = true
+            }
+            if (!isEmail(contact.emEmail)) {
+                newErrorObject['emEmail'] = true
+            }
+        })
+        for (const key in newErrorObject) {
+            if (newErrorObject[key]) {
+                toast.error('Please fix input errors!')
+                return setErrors(newErrorObject)
+            }
+        }
+        setErrors(newErrorObject)
+
+        const data = createFormData(formData)
+
+        try {
+            await axios.post(`${USER_ENDPOINT}/applicationinput`, data, {
+                headers: {
+                    'Content-Type': 'multipart/form-data',
+                },
+                withCredentials: true,
+            })
+            toast.success('Successfully updated user profile.')
+            setIsEditing(false);
+            // getDocs();
+        }
+        catch (error) {
+            toast.error(`Error submitting application! Error: ${error.response.data}`)
+        }
+    }
+
+    const profilePicCheck = docs.profilePictureURL ? docs.profilePictureURL.preview : '';  // for profile picture display
 
     return (
         <>
@@ -201,375 +461,178 @@ const Personal = () => {
 
                     <form>
                         <TextField
-                            fullWidth
-                            label="First Name"
-                            value={formData.firstName}
-                            disabled
-                            margin="normal"
-                        />
-                        <TextField
-                            fullWidth
-                            label="Last Name"
-                            value={formData.lastName}
-                            disabled
-                            margin="normal"
-                        />
-                        <TextField
-                            fullWidth
-                            label="Middle Name"
-                            value={formData.middleName}
-                            disabled
-                            margin="normal"
-                        />
-                        <TextField
-                            fullWidth
-                            label="Preferred Name"
-                            value={formData.preferredName}
-                            disabled
-                            margin="normal"
-                        />
 
-                        <Typography variant="h6" margin="normal">Address</Typography>
-                        <TextField
                             fullWidth
-                            label="Building/Apartment #"
-                            value={formData.building}
-                            disabled
-                            margin="normal"
+                            label="Upload New Profile Picture" 
+                            variant="outlined"
+                            InputLabelProps={{
+                                shrink: true,
+                            }}
                         />
+                    )}
+                    {['firstName', 'lastName', 'middleName', 'preferredName', 'email', 'ssn'].map((field) => (
+                        <div key={field}>
                         <TextField
+                            name={field}
+                            label={field.charAt(0).toUpperCase() + field.slice(1)}
+                            value={formData[field]}
+                            onChange={handleChange}
+                            error={errors[field]}
                             fullWidth
-                            label="Street Name"
-                            value={formData.street}
-                            disabled
-                            margin="normal"
+                            disabled={!isEditing}
+                            sx={{ mb: 2 }}
                         />
-                        <TextField
-                            fullWidth
-                            label="City"
-                            value={formData.city}
-                            disabled
-                            margin="normal"
+                        <ErrorHelperText 
+                            hasError={errors[field]} 
+                            message={['firstName', 'lastName', 'middleName', 'preferredName'].includes(field) ? helperTexts['name'] : helperTexts[field]}
+                            marginTop="10rem" 
                         />
-                        <TextField
-                            fullWidth
-                            label="State"
-                            value={formData.state}
-                            disabled
-                            margin="normal"
-                        />
-                        <TextField
-                            fullWidth
-                            label="ZIP"
-                            value={formData.zip}
-                            disabled
-                            type="number"
-                            margin="normal"
-                        />
+                        </div>
+                    ))}
 
-                        <Typography variant="h6" margin="normal">Phone Numbers</Typography>
-                        <TextField
-                            fullWidth
-                            label="Cell Phone Number"
-                            value={formData.cellPhone}
-                            disabled
-                            type="tel"
-                            margin="normal"
+                        <TextField 
+                            label='Date of Birth' 
+                            type='date' 
+                            name='dob' 
+                            value={formData.dob} 
+                            onChange={handleChange} 
+                            disabled={!isEditing} 
+                            required 
+                            variant='outlined' 
+                            error={errors.dob} 
                         />
-                        <TextField
-                            fullWidth
-                            label="Work Phone Number"
-                            value={formData.workPhone}
-                            disabled
-                            type="tel"
-                            margin="normal"
-                        />
+                        <ErrorHelperText hasError={errors.dob} message={helperTexts.dob} />
 
-                        <Typography variant="h6" margin="normal">Car Info</Typography>
-                        <TextField
-                            fullWidth
-                            label="Make"
-                            value={formData.carMake}
-                            disabled
-                            margin="normal"
-                        />
-                        <TextField
-                            fullWidth
-                            label="Model"
-                            value={formData.carModel}
-                            disabled
-                            margin="normal"
-                        />
-                        <TextField
-                            fullWidth
-                            label="Color"
-                            value={formData.carColor}
-                            disabled
-                            margin="normal"
-                        />
-
-                        <Typography variant="h6" margin="normal">Other Info</Typography>
-                        <TextField
-                            fullWidth
-                            label="Email"
-                            value={formData.email}
-                            disabled
-                            type="email"
-                            margin="normal"
-                        />
-                        <TextField
-                            fullWidth
-                            label="SSN"
-                            value={formData.ssn}
-                            disabled
-                            type="password"
-                            margin="normal"
-                        />
-                        <TextField
-                            fullWidth
-                            label="Date of Birth"
-                            value={formData.dob}
-                            disabled
-                            type = {formData.dob? 'date' : 'text'}
-                            margin="normal"
-                        />
-                        <TextField
-                            fullWidth
-                            label="Gender"
-                            value={formData.gender}
-                            disabled
-                            margin="normal"
-                        />
-
-                        <Typography variant="h6" margin="normal">Work Authorization</Typography>
-                        <TextField
-                            fullWidth
-                            label="Work Authorization"
-                            value={formData.isPermRes ? formData.permResStatus : formData.nonPermWorkAuth}
-                            disabled
-                            margin="normal"
-                        />
-                        {/* <FormControl fullWidth margin="normal">
-                            <FormLabel>Are you a permanent resident?</FormLabel>
-                            <RadioGroup row value={formData.isPermRes}>
-                                <FormControlLabel
-                                    value="Yes"
-                                    control={<Radio />}
-                                    label="Yes"
-                                    disabled
-                                />
-                                <FormControlLabel
-                                    value="No"
-                                    control={<Radio />}
-                                    label="No"
-                                    disabled
-                                />
-                            </RadioGroup>
-                        </FormControl>
-                        {formData.isPermRes === 'No' ? (
-                            <>
-                                <TextField
-                                    fullWidth
-                                    label="Work Authorization"
-                                    value={formData.nonPermWorkAuth}
-                                    disabled
-                                    margin="normal"
-                                />
-                                <TextField
-                                    fullWidth
-                                    label="Visa Start Date"
-                                    value={formData.visaStartDate}
-                                    disabled
-                                    type={formData.visaStartDate? 'date' : 'text'}
-                                    margin="normal"
-                                />
-                                <TextField
-                                    fullWidth
-                                    label="Visa End Date"
-                                    value={formData.visaEndDate}
-                                    disabled
-                                    type={formData.visaEndDate? 'date' : 'text'}
-                                    margin="normal"
-                                />
-                            </>
-                        ) : (
-                            <FormControl fullWidth margin="normal">
-                                <FormLabel>What kind of permanent resident?</FormLabel>
-                                <RadioGroup row value={formData.permResStatus}>
-                                    <FormControlLabel
-                                        value="Citizen"
-                                        control={<Radio />}
-                                        label="Citizen"
-                                        disabled
-                                    />
-                                    <FormControlLabel
-                                        value="Green Card"
-                                        control={<Radio />}
-                                        label="Green Card"
-                                        disabled
-                                    />
-                                </RadioGroup>
-                            </FormControl>
-                        )} */}
-
-                        <Typography variant="h6" margin="normal">{`Driver's License`}</Typography>
-                        <FormControl fullWidth margin="normal">
-                            <FormLabel>Do you have a {`driver's license`}?</FormLabel>
-                            <RadioGroup row value={formData.hasDriversLicense}>
-                                <FormControlLabel
-                                    value="Yes"
-                                    control={<Radio />}
-                                    label="Yes"
-                                    disabled
-                                />
-                                <FormControlLabel
-                                    value="No"
-                                    control={<Radio />}
-                                    label="No"
-                                    disabled
-                                />
-                            </RadioGroup>
-                        </FormControl>
-                        {formData.hasDriversLicense === 'Yes' && (
-                            <>
-                                <TextField
-                                    fullWidth
-                                    label="Driver's License Number"
-                                    value={formData.dlNum}
-                                    disabled
-                                    margin="normal"
-                                />
-                                <TextField
-                                    fullWidth
-                                    label="Driver's License Expiration"
-                                    value={formData.dlExpDate}
-                                    disabled
-                                    type={formData.dlExpDate? 'date' : 'text'}
-                                    margin="normal"
-                                />
-                            </>
-                        )}
-
-                        <Typography variant="h6" margin="normal">Reference</Typography>
-                        <FormControl fullWidth margin="normal">
-                            <FormLabel>Did someone refer you to this company?</FormLabel>
-                            <RadioGroup row value={formData.isReferred}>
-                                <FormControlLabel
-                                    value="Yes"
-                                    control={<Radio />}
-                                    label="Yes"
-                                    disabled
-                                />
-                                <FormControlLabel
-                                    value="No"
-                                    control={<Radio />}
-                                    label="No"
-                                    disabled
-                                />
-                            </RadioGroup>
-                        </FormControl>
-                        {formData.isReferred === 'Yes' && (
-                            <>
-                                <TextField
-                                    fullWidth
-                                    label="Referer's First Name"
-                                    value={formData.refFirstName}
-                                    disabled
-                                    margin="normal"
-                                />
-                                <TextField
-                                    fullWidth
-                                    label="Referer's Middle Name"
-                                    value={formData.refMiddleName}
-                                    disabled
-                                    margin="normal"
-                                />
-                                <TextField
-                                    fullWidth
-                                    label="Referer's Last Name"
-                                    value={formData.refLastName}
-                                    disabled
-                                    margin="normal"
-                                />
-                                <TextField
-                                    fullWidth
-                                    label="Referer's Phone"
-                                    value={formData.refPhone}
-                                    disabled
-                                    margin="normal"
-                                />
-                                <TextField
-                                    fullWidth
-                                    label="Referer's Email"
-                                    value={formData.refEmail}
-                                    disabled
-                                    margin="normal"
-                                />
-                                <TextField
-                                    fullWidth
-                                    label={`Referer's Relationship to ${formData.firstName}`}
-                                    value={formData.refRelationship}
-                                    disabled
-                                    margin="normal"
-                                />
-                            </>
-                        )}
-
-                        <Typography variant="h6" margin="normal">Emergency Contacts</Typography>
-                        {formData.emergencyContacts.map((contact, index) => (
-                            <Box key={index} sx={{ mb: 4 }}>
-                                <TextField
-                                    fullWidth
-                                    label="First Name"
-                                    value={contact.firstName}
-                                    disabled
-                                    margin="normal"
-                                />
-                                <TextField
-                                    fullWidth
-                                    label="Last Name"
-                                    value={contact.lastName}
-                                    disabled
-                                    margin="normal"
-                                />
-                                <TextField
-                                    fullWidth
-                                    label="Middle Name"
-                                    value={contact.middleName}
-                                    disabled
-                                    margin="normal"
-                                />
-                                <TextField
-                                    fullWidth
-                                    label="Phone"
-                                    value={contact.phone}
-                                    disabled
-                                    margin="normal"
-                                />
-                                <TextField
-                                    fullWidth
-                                    label="Email"
-                                    value={contact.emEmail}
-                                    disabled
-                                    margin="normal"
-                                />
-                                <TextField
-                                    fullWidth
-                                    label={`Relationship to ${formData.firstName}`}
-                                    value={contact.relationship}
-                                    disabled
-                                    margin="normal"
-                                />
-                            </Box>
+                    <TextField
+                        select
+                        name="gender"
+                        label="Gender"
+                        value={formData.gender}
+                        onChange={handleChange}
+                        disabled={!isEditing}
+                        fullWidth
+                    >
+                        {['Male', 'Female', 'I do not wish to answer'].map(gender => (
+                            <MenuItem key={gender} value={gender}>{gender}</MenuItem>
                         ))}
+                    </TextField>
+                </Box>
+                    
+                {/* Contact Info Section */}
+                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, padding: 2}}>
+                <Typography variant="h6" marginTop={-2}>Contact Info</Typography>
+                    <TextField label='Cell Phone Number' name='cellPhone' value={formData.cellPhone} onChange={handleChange} disabled={!isEditing} variant='outlined' required fullWidth error={errors.cellPhone} />                    
+                    <ErrorHelperText hasError={errors.cellPhone} message={helperTexts.cellPhone} />
+                    <TextField label='Work Phone Number' name='workPhone' value={formData.workPhone} onChange={handleChange} disabled={!isEditing} variant='outlined' fullWidth error={errors.workPhone} />
+                    <ErrorHelperText hasError={errors.workPhone} message={helperTexts.workPhone} />
+                </Box>
 
-                        <ToastContainer />
-                    </form>
-                </Paper>
-            ) : (
-                'Loading...'
-            )}
-        </>
+                {/* Address Section */}
+                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, padding: 2}}>
+                <Typography variant="h6" marginTop={-2}>Address</Typography>
+                    <TextField label='Building/Apartment Number' name='building' value={formData.building} onChange={handleChange} error={errors.building} disabled={!isEditing} required fullWidth />
+                    <ErrorHelperText hasError={errors.building} message={helperTexts.building} />
+                    <TextField label='Street' name='street' value={formData.street} onChange={handleChange} disabled={!isEditing} error={errors.street} required fullWidth />
+                    <ErrorHelperText hasError={errors.street} message={helperTexts.address} />
+                    <TextField label='City' name='city' value={formData.city} onChange={handleChange} disabled={!isEditing} error={errors.city} required fullWidth />
+                    <ErrorHelperText hasError={errors.city} message={helperTexts.location} />
+                    <TextField label='State' name='city' value={formData.state} onChange={handleChange} disabled={!isEditing} error={errors.state} required fullWidth />
+                    <ErrorHelperText hasError={errors.zip} message={helperTexts.location} />
+                    <TextField label='ZIP' name='zip' type='number' value={formData.zip} variant='outlined' onChange={handleChange} fullWidth error={errors.zip} disabled={!isEditing} required />
+                    <ErrorHelperText hasError={errors.zip} message={helperTexts.zip} />
+                </Box>
+
+                {/* Employment Status Section */}
+                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, padding: 2}}>
+                    <Typography variant="h6" marginTop={-4}>Employment Status</Typography>
+                    <TextField name="permResStatus" label="U.S. Residency Status" 
+                            value={formData.isPermRes === 'undefined' ? "Non-Resident" : "Resident"} 
+                            disabled 
+                            fullWidth 
+                            variant="outlined"
+                            InputLabelProps={{
+                                shrink: true,
+                            }} />
+                    <TextField name="workAuth" label="Work Authorization" value={formData.workAuth} disabled fullWidth variant="outlined"
+                            InputLabelProps={{
+                                shrink: true,
+                            }}/>
+                    <TextField label='Visa Start Date' type='date' name='visaStartDate' value={formData.visaStartDate} onChange={handleChange} disabled={!isEditing} variant='outlined' required fullWidth />
+                    <TextField label='Visa End Date' type='date' name='visaEndDate' value={formData.visaEndDate} onChange={handleChange} disabled={!isEditing} variant='outlined' error={errors.visaEndDate} required fullWidth />
+                    <ErrorHelperText hasError={errors.visaEndDate} message={helperTexts.visaEndDate} />
+                </Box>
+
+                {/* Emergency Contact Section */}
+                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, padding: 2}}>
+                    <Typography variant="h6" marginTop={-2} marginBottom={-2}>Emergency Contact</Typography>
+                    {formData.emergencyContacts.map((contact, index) => (
+                        <div key={index} style={{ marginTop: '1rem' }}>
+                            <TextField label="First Name" name='firstName' value={contact.firstName} variant='outlined' onChange={(e) => handleEmContactChange(e, index)} fullWidth disabled={!isEditing} required sx={{ mb: 2 }} />
+                            <ErrorHelperText hasError={errors.emFirstName} message={helperTexts.name} />
+                            <TextField label="Last Name" name='lastName' value={contact.lastName} variant='outlined' onChange={(e) => handleEmContactChange(e, index)} fullWidth disabled={!isEditing} required sx={{ mb: 2 }} />
+                            <ErrorHelperText hasError={errors.emLastName} message={helperTexts.name} />
+                            <TextField label="Middle Name" name='middleName' value={contact.middleName} variant='outlined' onChange={(e) => handleEmContactChange(e, index)} fullWidth disabled={!isEditing} sx={{ mb: 2 }} />
+                            <ErrorHelperText hasError={errors.emMiddleName} message={helperTexts.name} />
+                            <TextField label="Phone" name='phone' value={contact.phone} variant='outlined' onChange={(e) => handleEmContactChange(e, index)} fullWidth disabled={!isEditing} required sx={{ mb: 2 }} />
+                            <ErrorHelperText hasError={errors.emPhone} message={helperTexts.cellPhone} />
+                            <TextField label="Email" name='emEmail' value={contact.emEmail} variant='outlined' onChange={(e) => handleEmContactChange(e, index)} fullWidth disabled={!isEditing} required sx={{ mb: 2 }} />
+                            <ErrorHelperText hasError={errors.emEmail} message={helperTexts.email} />
+                            <TextField label="Relationship to You" name='relationship' value={contact.relationship} variant='outlined' onChange={(e) => handleEmContactChange(e, index)} fullWidth disabled={!isEditing} required sx={{ mb: 2 }} />
+                            {formData.emergencyContacts.length !== 1 && isEditing &&
+                                <Button onClick={(e) => removeEmergencyContact(e, index)} disabled={!isEditing}>Remove Contact</Button>
+                            }
+                            <br />
+                        </div>
+                    ))}
+                    {isEditing && <Button onClick={addEmergencyContact} disabled={!isEditing}>Add Contact</Button>}
+                </Box>
+
+                {/* Documents Section */}
+                <Typography variant="h6">Documents</Typography>
+                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, mb: '2rem' }}>
+                    {Object.keys(docs).map((key) => {
+                        const doc = docs[key]
+                        let fileName
+                        switch (key) {
+                            case 'profilePictureURL':
+                                fileName = 'Profile Picture'
+                                break
+                            case 'driversLicenseCopy_url':
+                                fileName = "Driver's License"
+                                break
+                            case 'optUrl':
+                                fileName = 'OPT Receipt'
+                                break
+                        }
+                        return (
+                            <>
+                                <Card key={`${key}-download`} sx={{ minWidth: 275 }}>
+                                    <CardContent>
+                                        <Typography variant='h6'>{fileName}</Typography>
+                                    </CardContent>
+                                    <CardActions sx={{ justifyContent: 'center' }}>
+                                        <Button href={doc.download} download>
+                                            Download
+                                        </Button>
+                                        <Button onClick={() => window.open(doc.preview, '_blank')}>
+                                            Preview
+                                        </Button>
+                                    </CardActions>
+                                </Card>
+                            </>
+                        )
+                    })}
+                </Box>
+
+                <Button variant="outlined" onClick={handleEditToggle}>{isEditing ? 'Cancel' : 'Edit'}</Button>
+                {isEditing && <Button variant="contained" onClick={handleSubmit}>Save</Button>}
+                <ToastContainer />
+            </Box>
+        </Container>
+    ) : (
+        'Loading...'
+    )}
+    </>
     )
 }
 

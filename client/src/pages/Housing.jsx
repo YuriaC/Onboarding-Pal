@@ -3,7 +3,7 @@ import axios from 'axios'
 import { COMMENT_ENDPOINT, REPORT_ENDPOINT, USER_ENDPOINT } from '../constants'
 import { toast, ToastContainer } from 'material-react-toastify'
 import 'material-react-toastify/dist/ReactToastify.css'
-import { Container, Card, CardContent, Typography, List, ListItem, InputLabel, Select, MenuItem, ListItemText, Box, Button, TextField, Accordion, AccordionDetails, AccordionSummary, ListItemIcon } from '@mui/material'
+import { Container, Card, CardContent, Typography, List, ListItem, Select, MenuItem, ListItemText, Box, Button, TextField, Accordion, AccordionDetails, AccordionSummary } from '@mui/material'
 import PhoneIcon from '@mui/icons-material/Phone'
 import { useNavigate } from 'react-router-dom'
 
@@ -219,9 +219,15 @@ const Housing = () => {
                                         console.log('roommate:', roommate)
                                         return (
                                             <ListItem key={index}>
-                                                <ListItemText primary={`${roommate.firstName}${roommate.preferredName ? ` "${roommate.preferredName}"` : ''}${roommate.middleName ? ` ${roommate.middleName}`: ''} ${roommate.lastName}`} />
-                                                <ListItemIcon><PhoneIcon /></ListItemIcon>
-                                                <Typography>{roommate.cellPhone}</Typography>
+                                                <Box sx={{ display: 'flex', justifyContent: 'start', mb: 2, gap: 4 }}>
+                                                    <Typography variant='body1' color='textPrimary'>
+                                                        {`${roommate.firstName}${roommate.preferredName ? ` "${roommate.preferredName}"` : ''}${roommate.middleName ? ` ${roommate.middleName}`: ''} ${roommate.lastName}`}
+                                                    </Typography>
+                                                    <Typography variant='body1' color='textPrimary' sx={{ display: 'flex', alignItems: 'center' }}>
+                                                        <PhoneIcon />
+                                                        {roommate.cellPhone}
+                                                    </Typography>
+                                                </Box>
                                             </ListItem>
                                         )
                                     })}
@@ -236,7 +242,7 @@ const Housing = () => {
                 </Card>
             </Box>
             <Box sx={{ margin: 'auto', mt: 2 }}>
-                <Button onClick={() => setIsCreatingReport(!isCreatingReport)}>
+                <Button onClick={() => setIsCreatingReport(!isCreatingReport)} fullWidth sx={{ p: 2 }}>
                     Create Facility Report
                 </Button>
                 {isCreatingReport &&
@@ -262,20 +268,20 @@ const Housing = () => {
                                 onChange={handleChange}
                                 sx={{ mb: 2 }}
                             />
-                            <Button type='submit' variant='contained' color='primary'>
+                            <Button type='submit' variant='contained' color='primary' fullWidth>
                                 Submit
                             </Button>
                         </form>
                     </>
                 }
             </Box>
-            <Box sx={{ margin: 'auto', mt: 2 }}>
+            <Box sx={{ margin: 'auto', mt: 2, mb: 2 }}>
                 <Card>
                     {houseData.reports.length === 0
                         ? <Typography sx={{ p: 2 }}>You haven&apos;t made any reports for this house</Typography>
                         : (
                             <>
-                                <Button onClick={() => setIsViewingReports(!isViewingReports)}>
+                                <Button onClick={() => setIsViewingReports(!isViewingReports)} fullWidth sx={{ p: 2 }}>
                                     View Your Reports
                                 </Button>
                                 {isViewingReports &&
