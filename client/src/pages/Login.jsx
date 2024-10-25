@@ -17,12 +17,19 @@ const Login = () => {
     const user = useSelector((state) => state.user);
 
     useEffect(() => {
-        const cookie = getCookieValue('auth_token')
-        const { userRole } = getUserRoleFromCookie()
-        if (cookie) {
-            return navigate(`/${userRole}/home`)
+        const checkAuth = async () => {
+            await setTimeout(() => {
+                console.log('Log out')
+            }, 500)
+            const cookie = getCookieValue('auth_token')
+            const { userRole } = getUserRoleFromCookie()
+            if (cookie) {
+                return navigate(`/${userRole}/home`)
+            }
         }
-    })
+
+        checkAuth()
+    }, [])
 
     // Function to handle the login process
     const userLogin = (e) => {

@@ -21,6 +21,9 @@ const Navbar = () => {
         // Remove the token from the cookie
 
         document.cookie = "";
+        // setTimeout(() => {
+        //     console.log('Logged out')
+        // }, 500)
         navigate("/login"); // Redirect to login page after logout
         dispatch(logoutUserThunk()); // Dispatch the logout action
     };
