@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import './Personal.css';
 import axios from 'axios';
 import { toast, ToastContainer } from 'material-react-toastify';
+import { useNavigate, useParams } from 'react-router-dom'
 import 'material-react-toastify/dist/ReactToastify.css';
 import { Avatar, Select, MenuItem, InputLabel, Container, TextField, Box, Card, CardActions, CardContent, Typography, Button } from '@mui/material';
 import { isEmail, checkZIP, checkSSN, isAlphabetic, isAlphaNumeric } from '../helpers/HelperFunctions';
@@ -9,8 +10,9 @@ import { alphanumRegex, phoneRegex, USER_ENDPOINT, username } from '../constants
 import ErrorHelperText from '../components/ErrorHelperText';
 
 const Personal = () => {
+    const navigate = useNavigate()
+    const { employeeId } = useParams()
 
-    console.log('Personal')  // debug
     const [isEditing, setIsEditing] = useState(false);
     const [formData, setFormData] = useState({
         firstName: '',
@@ -50,25 +52,14 @@ const Personal = () => {
             relationship: '',
             counter: 0,
         }],
+        onboardingStatus: '',
     });
 
     const [formDataClone, setFormDataClone] = useState({});
+    const [isLoading, setIsLoading] = useState(true)
     const [docs, setDocs] = useState([]);  // for containing files from AWS 
     const [files, setfiles] = useState([]);
     const [emCounter, setEmCounter] = useState(1)
-    const userDataUrl = `${USER_ENDPOINT}/userinfo`;
-    const sendDataUrl = `${USER_ENDPOINT}/userinfo`;
-
-    // useEffect(() => {
-    //     axios.get(`${USER_ENDPOINT}/userinfo`, { withCredentials: true })
-    //         .then(response => {
-    //             const { onboardingStatus } = response.data
-    //             if (onboardingStatus !== 'Approved') {
-    //                 return navigate('/employee/onboarding')
-    //             }
-    //         }
-    //     )
-    // }, [])
 
     // fetch uploaded file from AWS
     const getDocs = async () => {
@@ -97,6 +88,7 @@ const Personal = () => {
             visaStartDate,
             visaEndDate,
             emergencyContacts,
+            onboardingStatus,
         } = data
         const newEmContacts = []
         for (const emContact of emergencyContacts) {
@@ -133,6 +125,7 @@ const Personal = () => {
             isPermRes,
             permResStatus,
             workAuth,
+            onboardingStatus,
             visaStartDate: visaStartDate ? visaStartDate.split('T')[0] : '',
             visaEndDate: visaEndDate ? visaEndDate.split('T')[0] : '',
             emergencyContacts: newEmContacts,
@@ -187,24 +180,45 @@ const Personal = () => {
 
 
     useEffect(() => {
-        axios.get(userDataUrl, {
-            withCredentials: true,
-        })
-        .then(response => {
-            console.log('response.data:', response.data)  // debug
-            setDataToForm(response.data)
-            // setFormData({
-            //     ...formData,
-            //     documents: response.data
-            // })
-            getDocs();
-            toast.success('Successfully fetched user data and files!')
-        })
-        .catch(error => {
-            console.log('error:', error)
-            toast.error(`Error fetching user files! Error ${error.message}`)
-        })
+        const fetchData = async () => {
+            await axios.get(`${USER_ENDPOINT}/userinfo`, {
+                withCredentials: true,
+            })
+                .then(response => {
+                    const { data } = response
+                    const { onboardingStatus } = data
+                    if (onboardingStatus !== 'Approved') {
+                        return navigate('/onboarding')
+                    }
+                    setDataToForm(data);
+                    getDocs();
+                    toast.success('Successfully fetched user data and files!')
+                })
+                .catch(error => {
+                    toast.error(`Error fetching user info! Error: ${error.message}`)
+                })
+            
+            setIsLoading(false)
+        }
+        fetchData()
     }, [])
+
+
+    // useEffect(() => {
+    //     axios.get(`${USER_ENDPOINT}/userinfo/${employeeId}`, {
+    //         withCredentials: true,
+    //     })
+    //     .then(response => {
+    //         console.log('response.data:', response.data)  // debug
+    //         setDataToForm(response.data)
+    //         getDocs();
+    //         toast.success('Successfully fetched user data and files!')
+    //     })
+    //     .catch(error => {
+    //         console.log('error:', error)
+    //         toast.error(`Error fetching user files! Error ${error.message}`)
+    //     })
+    // }, [])
 
     const handleChange = (e) => {
         const { type, name, value } = e.target
@@ -427,26 +441,19 @@ const Personal = () => {
         }
     }
 
-    // subject to change
-    const handleDocumentUpload = (e) => {
-        const files = Array.from(e.target.files);
-        const updatedDocuments = [...formData.documents, ...files];
-        setFormData((prevData) => ({
-            ...prevData,
-            documents: updatedDocuments,
-        }));
-    };
-
-
+    const profileURL = docs.profilePictureURL;
+    console.log(profileURL);
     return (
-        <Container maxWidth="md" sx={{ padding: "2rem" }}>
+        <>
+        {!isLoading ? (<Container maxWidth="md" sx={{ padding: "2rem" }}>
         <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, padding: 2, boxShadow: 3, borderRadius: 2, backgroundColor: 'white' }}>
             <Typography variant="h4">Personal Information</Typography>
                 {/* Basic Info Section */}
                 <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, padding: 2}} >
                 <Typography variant="h6">Basic Info</Typography>
-                    { docs.profilePicture === ''? <img src={formData.profilePicture} alt='profilePicture'/> :
-                        <Avatar sx={{ bgcolor: "blue", margin: "0 auto 2rem auto", width: "4rem", height: "4rem"}}>{`${formData.firstName[0]}${formData.lastName[0]}`}</Avatar>
+                    { docs.profilePictureURL === ''?
+                        <Avatar sx={{ bgcolor: "blue", margin: "0 auto 2rem auto", width: "4rem", height: "4rem"}}>{`${formData.firstName[0]}${formData.lastName[0]}`}</Avatar> :
+                        <img src={profileURL.preview} alt='profilePicture'/>
                     }
                     {/* <img src={formData.profilePicture} alt='profilePicture'/> */}
                     {isEditing && (
@@ -622,7 +629,11 @@ const Personal = () => {
                 <ToastContainer />
             </Box>
         </Container>
-    );
+    ) : (
+        'Loading...'
+    )}
+    </>
+    )
 }
 
 export default Personal
