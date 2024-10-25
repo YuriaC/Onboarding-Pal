@@ -397,7 +397,7 @@ const Personal = () => {
                 <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, padding: 2}} >
                 <Typography variant="h6">Basic Info</Typography>
                 {profilePicCheck ? (
-                    <img src={profilePicCheck} alt='profilePicture' />
+                    <img src={profilePicCheck} alt='profilePicture' style={{ maxWidth: '10rem', maxHeight: '10rem', boarderRadius: '50%', objectFit: 'cover' }} />
                 ) : (
                     <Avatar sx={{ bgcolor: "blue", margin: "0 auto 2rem auto", width: "4rem", height: "4rem"}}>
                         {`${formData.firstName[0]}${formData.lastName[0]}`}

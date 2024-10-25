@@ -675,11 +675,14 @@ const getUserDocs = async (req, res) => {
         if (!user) {
             return res.status(404).json('User not found!')
         }
-        const { profilePictureURL, optUrl, driversLicenseCopy_url } = user
+        const { profilePictureURL, optUrl, driversLicenseCopy_url, eadUrl, i983Url, i20Url } = user
         const urls = {
             profilePictureURL,
             optUrl,
             driversLicenseCopy_url,
+            eadUrl,
+            i983Url,
+            i20Url,
         }
         const ret = {}
         for (const key of ['profilePictureURL', 'optUrl', 'driversLicenseCopy_url', 'eadUrl', 'i983Url', 'i20Url']) {
