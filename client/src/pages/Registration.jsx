@@ -116,7 +116,7 @@ const Registration = () => {
                     <TextField
                         fullWidth
                         required
-                        // disabled
+                        disabled
                         label="Email"
                         value={form.email}
                         onChange={(e) => setForm({ ...form, email: e.target.value })}

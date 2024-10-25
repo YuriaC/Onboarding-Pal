@@ -1335,6 +1335,7 @@ const updateUserProfile = async (req, res) => {
                     "isPermRes": isPermRes,
                     "permResStatus": permResStatus,
                     "visaTitle": visaTitle,
+                    "optStatus": isPermRes === 'No' && nonPermWorkAuth === 'F1(CPT/OPT)' ? 'Pending' : 'Not Started'
                 }
             }
         );

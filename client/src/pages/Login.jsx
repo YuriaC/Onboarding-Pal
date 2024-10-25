@@ -20,11 +20,11 @@ const Login = () => {
         const checkAuth = async () => {
             await setTimeout(() => {
                 console.log('Log out')
-            }, 500)
+            }, 1000)
             const cookie = getCookieValue('auth_token')
             const { userRole } = getUserRoleFromCookie()
             if (cookie) {
-                return navigate(`/${userRole}/home`)
+                return navigate(`${userRole === 'hr' ? '/hr/home' : '/employee/profile'}`)
             }
         }
 
