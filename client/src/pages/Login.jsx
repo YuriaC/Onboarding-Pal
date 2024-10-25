@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import { loginUserThunk } from '../store/user/userSlice';
 import { TextField, Button, Typography, Box, Container, withTheme } from '@mui/material';
+import { USER_ENDPOINT } from '../constants';
 
 const Login = () => {
     const [form, setForm] = useState({
@@ -14,19 +15,6 @@ const Login = () => {
     const navigate = useNavigate();
     const user = useSelector((state) => state.user);
 
-    const getCookie = (name) => {
-        const value = `; ${document.cookie}`;
-        const parts = value.split(`; ${name}=`);
-        if (parts.length === 2) return parts.pop().split(';').shift();
-        return null;
-    }
-
-    useEffect(() => {
-        const cookie = getCookie('auth_token')
-        if (cookie) {
-            return navigate(`/not-found`)
-        }
-    }, [])
 
 
     // Function to handle the login process
