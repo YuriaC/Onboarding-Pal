@@ -366,8 +366,8 @@ const setApplicationInput = async (req, res) => {
     const gender = req.body.gender;
     const workauth = req.body.nonPermWorkAuth; //gc,citizen,work auth type
     const { isReferred } = req.body
-    const dlnum = req.body.dlNum;
-    const dldate = req.body.dlExpDate;
+    const dlnum = req.body.dlNum || "";//
+    const dldate = req.body.dlExpDate || "";//
     const { refFirstName, refLastName, refMiddleName, refPhone, refEmail, refRelationship } = req.body
     const { visaStartDate, visaEndDate, visaTitle } = req.body
     const emergencyContacts = req.body.emergencyContacts
@@ -381,8 +381,11 @@ const setApplicationInput = async (req, res) => {
         }
     })
 
+
     try {
+        
         const filePromises = files.map(file => {
+            console.log(file)
             const newFileName = `${Date.now().toString()}-${file.originalname}`
             const command = new PutObjectCommand({
                 Bucket: process.env.S3_BUCKET,
@@ -390,6 +393,7 @@ const setApplicationInput = async (req, res) => {
                 Body: file.buffer,
                 ContentType: file.mimetype,
             })
+
 
             return s3.send(command).then(() => {
                 const fileURL = `https://${process.env.S3_BUCKET}.s3.amazonaws.com/${newFileName}`
@@ -668,6 +672,7 @@ const getUserDocs = async (req, res) => {
         })
 
         const user = await User.findOne({ username: username }).lean().exec()
+        console.log(user)
         if (!user) {
             return res.status(404).json('User not found!')
         }
@@ -875,6 +880,30 @@ const getUserInfo = async (req, res) =>{
         return res.status(500).json({ message: error.message });
     }
 };
+
+/*const updateUserInfo = async (req, res) =>{
+    const { userId } = req.user
+    try {
+        const user = await User.findById(userId).populate('referer').populate({
+            path: 'house',
+            populate: [
+                { path: 'employees' },
+                { path: 'reports', populate: {
+                    path: 'comments'
+                }
+            }]
+        }).populate('emergencyContacts').lean().exec();
+        if (!user) {
+            return res.status(401).json({ message: 'User not Found!' });
+        }
+
+        //return res.status(200).json(user)
+    } catch (error) {
+        console.error(error);
+        return res.status(500).json({ message: error.message });
+    }
+}*/
+
 const getUserInfoById = async (req, res) =>{
     const { userId } = req.params
     console.log('userId:', userId)
@@ -1192,6 +1221,7 @@ module.exports = {
     sendRegistrationLink,
     getUserDocs,
     getUserInfo,
+    //updateUserInfo,
     getEmpolyeesProfileForHR,
     getPersonalinfoById,
     logout,
