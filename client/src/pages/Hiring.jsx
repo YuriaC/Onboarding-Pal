@@ -1,6 +1,6 @@
-import  { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import {TableContainer,TableHead, Table, TableBody, TableRow, TableCell, Box, Tabs, Tab, TextField, Button, Typography, List, ListItem, ListItemText } from '@mui/material';
+import { Divider, TableContainer,TableHead, Table, TableBody, TableRow, TableCell, Box, Tabs, Tab, TextField, Button, Typography, List, ListItem, ListItemText} from '@mui/material';
 import { sendRegistrationLinkThunk, fetchRegistrationHistoryThunk, fetchApplicationsThunk } from '../store/user/userSlice';
 import { toast, ToastContainer } from 'react-toastify';
 
@@ -56,7 +56,7 @@ const Hiring = () => {
     };
 
     return (
-        <Box>
+        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, padding: 2, boxShadow: 3, borderRadius: 2, backgroundColor: 'white' }}>
             <Tabs value={selectedTab} onChange={handleTabChange} centered>
                 <Tab label="Registration Token" />
                 <Tab label="Onboarding Application Review" />
@@ -138,9 +138,9 @@ const Hiring = () => {
 
             {selectedTab === 1 && (
                 <Box sx={{ padding: 3 }}>
-
                     {/* Pending Applications */}
-                    <Typography variant="h6" sx={{ marginTop: 2 }}>Pending Applications</Typography>
+                    <Box sx={{margin: '0 auto 2rem auto'}}>
+                    <Typography variant="h6" sx={{ marginTop: 1 }}>Pending Applications</Typography>
                     {pendingApplications.length === 0 ? (
                         <Typography>No pending applications</Typography>
                     ) : (
@@ -158,29 +158,35 @@ const Hiring = () => {
                             )})}
                         </List>
                     )}
+                    <Divider sx={{marginTop: "2rem", bgcolor: "#1976d2"}}></Divider>
+                    </Box>
 
                     {/* Rejected Applications */}
+                    <Box sx={{margin: '0 auto 2rem auto'}}>
                     <Typography variant="h6" sx={{ marginTop: 2 }}>Rejected Applications</Typography>
                     {rejectedApplications.length === 0 ? (
                         <Typography>No rejected applications</Typography>
                     ) : (
-                        <List>
+                        <List sx={{borderRadius: 2, boxShadow: 2}}>
                             {rejectedApplications.map(application => {
                                 return (
                                 <ListItem key={application._id}>
                                     <ListItemText
                                         primary={`Name: ${application.firstName} ${application.lastName} | Email: ${application.email}`}
                                     />
-                                    <Button onClick={() => handleViewApplication(application._id)}>
+                                    <Button onClick={() => handleViewApplication(application._id)} sx={{marginLeft: '.5rem'}}>
                                         View Application
                                     </Button>
                                 </ListItem>
                             )})}
                         </List>
                     )}
+                    <Divider sx={{marginTop: "2rem", bgcolor: "#1976d2"}}></Divider>
+                    </Box>
 
                     {/* Approved Applications */}
-                    <Typography variant="h6" sx={{ marginTop: 2 }}>Approved Applications</Typography>
+                    <Box sx={{margin: '0 auto'}}>
+                    <Typography variant="h6" sx={{ marginTop: 1 }}>Approved Applications</Typography>
                     {approvedApplications.length === 0 ? (
                         <Typography>No approved applications</Typography>
                     ) : (
@@ -197,6 +203,7 @@ const Hiring = () => {
                             ))}
                         </List>
                     )}
+                    </Box>
                 </Box>
             )}
             <ToastContainer />
