@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react'
 import axios from 'axios'
 import { toast, ToastContainer } from 'react-toastify'
-import { isEmail, isAddress, checkZIP, checkSSN, isAlphabetic, isAlphaNumeric } from '../helpers/HelperFunctions';
+import { isAlphabetic } from '../helpers/HelperFunctions';
 import {
     Avatar,
     Box,
@@ -17,13 +17,12 @@ import {
     CardActions,
     CardContent,
     Button,
-    Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle,
+    Dialog, DialogActions, DialogTitle,
     InputLabel,
     MenuItem,
     Select,
 } from '@mui/material'
-import { alphanumRegex, phoneRegex, USER_ENDPOINT } from '../constants';
-import ErrorHelperText from '../components/ErrorHelperText';
+import { USER_ENDPOINT } from '../constants';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faUser } from '@fortawesome/free-solid-svg-icons'
 
@@ -111,19 +110,19 @@ const PersonalAlt = () => {
         emEmail: false,
     })
 
-    const helperTexts = {
-        name: "Name must contain only English characters.", 
-        dlNum: "Driver's license number must be alphanumeric!",
-        building: "Building Adress can only contain alphanumeric characters!",
-        ssn: "SSN must be 9-digit long",
-        address: "Street/ City/ State entry must be english characters!",
-        zip: 'ZIP code must have 5 digits!',
-        dob: 'Birthday must be in the past!',
-        visaEndDate: 'Visa end date must be in the future!',
-        cellPhone: 'Phone number must be in a proper format!',
-        workPhone: 'Phone number must be in a proper format!',
-        email: 'Email must be in a proper format!',
-    }
+    // const helperTexts = {
+    //     name: "Name must contain only English characters.", 
+    //     dlNum: "Driver's license number must be alphanumeric!",
+    //     building: "Building Adress can only contain alphanumeric characters!",
+    //     ssn: "SSN must be 9-digit long",
+    //     address: "Street/ City/ State entry must be english characters!",
+    //     zip: 'ZIP code must have 5 digits!',
+    //     dob: 'Birthday must be in the past!',
+    //     visaEndDate: 'Visa end date must be in the future!',
+    //     cellPhone: 'Phone number must be in a proper format!',
+    //     workPhone: 'Phone number must be in a proper format!',
+    //     email: 'Email must be in a proper format!',
+    // }
 
     const [editSections, setEditSections] = useState({
         nameSection: false,

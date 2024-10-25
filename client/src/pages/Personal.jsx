@@ -5,8 +5,8 @@ import { toast, ToastContainer } from 'material-react-toastify';
 import { useNavigate } from 'react-router-dom'
 import 'material-react-toastify/dist/ReactToastify.css';
 import { Avatar, Select, MenuItem, InputLabel, FormControl, Dialog, DialogTitle, DialogActions, Radio, FormControlLabel, FormLabel, RadioGroup, Container, TextField, Box, Card, CardActions, CardContent, Typography, Button } from '@mui/material';
-import { isEmail, isAddress, checkZIP, checkSSN, isAlphabetic, isAlphaNumeric } from '../helpers/HelperFunctions';
-import { alphanumRegex, phoneRegex, USER_ENDPOINT } from '../constants';
+import { isEmail, isAddress, checkZIP, isAlphabetic, isAlphaNumeric } from '../helpers/HelperFunctions';
+import { phoneRegex, USER_ENDPOINT } from '../constants';
 import ErrorHelperText from '../components/ErrorHelperText';
 
 const Personal = () => {

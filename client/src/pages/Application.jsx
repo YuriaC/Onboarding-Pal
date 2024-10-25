@@ -4,7 +4,6 @@ import { USER_ENDPOINT } from '../constants'
 import axios from 'axios'
 import { toast, ToastContainer } from 'react-toastify'
 import {
-    Avatar,
     Box,
     Button,
     TextField,
@@ -19,9 +18,6 @@ import {
     CardHeader,
     CardContent,
 } from '@mui/material'
-
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faUser } from '@fortawesome/free-solid-svg-icons'
 
 const Application = () => {
     const navigate = useNavigate()
