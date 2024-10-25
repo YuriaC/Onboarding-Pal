@@ -4,6 +4,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { loginUserThunk } from '../store/user/userSlice';
 import { TextField, Button, Typography, Box, Container, withTheme } from '@mui/material';
 import { USER_ENDPOINT } from '../constants';
+import { getCookieValue, getUserRoleFromCookie } from '../helpers/HelperFunctions';
 
 const Login = () => {
     const [form, setForm] = useState({
@@ -15,7 +16,13 @@ const Login = () => {
     const navigate = useNavigate();
     const user = useSelector((state) => state.user);
 
-
+    useEffect(() => {
+        const cookie = getCookieValue('auth_token')
+        const { userRole } = getUserRoleFromCookie()
+        if (cookie) {
+            return navigate(`/${userRole}/home`)
+        }
+    })
 
     // Function to handle the login process
     const userLogin = (e) => {
