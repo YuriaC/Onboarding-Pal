@@ -381,7 +381,6 @@ const setApplicationInput = async (req, res) => {
         }
     })
 
-
     try {
         
         const filePromises = files.map(file => {
@@ -1204,7 +1203,143 @@ const postVisaDecision = async(req,res) =>{
         return res.status(500).json({ message: error.message });
     }
 
-}
+
+    
+
+};
+
+const updateUserProfile = async (req, res) => {
+    const username = req.body.username;
+    const { files } = req;
+    const { AccessKeyId, SecretAccessKey, SessionToken } = req.credentials;
+    const firstname = req.body.firstName;
+    const lastname = req.body.lastName;
+    const middlename = req.body.middleName;
+    const preferredname = req.body.preferredName;
+    const { building, street, city, state, zip } = req.body
+    const address = `${building} ${street}, ${city}, ${state} ${zip}`
+    const cellPhone = req.body.cellPhone;
+    const workPhone = req.body.workPhone
+    const ssn = req.body.ssn;
+    const dob = req.body.dob;
+    const gender = req.body.gender;
+    const { visaStartDate, visaEndDate } = req.body
+    const emergencyContacts = req.body.emergencyContacts
+
+    let profilePictureURL = '';
+    // let driversLicenseCopy_url = '';
+    // let optUrl = '';
+    // let eadUrl = '';
+    // let i983Url = '';
+    // let i20Url = '';
+
+    const s3 = new S3Client({
+        region: process.env.AWS_REGION,
+        credentials: {
+            accessKeyId: AccessKeyId,
+            secretAccessKey: SecretAccessKey,
+            sessionToken: SessionToken,
+        }
+    });
+
+    try {
+        const filePromises = files.map(file => {
+            const newFileName = `${Date.now().toString()}-${file.originalname}`;
+            const command = new PutObjectCommand({
+                Bucket: process.env.S3_BUCKET,
+                Key: newFileName,
+                Body: file.buffer,
+                ContentType: file.mimetype,
+            });
+
+            return s3.send(command).then(() => {
+                const fileURL = `https://${process.env.S3_BUCKET}.s3.amazonaws.com/${newFileName}`;
+                switch (file.fieldname) {
+                    case 'profilePicture':
+                        profilePictureURL = fileURL
+                        break
+                    // case 'optReceipt':
+                    //     optReceiptURL = fileURL
+                    //     break
+                    // case 'dlCopy':
+                    //     dlCopyURL = fileURL
+                    //     break
+                    // case 'ead':
+                    //     eadUrl = fileURL;
+                    //     break;
+                    // case 'i983':
+                    //     i983Url = fileURL;
+                    //     break;
+                    // case 'i20':
+                    //     i20Url = fileURL;
+                    //     break;
+                }
+            });
+        });
+
+        await Promise.all(filePromises);  // throw an error if any promise is rejected
+
+        const user = await User.findOne({ username }).lean().exec();
+        if (!user) {
+            return res.status(404).json('User not Found!');
+        }
+
+        const emergencyContactIds = []
+        for (const emergencyContact of emergencyContacts) {
+            const {
+                firstName,
+                lastName,
+                middleName,
+                phone,
+                emEmail,
+                relationship,
+            } = emergencyContact
+            const contact = await Contact.create({
+                firstName,
+                lastName,
+                middleName,
+                cellPhone: phone,
+                email: emEmail,
+                relationship,
+            })
+            if (!contact) {
+                res.status(500).json(`Error creating emergency contact! Error: ${error.message}`)
+            }
+            emergencyContactIds.push(contact._id)
+        }
+
+        const result = await User.updateOne(
+            { _id: user._id },
+            {
+                $set: {
+                    "firstName": firstname,
+                    "lastName": lastname,
+                    "middleName": middlename,
+                    "preferredName": preferredname,
+                    "profilePictureURL": profilePictureURL !== '' ? profilePictureURL: req.body.profilePictureURL,
+                    "address": address,
+                    "cellPhone": cellPhone,
+                    "workPhone": workPhone,
+                    "ssn": ssn,
+                    "birthday": dob,
+                    "gender": gender,
+                    "emergencyContacts": emergencyContactIds,
+                    "visaStartDate": visaStartDate || undefined,
+                    "visaEndDate": visaEndDate || undefined,
+                }
+            }
+        );
+
+        if (result.acknowledged) {
+            return res.status(200).json(`Updated status: ${result.acknowledged ? "success" : "failed"}`);
+        }
+        return res.status(401).json(`Updated status: ${result.acknowledged ? "success" : "failed"}`);
+    } catch (error) {
+        console.error(error);
+        return res.status(500).json({ message: error.message });
+    }
+};
+
 module.exports = {
     register,
     login,
@@ -1235,4 +1370,5 @@ module.exports = {
     getUserDocsById,
     uploadNewWorkDoc,
     updateWorkAuthStatus,
+    updateUserProfile,
 }
