@@ -21,6 +21,7 @@ const Personal = () => {
         username: '',
         preferredName: '',
         profilePicture: null,
+        profilePictureURL: '',
         optReceipt: null,
         dlCopy: null,
         building: '',
@@ -65,6 +66,7 @@ const Personal = () => {
 
     const setDataToForm = (data) => {
         const {
+            username,
             firstName,
             lastName,
             middleName,
@@ -82,6 +84,7 @@ const Personal = () => {
             visaStartDate,
             visaEndDate,
             emergencyContacts,
+            profilePictureURL,
         } = data
         const newEmContacts = []
         for (const emContact of emergencyContacts) {
@@ -105,6 +108,7 @@ const Personal = () => {
         const street = buildingAndStreet.substring(firstSpaceIndex + 1)
         setFormData({
             ...formData,
+            username,
             firstName: firstName.charAt(0).toUpperCase() + firstName.slice(1),
             lastName: lastName.charAt(0).toUpperCase() + lastName.slice(1),
             middleName,
@@ -113,6 +117,7 @@ const Personal = () => {
             ssn,
             dob: birthday.split('T')[0],
             gender,
+            profilePictureURL,
             cellPhone,
             workPhone,
             isPermRes,
@@ -195,23 +200,6 @@ const Personal = () => {
         fetchData()
     }, [])
 
-
-    // useEffect(() => {
-    //     axios.get(`${USER_ENDPOINT}/userinfo/${employeeId}`, {
-    //         withCredentials: true,
-    //     })
-    //     .then(response => {
-    //         console.log('response.data:', response.data)  // debug
-    //         setDataToForm(response.data)
-    //         getDocs();
-    //         toast.success('Successfully fetched user data and files!')
-    //     })
-    //     .catch(error => {
-    //         console.log('error:', error)
-    //         toast.error(`Error fetching user files! Error ${error.message}`)
-    //     })
-    // }, [])
-
     const handleChange = (e) => {
         const { type, name, value } = e.target
         setFormData({
@@ -220,14 +208,12 @@ const Personal = () => {
         })
     }
 
-
     const handleEmContactChange = (e, index) => {
         const { name, value } = e.target
         const newContacts = [...formData.emergencyContacts]
         newContacts[index][name] = value
         setFormData({...formData, emergencyContacts: newContacts})
     }
-
 
     const handleEditToggle = () => {
         if (isEditing) {
@@ -288,10 +274,11 @@ const Personal = () => {
         return formData;
     }
 
-    const handleSubmit = async (e) => {
-        e.preventDefault()
-        const newErrorObject = {}
 
+    const handleSubmit = async (e) => {
+        e.preventDefault();   
+
+        const newErrorObject = {}
         for (const key in errors) {
             newErrorObject[key] = false
         }
@@ -362,7 +349,7 @@ const Personal = () => {
         const data = createFormData(formData)
 
         try {
-            await axios.post(`${USER_ENDPOINT}/applicationinput`, data, {
+            await axios.post(`${USER_ENDPOINT}/updateProfile`, data, {
                 headers: {
                     'Content-Type': 'multipart/form-data',
                 },
