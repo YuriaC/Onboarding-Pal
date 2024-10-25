@@ -21,7 +21,9 @@ const EmployeeProfiles = () => {
                 searchTerm : value
             }
         })
-        setDsiayEmployee(filteredEmployees.data)
+        const newData = filteredEmployees.data
+        newData.sort((a, b) => a.lastName > b.lastName ? -1 : 1)
+        setDsiayEmployee(newData)
     }
 
     useEffect(()=>{

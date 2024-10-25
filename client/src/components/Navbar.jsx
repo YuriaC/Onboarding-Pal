@@ -107,6 +107,14 @@ const Navbar = () => {
                                         Home/Employee Profiles
                                     </NavLink>
                                     <NavLink
+                                        to="/hr/visa-status"
+                                        className={({ isActive }) =>
+                                            isActive ? "active-link" : "nav-link"
+                                        }
+                                    >
+                                        Visa Status
+                                    </NavLink>
+                                    <NavLink
                                         to="/hr/hiring"
                                         className={({ isActive }) =>
                                             isActive ? "active-link" : "nav-link"
@@ -121,14 +129,6 @@ const Navbar = () => {
                                         }
                                     >
                                         Housing Management
-                                    </NavLink>
-                                    <NavLink
-                                        to="/hr/visa-status"
-                                        className={({ isActive }) =>
-                                            isActive ? "active-link" : "nav-link"
-                                        }
-                                    >
-                                        Visa Status HR
                                     </NavLink>
                                 </>
                             )}
