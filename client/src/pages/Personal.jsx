@@ -445,26 +445,23 @@ const Personal = () => {
 
     return (
         <>
-        {!isLoading ? (<Container maxWidth="md" sx={{ padding: "2rem" }}>
-        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, padding: 2, boxShadow: 3, borderRadius: 2, backgroundColor: 'white' }}>
-            <Typography variant="h4">Personal Information</Typography>
-                {/* Basic Info Section */}
-                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, padding: 2}} >
-                <Typography variant="h6">Basic Info</Typography>
-                {profilePicCheck ? (
-                    <img src={profilePicCheck} alt='profilePicture' />
-                ) : (
-                    <Avatar sx={{ bgcolor: "blue", margin: "0 auto 2rem auto", width: "4rem", height: "4rem"}}>
-                        {`${formData.firstName[0]}${formData.lastName[0]}`}
-                    </Avatar>
-                )}
-                    {/* <img src={formData.profilePicture} alt='profilePicture'/> */}
-                    {isEditing && (
-                        <TextField                        
-                            type='file'
-                            name='profilePicture'
-                            onChange={handleChange}
-                            accept='image/*'
+            {!isLoading ? (
+                <Paper sx={{ p: 3, width: '60vw' }}>
+                    <Typography variant='h4' sx={{ mb: 1 }}>
+                        {formData.firstName} {formData.lastName} ({formData.username})
+                    </Typography>
+                    {formData.profilePicture ? null : (
+                       <Avatar sx={{ width: 60, margin: 'auto', height: 60 }}>
+                            { formData.firstName ?formData.firstName[0]:              
+                            <FontAwesomeIcon icon={faUser} />
+                        }
+
+                        </Avatar>
+                    )}
+
+                    <form>
+                        <TextField
+
                             fullWidth
                             label="Upload New Profile Picture" 
                             variant="outlined"

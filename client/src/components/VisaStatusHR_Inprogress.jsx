@@ -257,7 +257,7 @@ const VisaStatusHR_inprogress = () => {
     return (
         <>
             <Box sx={{ 
-                width: '100%',
+                width: '90%',
                 height: '400px', 
                 margin: 'auto', 
                 padding: '10px', 

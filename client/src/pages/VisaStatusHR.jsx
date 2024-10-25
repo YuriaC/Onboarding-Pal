@@ -12,7 +12,7 @@ const VisaStatusHR = () => {
         
 
     return (
-        <div>
+        <div style={{ minWidth: '1200px' }}>
             <Button onClick={() => handleToggle('all')}>
                 {visibleDiv === 'all' ? 'Hide' : 'Show'} All
             </Button>
@@ -20,22 +20,22 @@ const VisaStatusHR = () => {
                 {visibleDiv === 'inprogress' ? 'Hide' : 'Show'} In Progress
             </Button>
 
-            {/* Conditionally render D  iv 1 */}
+            {/* Conditionally render Div 1 */}
             {visibleDiv === 'all' && (
-                <div >
-                <p>All Employees</p>
-                <VisaStatusHR_all/>
+                <div>
+                    <p>All Employees</p>
+                    <VisaStatusHR_all/>
                 </div>
             )}
 
             {/* Conditionally render Div 2 */}
             {visibleDiv === 'inprogress' && (
-                <div >
-                <p>In progress Employees</p>
-                <VisaStatusHR_inprogress/>
+                <div>
+                    <p>In progress Employees</p>
+                    <VisaStatusHR_inprogress/>
                 </div>
             )}
-    </div>
+        </div>
     )
 }
 

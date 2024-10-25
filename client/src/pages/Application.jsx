@@ -242,12 +242,8 @@ const Application = () => {
                             </Card>
                         </Box>
                     }
+                    
 
-                    {formData.profilePicture ? <img src={formData.profilePicture} style={{ maxWidth: '8rem', maxHeight: '8rem', marginTop: '0rem' }} /> : (
-                        <Avatar sx={{ width: 60, margin: 'auto', height: 60 }}>
-                            <FontAwesomeIcon icon={faUser} />
-                        </Avatar>
-                    )}
 
                     <form>
                         <TextField
