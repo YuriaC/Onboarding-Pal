@@ -14,6 +14,20 @@ const Login = () => {
     const navigate = useNavigate();
     const user = useSelector((state) => state.user);
 
+    const getCookie = (name) => {
+        const value = `; ${document.cookie}`;
+        const parts = value.split(`; ${name}=`);
+        if (parts.length === 2) return parts.pop().split(';').shift();
+        return null;
+    }
+
+    useEffect(() => {
+        const cookie = getCookie('auth_token')
+        if (cookie) {
+            return navigate(`/not-found`)
+        }
+    }, [])
+
 
     // Function to handle the login process
     const userLogin = (e) => {
