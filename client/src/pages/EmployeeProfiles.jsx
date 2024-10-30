@@ -1,10 +1,9 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import axios from 'axios';
-import {Link} from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import { setSearchTerm } from '../store/user/searchTerm';
 import './EmployeeProfiles.css';
-
+import { Container, Box, Button, TextField, CircularProgress, Typography } from '@mui/material'; // Material UI components
 
 const EmployeeProfiles = () => {
     const [displayEmployee, setDsiayEmployee] = useState([]);
@@ -21,7 +20,9 @@ const EmployeeProfiles = () => {
                 searchTerm : value
             }
         })
-        setDsiayEmployee(filteredEmployees.data)
+        const newData = filteredEmployees.data
+        newData.sort((a, b) => a.lastName > b.lastName ? -1 : 1)
+        setDsiayEmployee(newData)
     }
 
     useEffect(()=>{
@@ -30,44 +31,59 @@ const EmployeeProfiles = () => {
 
 
     return (
-        <div className="employee-profiles">
+        // <div className="employee-profiles">
+        <Container sx={{padding: "2rem", width: '60vw'}}>
+            <Box sx={{ display: 'flex', flexDirection: 'column', padding: 2, boxShadow: 3, borderRadius: 2, backgroundColor: 'white' }}>
             <h2>Employee Profiles</h2>
 
             <div className="employee-summary">
                 <h3>Total Employees: {displayEmployee.length}</h3>
             </div>
 
-            <input
-                type="text"
-                placeholder="Search by name..."
+            <TextField
+                label = "Search Bar"
+                variant='outlined'
+                placeholder="Search Employee by Name..."
                 value={searchTermState}
                 onChange={(e)=>{searchEmployee(e.target.value)}}
                 className="search-bar"
+                sx={{ mb: 6, margin:"0 auto 2rem auto", width: '70%', boxShadow: 1}}
+                InputLabelProps={{
+                    shrink: true,
+                }}           
             />
 
+            <Typography>{displayEmployee.length === 0 ? 'No records found' : displayEmployee.length === 1 ? 'One record found' : 'Multiple records found'}</Typography>
+
             <div className="employee-list">
-                {displayEmployee.length > 0 ? (
+                {displayEmployee.length > 0 && (
                     displayEmployee.map((employee) => (
                         <div className="employee-item" key={employee._id}>
                             <h4>
-                                <Link
-                                    to={`/hr/employee-profiles/${employee._id}`}
-                                    rel="noopener noreferrer"
-                                >
-                                    {`${employee.firstName} ${employee.lastName} ${employee.username}`.trim() || 'Undefined Name'}
-                                </Link>
+                                <Typography variant='h6' onClick={() => window.open(`/hr/employee-profiles/${employee._id}`, '_blank', 'noopener,noreferrer')} sx={{ textDecoration: 'underline', cursor: 'pointer' }}>{`${employee.firstName} ${employee.lastName}`.trim() || 'Undefined Name'}</Typography>
                             </h4>
-                            <p>SSN: {employee.ssn || 'Undefined SSN'}</p>
-                            <p>Work Authorization: {employee.workAuth || 'Undefined Work Authorization'}</p>
-                            <p>Phone: {employee.workPhone || 'Undefined Phone'}</p>
-                            <p>Email: {employee.email || 'Undefined Email'}</p>
+                            <h5>{employee.username}</h5>
+                            {employee.ssn && <p>SSN: {employee.ssn}</p>}
+                            {employee.isPermRes === 'Yes' ? (
+                                <p>Work Authorization: {employee.permResStatus}</p>
+                            ) : (
+                                <>
+                                    {employee.workAuth === 'Other' ? (
+                                        <p>Work Authorization: {employee.visaTitle ? employee.visaTitle : 'Other (Unspecified)'}</p>
+                                    ) : (
+                                        <p>Work Authorization: {employee.workAuth}</p>
+                                    )}
+                                </>
+                            )}
+                            {employee.cellPhone && <p>Phone: {employee.cellPhone}</p>}
+                            {employee.email && <p>Email: {employee.email}</p>}
                         </div>
                     ))
-                ) : (
-                    <p>No employees found.</p>
                 )}
             </div>
-        </div>
+        {/* </div> */}
+        </Box>
+        </Container>
     );
 };
 

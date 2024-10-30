@@ -2,7 +2,9 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import { loginUserThunk } from '../store/user/userSlice';
-import { TextField, Button, Typography, Box, Container } from '@mui/material';
+import { TextField, Button, Typography, Box, Container, withTheme } from '@mui/material';
+import { USER_ENDPOINT } from '../constants';
+import { getCookieValue, getUserRoleFromCookie } from '../helpers/HelperFunctions';
 
 const Login = () => {
     const [form, setForm] = useState({
@@ -14,6 +16,20 @@ const Login = () => {
     const navigate = useNavigate();
     const user = useSelector((state) => state.user);
 
+    useEffect(() => {
+        const checkAuth = async () => {
+            await setTimeout(() => {
+                console.log('Log out')
+            }, 1000)
+            const cookie = getCookieValue('auth_token')
+            const { userRole } = getUserRoleFromCookie()
+            if (cookie) {
+                return navigate(`${userRole === 'hr' ? '/hr/home' : '/employee/profile'}`)
+            }
+        }
+
+        checkAuth()
+    }, [])
 
     // Function to handle the login process
     const userLogin = (e) => {
@@ -22,13 +38,12 @@ const Login = () => {
     };
 
  
-
     return (
-        <Container maxWidth="sm" sx={{ marginTop: 8 }}>
+        <Container sx={{ width: '25vw', marginTop: 15}}>
             <Box
                 component="form"
                 onSubmit={userLogin}
-                sx={{ display: 'flex', flexDirection: 'column', gap: 2, padding: 2, boxShadow: 3, borderRadius: 2 }}
+                sx={{ display: 'flex', flexDirection: 'column', gap: 2, padding: 2, boxShadow: 3, borderRadius: 2,  backgroundColor: 'white'}}
             >
                 <Typography variant="h4" align="center" gutterBottom>
                     Login
@@ -61,7 +76,6 @@ const Login = () => {
                 />
 
 
-
                 <Button
                     type="submit"
                     variant="contained"
@@ -72,8 +86,6 @@ const Login = () => {
                     Login
 
                 </Button>
-
-
             </Box>
         </Container>
     );

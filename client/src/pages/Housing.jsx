@@ -3,11 +3,13 @@ import axios from 'axios'
 import { COMMENT_ENDPOINT, REPORT_ENDPOINT, USER_ENDPOINT } from '../constants'
 import { toast, ToastContainer } from 'material-react-toastify'
 import 'material-react-toastify/dist/ReactToastify.css'
-import { Card, CardContent, Typography, List, ListItem, ListItemText, Box, Button, TextField, Accordion, AccordionDetails, AccordionSummary, ListItemIcon } from '@mui/material'
+import { Container, Card, CardContent, Typography, List, ListItem, Select, MenuItem, ListItemText, Box, Button, TextField, Accordion, AccordionDetails, AccordionSummary } from '@mui/material'
 import PhoneIcon from '@mui/icons-material/Phone'
+import { useNavigate } from 'react-router-dom'
 
 const Housing = () => {
 
+    const navigate = useNavigate()
     const [houseData, setHouseData] = useState({
         address: '',
         employees: [],
@@ -38,6 +40,10 @@ const Housing = () => {
     useEffect(() => {
         axios.get(`${USER_ENDPOINT}/userinfo`, { withCredentials: true })
             .then(response => {
+                const { onboardingStatus } = response.data
+                if (onboardingStatus !== 'Approved') {
+                    return navigate('/onboarding')
+                }
                 const { house } = response.data
                 console.log('response.data:', response.data)
                 setUserInfo({
@@ -177,9 +183,27 @@ const Housing = () => {
             })
     }
 
+    const handleStatusChange = async (e, reportId) => {
+        e.preventDefault()
+        try {
+            await axios.put(`${REPORT_ENDPOINT}/updatestatus/${reportId}`, {
+                newStatus: e.target.value
+            })
+            setSubmitted(!submitted)
+            toast.success('Successfully updated report status!')
+        }
+        catch (error) {
+            toast.error(`Error updating report status! Error: ${error.message}`)
+        }
+    }
+
+    const handleStatusClick = (e) => {
+        e.stopPropagation()
+    }
+
     return (
-        <div style={{ width: '90vw' }}>
-            <Box sx={{ margin: 'auto', mt: 5 }}>
+        <Container sx={{ marginTop: 8, width: '80vw' }}>
+            <Box sx={{ mt: 5 }}>
                 <Card>
                     <CardContent>
                         <Typography variant='h4' sx={{ mb: '2rem' }}>
@@ -195,9 +219,15 @@ const Housing = () => {
                                         console.log('roommate:', roommate)
                                         return (
                                             <ListItem key={index}>
-                                                <ListItemText primary={`${roommate.firstName}${roommate.preferredName ? ` "${roommate.preferredName}"` : ''}${roommate.middleName ? ` ${roommate.middleName}`: ''} ${roommate.lastName}`} />
-                                                <ListItemIcon><PhoneIcon /></ListItemIcon>
-                                                <Typography>{roommate.cellPhone}</Typography>
+                                                <Box sx={{ display: 'flex', justifyContent: 'start', mb: 2, gap: 4 }}>
+                                                    <Typography variant='body1' color='textPrimary'>
+                                                        {`${roommate.firstName}${roommate.preferredName ? ` "${roommate.preferredName}"` : ''}${roommate.middleName ? ` ${roommate.middleName}`: ''} ${roommate.lastName}`}
+                                                    </Typography>
+                                                    <Typography variant='body1' color='textPrimary' sx={{ display: 'flex', alignItems: 'center' }}>
+                                                        <PhoneIcon />
+                                                        {roommate.cellPhone}
+                                                    </Typography>
+                                                </Box>
                                             </ListItem>
                                         )
                                     })}
@@ -212,7 +242,7 @@ const Housing = () => {
                 </Card>
             </Box>
             <Box sx={{ margin: 'auto', mt: 2 }}>
-                <Button onClick={() => setIsCreatingReport(!isCreatingReport)}>
+                <Button onClick={() => setIsCreatingReport(!isCreatingReport)} fullWidth sx={{ p: 2 }}>
                     Create Facility Report
                 </Button>
                 {isCreatingReport &&
@@ -238,20 +268,20 @@ const Housing = () => {
                                 onChange={handleChange}
                                 sx={{ mb: 2 }}
                             />
-                            <Button type='submit' variant='contained' color='primary'>
+                            <Button type='submit' variant='contained' color='primary' fullWidth>
                                 Submit
                             </Button>
                         </form>
                     </>
                 }
             </Box>
-            <Box sx={{ margin: 'auto', mt: 2 }}>
+            <Box sx={{ margin: 'auto', mt: 2, mb: 2 }}>
                 <Card>
                     {houseData.reports.length === 0
-                        ? <Typography>You haven&apos;t made any reports for this house</Typography>
+                        ? <Typography sx={{ p: 2 }}>You haven&apos;t made any reports for this house</Typography>
                         : (
                             <>
-                                <Button onClick={() => setIsViewingReports(!isViewingReports)}>
+                                <Button onClick={() => setIsViewingReports(!isViewingReports)} fullWidth sx={{ p: 2 }}>
                                     View Your Reports
                                 </Button>
                                 {isViewingReports &&
@@ -262,11 +292,17 @@ const Housing = () => {
                                                 <Accordion key={index} sx={{ minWidth: '60vw' }}>
                                                     <AccordionSummary>
                                                         <Box sx={{ width: '100%' }}>
-                                                            <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
+                                                            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                                                                 <Typography sx={{ fontWeight: 'bold' }}>{report.title}</Typography>
                                                                 <Typography color='text.secondary'>{report.createdBy}</Typography>
                                                                 <Typography color='text.secondary'>{report.timestamp}</Typography>
-                                                                <Typography>Status: {report.status}</Typography>
+                                                                <Box>
+                                                                    <Select name='status' value={report.status} onClick={handleStatusClick} onChange={(e) => handleStatusChange(e, report._id)}>
+                                                                        <MenuItem value='Open'>Open</MenuItem>
+                                                                        <MenuItem value='In Progress'>In Progress</MenuItem>
+                                                                        <MenuItem value='Closed'>Closed</MenuItem>
+                                                                    </Select>
+                                                                </Box>
                                                             </Box>
                                                             <Box>
                                                                 <Typography variant='body2'>{report.description}</Typography>
@@ -330,7 +366,7 @@ const Housing = () => {
                 </Card>
             </Box>
             <ToastContainer />
-        </div>
+        </Container>
     )
 }
 

@@ -4,13 +4,17 @@ import axios from 'axios'
 import { useNavigate } from 'react-router-dom';
 import { ToastContainer, toast } from 'react-toastify';
 import DeleteIcon from '@mui/icons-material/Delete'
-import PhoneIcon from '@mui/icons-material/Phone';
-import MailIcon from '@mui/icons-material/Mail'
 import {
     Typography,
-    Box,
     Button,
-    Card,
+    Paper,
+    Table,
+    TableBody,
+    TableCell,
+    TableContainer,
+    TableHead,
+    TableRow,
+    Box,
 } from '@mui/material'
 
 const HousingMgmt = () => {
@@ -40,7 +44,6 @@ const HousingMgmt = () => {
         })
             .then(response => {
                 console.log('response:', response)
-                // setHouses(prev => prev.filter(house => house._id !== houseId))
                 setChanged(prev => !prev)
                 toast.success(`Successfully deleted ${address}!`)
             })
@@ -55,77 +58,46 @@ const HousingMgmt = () => {
     }
 
     return (
-        <div>
+        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, padding: 2, boxShadow: 3, borderRadius: 2, backgroundColor: 'white' }}>
             <h1>Housing Management</h1>
-            <button onClick={() => navigate('/hr/addhouse')}>Add House</button>
-            <Box sx={{ justifyContent: 'center', width: '100%' }}>
-            {houses.map((house, index) => {
-                return (
-                    <div key={house.address}>
-                        <Card key={house.address} sx={{ mb: '1rem' }}>
-                            <Box sx={{ width: '100%', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                                <Box sx={{ mr: '1rem' }}>
+            <Button onClick={() => navigate('/hr/addhouse')} sx={{ p: 2, mb: 2 }} fullWidth>Add House</Button>
+
+            <TableContainer component={Paper} sx={{ mb: 3 }}>
+                <Table sx={{ minWidth: 650 }} aria-label="simple table">
+                    <TableHead>
+                        <TableRow>
+                            <TableCell>Address</TableCell>
+                            <TableCell>Landlord</TableCell>
+                            <TableCell>Phone</TableCell>
+                            <TableCell>Email </TableCell>
+                            <TableCell>Residents</TableCell>
+                            <TableCell align="right">Actions</TableCell>
+                        </TableRow>
+                    </TableHead>
+                    <TableBody>
+                        {houses.map((house) => (
+                            <TableRow
+                                key={house.address}
+                                sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
+                            >
+                                <TableCell component="th" scope="row">
                                     <Typography variant='h5' sx={{ cursor: 'pointer'}} onClick={(e) => handleClick(e, house._id)}>{house.address.split(', ')[0]}</Typography>
                                     <Typography variant='body1'>{house.address.split(', ')[1]}, {house.address.split(', ')[2]}</Typography>
-                                </Box>
-                                <Box sx={{ mr: '1rem' }}>
-                                    <Typography color='text.primary' sx={{ ml: 2 }} display='block'>{house.landlordName}</Typography>
-                                </Box>
-                                <Box sx={{ mr: '1rem' }}>
-                                    <Typography><PhoneIcon />{house.landlordPhone}</Typography>
-                                    <Typography><MailIcon />{house.landlordEmail}</Typography>
-                                </Box>
-                                <Box sx={{ mr: '1rem' }}>
-                                    <Typography sx={{ ml: 2 }}>Residents: {house.employees.length}</Typography>
-                                </Box>
-                                <Button onClick={(e) => handleDelete(e, house._id, house.address)}><DeleteIcon /></Button>
-                            </Box>
-                        </Card>
-                        {/* <Accordion key={house.address} sx={{ width: '100%', mb: '1rem' }}>
-                            <AccordionSummary
-                                expandIcon={<ExpandMoreIcon />}
-                            >
-                                <Box sx={{ width: '100%', display: 'flex', justifyContent: 'space-between' }}>
-                                    <Box sx={{ mr: '1rem' }}>
-                                        <Typography variant='h5'>{house.address.split(', ')[0]}</Typography>
-                                        <Typography variant='body1'>{house.address.split(', ')[1]}, {house.address.split(', ')[2]}</Typography>
-                                    </Box>
-                                    <Box sx={{ mr: '1rem' }}>
-                                        <Typography color='text.primary' sx={{ ml: 2 }} display='block'>{house.landlordName}</Typography>
-                                    </Box>
-                                    <Box sx={{ mr: '1rem' }}>
-                                        <Typography><PhoneIcon />{house.landlordPhone}</Typography>
-                                        <Typography><MailIcon />{house.landlordEmail}</Typography>
-                                    </Box>
-                                    <Box sx={{ mr: '1rem' }}>
-                                        <Typography sx={{ ml: 2 }}>Residents: {house.employees.length}</Typography>
-                                    </Box>
+                                </TableCell>
+                                <TableCell>{house.landlordName}</TableCell>
+                                <TableCell>{house.landlordPhone}</TableCell>
+                                <TableCell>{house.landlordEmail}</TableCell>
+                                <TableCell align='center'>{house.employees.length}</TableCell>
+                                <TableCell align="right">
                                     <Button onClick={(e) => handleDelete(e, house._id, house.address)}><DeleteIcon /></Button>
-                                </Box>
-                            </AccordionSummary>
-                            <AccordionDetails sx={{ color: 'text.secondary' }}>
-                                <Typography>Beds: {house.numBeds}</Typography>
-                                <Typography>Mattresses: {house.numMattresses}</Typography>
-                                <Typography>Tables: {house.numTables}</Typography>
-                                <Typography>Chairs: {house.numChairs}</Typography>
-                                {house.reports.length > 0
-                                    ? '' 
-                                    : <h4>No reports for this residence!</h4>
-                                }
-                                {house.employees.length > 0 ? house.employees.map((employee) => {
-                                    return (
-                                        <div key={employee._id}>
-                                            <h3>{employee.firstName}</h3>
-                                        </div>
-                                    )
-                                }) : <h4>No employees live here!</h4>}
-                            </AccordionDetails>
-                        </Accordion> */}
-                    </div>
-            )})}
-            </Box>
+                                </TableCell>
+                            </TableRow>
+                        ))}
+                    </TableBody>
+                </Table>
+            </TableContainer>
             <ToastContainer />
-        </div>
+        </Box>
     )
 }
 

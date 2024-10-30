@@ -4,7 +4,7 @@ import axios from 'axios'
 import { COMMENT_ENDPOINT, HOUSE_ENDPOINT, REPORT_ENDPOINT, USER_ENDPOINT } from '../constants'
 import { toast, ToastContainer } from 'material-react-toastify'
 import 'material-react-toastify/dist/ReactToastify.css'
-import { Card, CardContent, Typography, List, ListItem, ListItemText, Box, Button, TextField, Accordion, AccordionDetails, AccordionSummary, ListItemIcon, Pagination } from '@mui/material'
+import { Card, CardContent, Typography, List, ListItem, ListItemText, Box, Button, Select, MenuItem, TextField, Accordion, AccordionDetails, AccordionSummary, Pagination } from '@mui/material'
 import PhoneIcon from '@mui/icons-material/Phone'
 import EmailIcon from '@mui/icons-material/Email'
 import DirectionsCarIcon from '@mui/icons-material/DirectionsCar'
@@ -51,7 +51,6 @@ const HouseDetails = () => {
             try {
                 const userResponse = await axios.get(`${USER_ENDPOINT}/userinfo`, { withCredentials: true })
                 const userData = userResponse.data
-                console.log('userData:', userData)
                 setUserInfo({
                     id: userData._id,
                     username: userData.username,
@@ -101,30 +100,7 @@ const HouseDetails = () => {
                 toast.error(`Error fetching data! Error: ${error.message}`)
             }
         }
-        // axios.get(`${USER_ENDPOINT}/userinfo`, { withCredentials: true })
-        //     .then(response => {
-        //         // const { house } = response.data
-        //         // const otherEmployees = employees.filter(employee => {
-        //         //     return (
-        //         //         employee._id !== response.data._id
-        //         //     )
-        //         // })
-        //         // let newComments = {}
-        //         // let newCommentReports = {}
-        //         // for (const report of reports) {
-        //         //     newCommentReports[report._id] = ''
-        //         //     const comments = report.comments
-        //         //     for (const comment of comments) {
-        //         //         newComments[comment._id] = comment.description
-        //         //     }
-        //         // }
-        //         // setNewReportComments(newCommentReports)
-        //         // setCommentChanges(newComments)
-        //         // console.log('reports:', reports)
-        //     })
-        //     .catch(error => {
-        //         toast.error(`Error getting user info! Error: ${error.message}`)
-        //     })
+        
         fetchData()
     }, [submitted])
 
@@ -211,6 +187,24 @@ const HouseDetails = () => {
         navigate(`/hr/employee-profiles/${employeeId}`)
     }
 
+    const handleStatusChange = async (e, reportId) => {
+        e.preventDefault()
+        try {
+            await axios.put(`${REPORT_ENDPOINT}/updatestatus/${reportId}`, {
+                newStatus: e.target.value
+            })
+            setSubmitted(!submitted)
+            toast.success('Successfully updated report status!')
+        }
+        catch (error) {
+            toast.error(`Error updating report status! Error: ${error.message}`)
+        }
+    }
+
+    const handleStatusClick = (e) => {
+        e.stopPropagation()
+    }
+
     return (
         <div style={{ width: '80vw' }}>
             <Box sx={{ margin: 'auto', mt: 5 }}>
@@ -243,11 +237,11 @@ const HouseDetails = () => {
                             <Typography variant='body1' color='textPrimary'>
                                 {houseData.landlordName}
                             </Typography>
-                            <Typography variant='body1' color='textPrimary'>
+                            <Typography variant='body1' color='textPrimary' sx={{ display: 'flex', alignItems: 'center' }}>
                                 <PhoneIcon />
                                 {houseData.landlordPhone}
                             </Typography>
-                            <Typography variant='body1' color='textPrimary'>
+                            <Typography variant='body1' color='textPrimary' sx={{ display: 'flex', alignItems: 'center' }}>
                                 <EmailIcon />
                                 {houseData.landlordEmail}
                             </Typography>
@@ -262,18 +256,13 @@ const HouseDetails = () => {
                                         console.log('roommate:', roommate)
                                         return (
                                             <ListItem key={index} sx={{ display: 'flex', justifyContent: 'start', gap: 4 }}>
-                                                {/* <ListItemText sx={{ cursor: 'pointer', width: '3rem' }} onClick={(e) => viewEmployee(e, roommate._id)} primary={`${roommate.firstName}${roommate.preferredName ? ` "${roommate.preferredName}"` : ''}${roommate.middleName ? ` ${roommate.middleName}`: ''} ${roommate.lastName}`} /> */}
                                                 <Typography sx={{ cursor: 'pointer' }} onClick={(e) => viewEmployee(e, roommate._id)}>{`${roommate.firstName}${roommate.preferredName ? ` "${roommate.preferredName}"` : ''}${roommate.middleName ? ` ${roommate.middleName}`: ''} ${roommate.lastName}`}</Typography>
                                                 <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                                                    {/* <ListItemIcon><PhoneIcon /></ListItemIcon> */}
                                                     <PhoneIcon />
-                                                    {/* <Typography>{roommate.cellPhone}</Typography> */}
                                                     <ListItemText secondary={roommate.cellPhone || 'No phone provided'} />
                                                 </Box>
                                                 <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                                                    {/* <ListItemIcon><EmailIcon /></ListItemIcon> */}
                                                     <EmailIcon />
-                                                    {/* <Typography>{roommate.email}</Typography> */}
                                                     <ListItemText secondary={roommate.email} />
                                                 </Box>
                                                 <Box sx={{ display: 'flex', alignItems: 'center' }}>
@@ -281,9 +270,7 @@ const HouseDetails = () => {
                                                         ? <Typography>No car info</Typography>
                                                         :
                                                         <>
-                                                            <ListItemIcon>
-                                                                <DirectionsCarIcon />
-                                                            </ListItemIcon>
+                                                            <DirectionsCarIcon />
                                                             <ListItemText secondary={`${[roommate.carColor, roommate.carMake, roommate.carModel].filter(Boolean).join(' ')}`} />
                                                         </>
                                                     }
@@ -339,26 +326,32 @@ const HouseDetails = () => {
             <Box sx={{ margin: 'auto', mt: 2 }}>
                 <Card>
                     {houseData.reports.length === 0
-                        ? <Typography>No reports have been made about this house at this time</Typography>
+                        ? <Typography variant='body1' sx={{ p: 2 }}>No reports have been made about this house at this time</Typography>
                         : (
                             <>
-                                <Button onClick={() => setIsViewingReports(!isViewingReports)}>
+                                <Button onClick={() => setIsViewingReports(!isViewingReports)} fullWidth sx={{ p: 2, mb: 2 }}>
                                     View{userInfo.role === 'employee' ? ' Your ' : ' '}Reports
                                 </Button>
                                 {isViewingReports &&
                                 <>
                                     <List>
-                                        {currReports.map((report, index) => {
+                                        {currReports.map((report) => {
 
                                             return (
-                                                <Accordion key={index} sx={{ minWidth: '60vw' }}>
+                                                <Accordion key={report._id} sx={{ minWidth: '60vw' }}>
                                                     <AccordionSummary>
                                                         <Box sx={{ width: '100%' }}>
-                                                            <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
+                                                            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                                                                 <Typography sx={{ fontWeight: 'bold' }}>{report.title}</Typography>
-                                                                <Typography color='text.secondary'>Creator: {report.createdBy}</Typography>
+                                                                <Typography color='text.secondary'>{report.createdBy}</Typography>
                                                                 <Typography color='text.secondary'>{report.timestamp}</Typography>
-                                                                <Typography>Status: {report.status}</Typography>
+                                                                <Box>
+                                                                    <Select name='status' value={report.status} onClick={handleStatusClick} onChange={(e) => handleStatusChange(e, report._id)}>
+                                                                        <MenuItem value='Open'>Open</MenuItem>
+                                                                        <MenuItem value='In Progress'>In Progress</MenuItem>
+                                                                        <MenuItem value='Closed'>Closed</MenuItem>
+                                                                    </Select>
+                                                                </Box>
                                                             </Box>
                                                             <Box>
                                                                 <Typography variant='body2'>Description: {report.description}</Typography>
@@ -422,7 +415,7 @@ const HouseDetails = () => {
                                         count={Math.ceil(houseData.reports.length / reportsPerPage)}
                                         page={reportsPage}
                                         onChange={(_, value) => setReportsPage(value)}
-                                        sx={{ display: 'flex', justifyContent: 'center', mt: 2, mb: 2 }}
+                                        sx={{ display: 'flex', justifyContent: 'center', mt: 2, mb: 6 }}
                                     />
                                 </>
                                 }

@@ -1,6 +1,7 @@
 import {useState} from 'react'
-import VisaStatusHR_inprogress from './VisaStatusHR_Inprogress';
-import VisaStatusHR_all from './VisaStatusHR_all';
+import VisaStatusHR_inprogress from '../components/VisaStatusHR_Inprogress';
+import VisaStatusHR_all from '../components/VisaStatusHR_all';
+import { Container , Box, Typography, Button } from '@mui/material'
 
 const VisaStatusHR = () => {
     const [visibleDiv, setVisibleDiv] = useState('inprogress'); // State to track visible div
@@ -11,30 +12,30 @@ const VisaStatusHR = () => {
         
 
     return (
-        <div>
-            <button onClick={() => handleToggle('all')}>
+        <Container sx={{padding: "2rem", width: '75vw', minWidth: "60vw"}}>
+            <Button onClick={() => handleToggle('all')}>
                 {visibleDiv === 'all' ? 'Hide' : 'Show'} All
-            </button>
-            <button onClick={() => handleToggle('inprogress')}>
+            </Button>
+            <Button onClick={() => handleToggle('inprogress')}>
                 {visibleDiv === 'inprogress' ? 'Hide' : 'Show'} In Progress
-            </button>
+            </Button>
 
             {/* Conditionally render Div 1 */}
             {visibleDiv === 'all' && (
-                <div style={{ marginTop: '10px', border: '1px solid #ccc', padding: '10px' }}>
-                <p>All Employees</p>
-                <VisaStatusHR_all/>
+                <div>
+                    <Typography variant="h6">All Employees</Typography>
+                    <VisaStatusHR_all/>
                 </div>
             )}
 
             {/* Conditionally render Div 2 */}
             {visibleDiv === 'inprogress' && (
-                <div style={{ marginTop: '10px', border: '1px solid #ccc', padding: '10px' }}>
-                <p>In progress Employees!</p>
-                <VisaStatusHR_inprogress/>
+                <div>
+                    <Typography variant="h6" sx={{marginLeft: '.5rem'}}>In progress Employees</Typography>
+                    <VisaStatusHR_inprogress/>
                 </div>
             )}
-    </div>
+        </Container>
     )
 }
 

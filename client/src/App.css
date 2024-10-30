@@ -4,7 +4,6 @@
   text-align: center;
 }
 
-
 input {
   margin: 0.5rem;
 }
@@ -17,7 +16,6 @@ input:required:focus {
   outline: none;
   box-shadow: 0 0 5px red;
 }
-
 
 .address-input {
   width: 30rem;
@@ -59,3 +57,7 @@ input:required:focus {
   color: #888;
 } */
 
+/* .docPreview {
+  display: flex;
+  align-items: center;
+} */

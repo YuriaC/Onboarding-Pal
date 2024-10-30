@@ -1,11 +1,11 @@
 import { useState, useEffect } from 'react'
-import { useParams } from 'react-router-dom'
+import { useNavigate, useParams } from 'react-router-dom'
 import { USER_ENDPOINT } from '../constants'
 import axios from 'axios'
 import { toast, ToastContainer } from 'react-toastify'
 import {
-    Avatar,
     Box,
+    Button,
     TextField,
     RadioGroup,
     FormControl,
@@ -14,19 +14,21 @@ import {
     Radio,
     Typography,
     Paper,
+    Card,
+    CardHeader,
+    CardContent,
 } from '@mui/material'
 
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faUser } from '@fortawesome/free-solid-svg-icons'
-
-const EmployeeDetail = () => {
+const Application = () => {
+    const navigate = useNavigate()
     const { employeeId } = useParams()
+    const [feedback, setFeedback] = useState('')
+    const [isRejecting, setIsRejecting] = useState(false)
     const [isLoading, setIsLoading] = useState(true)
     const [formData, setFormData] = useState({
         firstName: '',
         lastName: '',
         middleName: '',
-        username: '',
         preferredName: '',
         profilePicture: '',
         optReceipt: null,
@@ -98,17 +100,14 @@ const EmployeeDetail = () => {
             firstName,
             lastName,
             middleName,
-            username,
             preferredName,
             address,
             cellPhone,
             workPhone,
-            profilePicture,
             carMake,
             carModel,
             carColor,
             ssn,
-            isPermRes,
             birthday,
             email,
             gender,
@@ -123,6 +122,7 @@ const EmployeeDetail = () => {
             visaStartDate,
             visaEndDate,
             visaTitle,
+            profilePicture,
         } = data
         const newEmContacts = []
         for (const emContact of emergencyContacts) {
@@ -149,20 +149,19 @@ const EmployeeDetail = () => {
             firstName,
             lastName,
             middleName,
-            username,
             preferredName,
-            profilePicture,
             cellPhone,
             workPhone,
             carMake,
             carModel,
             carColor,
+            profilePicture,
             ssn,
             email,
             dob: birthday ? birthday.split('T')[0] : null,
             gender,
             permResStatus,
-            isPermRes,
+            isPermRes: ['Citizen', 'Green Card'].includes(permResStatus) ? 'Yes' : 'No',
             hasDriversLicense: data['driversLicenseNumber'] ? 'Yes' : 'No',
             dlNum: driversLicenseNumber,
             dlExpDate: driversLicenseExpDate ? driversLicenseExpDate.split('T')[0] : null,
@@ -188,23 +187,59 @@ const EmployeeDetail = () => {
         })
     }
 
+    const handleApproval = async () => {
+        axios.put(`${USER_ENDPOINT}/updateappstatus/${employeeId}`, { newStatus: 'Approved' }, {
+            withCredentials: true,
+        })
+            .then(() => {
+                // window.close()
+                navigate('/hr/hiring')
+            })
+            .catch(error => {
+                toast.error(`Error approving application! Error: ${error.message}`)
+            })
+    }
+
+    const handleRejection = async () => {
+        axios.put(`${USER_ENDPOINT}/updateappstatus/${employeeId}`, { newStatus: 'Rejected', feedback }, {
+            withCredentials: true,
+        })
+            .then(() => {
+                // window.close()
+                navigate('/hr/hiring')
+            })
+            .catch(error => {
+                toast.error(`Error rejecting application! Error: ${error.message}`)
+            })
+    }
+
+    const handleChange = (e) => {
+        e.preventDefault()
+        const { value } = e.target
+        setFeedback(value)
+    }
 
     return (
         <>
             {!isLoading ? (
                 <Paper sx={{ p: 3, width: '60vw' }}>
-                    <Typography variant='h4' sx={{ mb: 1 }}>
-                        {formData.firstName} {formData.lastName} ({formData.username})
+                    <Typography variant='h4' sx={{ color: formData.onboardingStatus === 'Rejected' ? 'red' : formData.onboardingStatus === 'Approved' ? 'green' : 'black', mb: 2 }}>
+                        Status: {formData.onboardingStatus}
                     </Typography>
-                    {formData.profilePicture ? <img src={formData.profilePicture} alt={'Profile Picture'} style={{ maxWidth: '10rem', maxHeight: '10rem', boarderRadius: '50%', objectFit: 'cover' }} /> : (
-                       <Avatar sx={{  width: 60, margin: 'auto', height: 60 }}>
-                            { formData.firstName ?formData.firstName[0]:              
+                    {formData.onboardingStatus === 'Rejected' &&
+                        <Box sx={{ mt: 2, mb: 4 }}>
+                            <Card sx={{ backgroundColor: '#f8d7da', color: '#721c24' }}>
+                                <CardHeader title='Feedback given:' sx={{ paddingBottom: 0 }} />
+                                <CardContent>
+                                    <Typography variant='body1'>
+                                        {formData.hrFeedback.length > 0 ? formData.hrFeedback : 'No feedback given.'}
+                                    </Typography>
+                                </CardContent>
+                            </Card>
+                        </Box>
+                    }
+                    
 
-                            <FontAwesomeIcon icon={faUser} />
-                        }
-
-                        </Avatar>
-                    )}
 
                     <form>
                         <TextField
@@ -337,7 +372,7 @@ const EmployeeDetail = () => {
                             label="Date of Birth"
                             value={formData.dob}
                             disabled
-                            type = {formData.dob? 'date' : 'text'}
+                            type={formData.dob ? 'date' : 'text'}
                             margin="normal"
                         />
                         <TextField
@@ -349,14 +384,7 @@ const EmployeeDetail = () => {
                         />
 
                         <Typography variant="h6" margin="normal">Work Authorization</Typography>
-                        <TextField
-                            fullWidth
-                            label="Work Authorization"
-                            value={formData.isPermRes === 'Yes' ? formData.permResStatus : formData.nonPermWorkAuth !== 'Other' ? formData.nonPermWorkAuth : formData.visaTitle ? formData.visaTitle : 'Other (Unspecified)'}
-                            disabled
-                            margin="normal"
-                        />
-                        {/* <FormControl fullWidth margin="normal">
+                        <FormControl fullWidth margin="normal">
                             <FormLabel>Are you a permanent resident?</FormLabel>
                             <RadioGroup row value={formData.isPermRes}>
                                 <FormControlLabel
@@ -385,17 +413,17 @@ const EmployeeDetail = () => {
                                 <TextField
                                     fullWidth
                                     label="Visa Start Date"
-                                    value={formData.visaStartDate}
+                                    value={formData.visaStartDate ? formData.visaStartDate : ''}
                                     disabled
-                                    type={formData.visaStartDate? 'date' : 'text'}
+                                    type={formData.visaStartDate ? "date" : "text"}
                                     margin="normal"
                                 />
                                 <TextField
                                     fullWidth
                                     label="Visa End Date"
-                                    value={formData.visaEndDate}
+                                    value={formData.visaEndDate ? formData.visaEndDate : ''}
                                     disabled
-                                    type={formData.visaEndDate? 'date' : 'text'}
+                                    type={formData.visaEndDate ? "date" : "text"}
                                     margin="normal"
                                 />
                             </>
@@ -417,7 +445,7 @@ const EmployeeDetail = () => {
                                     />
                                 </RadioGroup>
                             </FormControl>
-                        )} */}
+                        )}
 
                         <Typography variant="h6" margin="normal">{`Driver's License`}</Typography>
                         <FormControl fullWidth margin="normal">
@@ -451,7 +479,7 @@ const EmployeeDetail = () => {
                                     label="Driver's License Expiration"
                                     value={formData.dlExpDate}
                                     disabled
-                                    type={formData.dlExpDate? 'date' : 'text'}
+                                    type= {formData.dlExpDate ? "date" : "text"}
                                     margin="normal"
                                 />
                             </>
@@ -570,6 +598,42 @@ const EmployeeDetail = () => {
                             </Box>
                         ))}
 
+                        {formData.onboardingStatus == 'Pending' && (
+                            <Box sx={{ display: 'flex', justifyContent: 'center', gap: 2, mt: 4 }}>
+                                <Button
+                                    variant='contained'
+                                    sx={{ backgroundColor: 'green', color: 'white', '&:hover': { backgroundColor: 'darkgreen' } }}
+                                    onClick={handleApproval}
+                                >
+                                    Approve
+                                </Button>
+                                <Button
+                                    variant='contained'
+                                    sx={{ backgroundColor: 'red', color: 'white', '&:hover': { backgroundColor: 'darkred' } }}
+                                    onClick={() => setIsRejecting(!isRejecting)}
+                                >
+                                    Reject
+                                </Button>
+                            </Box>
+                        )}
+
+                        {isRejecting && (
+                            <Box sx={{ mt: 4, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2 }}>
+                                <TextField
+                                    fullWidth
+                                    required
+                                    placeholder='Provide rejection feedback'
+                                    onChange={handleChange}
+                                    value={feedback}
+                                />
+                                <Button
+                                    sx={{ backgroundColor: 'red', color: 'white', '&:hover': { backgroundColor: 'darkred' } }}
+                                    onClick={handleRejection}
+                                >
+                                    Submit Rejection
+                                </Button>
+                            </Box>
+                        )}
                         <ToastContainer />
                     </form>
                 </Paper>
@@ -580,4 +644,5 @@ const EmployeeDetail = () => {
     )
 }
 
-export default EmployeeDetail
+export default Application
+

@@ -54,6 +54,11 @@ const addHouse = async (request, response) => {
 
     const address = `${street}, ${city}, ${state} ${zip}`
 
+    const existingHouse = await House.findOne({ address }).exec()
+    if (existingHouse) {
+      res.status(409).json({ message: 'House already exists!' })
+    }
+
     const house = await House.create({
       address,
       landlordName,

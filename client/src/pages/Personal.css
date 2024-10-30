@@ -1,6 +1,6 @@
-.personal-information {
+/* .personal-information {
     padding: 2rem;
-}
+} */
 
 .section {
     margin-bottom: 1.5rem;
@@ -10,13 +10,20 @@ h2, h3 {
     color: #333;
 }
 
-input {
+img {
+    margin: 0 auto;
+    /* border-radius: 50%; */
+    width: 6.25rem;
+    height: 6.25rem;
+}
+
+/* input {
     display: block;
     margin: 0.5rem 0;
     padding: 0.5rem;
     width: 100%;
     box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
-}
+} */
 
 button {
     background-color: #007bff;
@@ -27,9 +34,6 @@ button {
     margin-top: 1rem;
 }
 
-button:hover {
-    background-color: #0056b3;
-}
 
 .error {
     color: red;
