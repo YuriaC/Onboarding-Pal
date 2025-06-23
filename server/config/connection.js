@@ -4,8 +4,8 @@ const User = require('../models/User');
 const { faker } = require('@faker-js/faker')
 const argon2 = require("argon2");
 
-const MONGO_URI = process.env.MONGO_URI
-const password = "Abcd1234@"
+const MONGO_URI = process.env.MONGO_URI;
+const password = process.env.TEST_PWD;
 
 // console.log(MONGO_URI)
 
@@ -34,7 +34,6 @@ mongoose.connect(MONGO_URI)
             const hashedPassword = await argon2.hash(password)
             const startdate = new Date(2023, 9, 12);
             const enddate = new Date(2025, 9, 12);
-            ///const pdfUrl = "https://beaconfire-hr-project.s3.us-east-1.amazonaws.com/ead1.pdf?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Content-Sha256=UNSIGNED-PAYLOAD&X-Amz-Credential=ASIAV6NQT256JOWC5ODF%2F20241023%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-Date=20241023T162307Z&X-Amz-Expires=300&X-Amz-Security-Token=IQoJb3JpZ2luX2VjEFkaCXVzLWVhc3QtMSJHMEUCIGpVrgyHVOozyTCB2JmfI6NjKLfQlHuNVrb%2BzoS2au39AiEAnekwoIzos1Ioq8pi1AxVQQxCMoPnT2%2FQ9Tlg418ZlyUq9QIIwv%2F%2F%2F%2F%2F%2F%2F%2F%2F%2FARADGgw0MDg5MjkxNjMxMzIiDBjC8DzCSJEJTKcEdSrJAvC5rA9ievtRK6cF8qtq4WnUOI3KOmAJNzJXkd8NmwdEj5rFoANTaGF8xBhcI0dZgN1p5jX9GMte8ArtSekavXPLjg67ZD6zc62MjEJPyNK4uuV1JyM7lz%2FJFgrR%2BZlHZRB3xwBx1670amWaYjxLvGKzzAxzWzRrg8ptvVAmf%2FeEQITXnwgFooZlbBZ1bkE4lYt06evKALmxFHDeSlOxiewuEyOsnA%2BBye9prSD3afjF6HPYQdT4KoY1O3pnW8FGwOZ4oibfIxFUXf84dE43MitEAeXBp8kwVLcnAMVNPargqyX0yA0rnzHfuLoROOvRvRd3Qw2OaEFZLhjS1gYfnfd4L6z2vqRt1U4t0yGtM2Cbf99R5JAGVcBnKpkWMaHthZW5ATvHhdLLh%2FT9ia4GWLZJn5BS2%2FEbk9qMFGvdLyYGCv8id8%2FbNoigMMvF5LgGOrMCardzoB7wPuvRiKD0jdyobZ1q4GEOTjvXcvquttx6e%2FKUSVlkpSPaQ%2F6%2BEvBVlyTce3R6nxqjj6Pl0JdGT%2Frq34kn243WBQRYOR5qxSW0di399HiAZt6711HO1aRWnqVZmWjzw%2BYPLbmszxmbus%2FTXIAGk3gR5nVzBZzHlmQQLvBK681p3QNzRlDdQeT4hiw1q0d6bIEGaEZyl9sjRI4qV%2FRPYjbPpbl1HtO8f7ZylrjKY87k%2F8dv6pUoHqUZgkGKPt1xCsVSOl1d5xRy3pCHLsFw0fiMss%2BQbRZKTutkP6PqZ%2FPsrsHBGLsgaiRCnWKuH3GcuzpybD75PRv7YQV2QrmRZBOwV%2BMXUV7pEPPc9AZ642Y4G1liNguQWfTuvSDnEmHBBWCVFbgYc9KglqJHIIhbUg%3D%3D&X-Amz-Signature=4aa205348bac369480c46d09082814682724f5cb50a2352bd6e61bf3bae60caf&X-Amz-SignedHeaders=host&response-content-disposition=inline";
             const pdfUrl = "http://localhost:3000/workers/dummy.pdf"
 
             await House.insertMany(houses)
@@ -73,7 +72,7 @@ mongoose.connect(MONGO_URI)
                 //     visaEndDate:enddate,
                 //     workAuth:"OPT",
                 //     optUrl:pdfUrl,
-              
+
                 //   },
                 //   {
                 //     username: 'EmployeeTest3',
