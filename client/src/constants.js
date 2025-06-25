@@ -2,6 +2,7 @@
 
 const PORT = 3000;  // need to find better way to set port value dynamically
 
+export const BACKEND_BASEURL = `http://localhost:${PORT}`
 export const API_BASE_URL = `http://localhost:${PORT}/api`
 export const USER_ENDPOINT = `${API_BASE_URL}/users`
 export const HOUSE_ENDPOINT = `${API_BASE_URL}/houses`

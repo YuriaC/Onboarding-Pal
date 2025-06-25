@@ -2,7 +2,7 @@ import {useState, useEffect} from 'react';
 import axios from 'axios';
 // import MyDocument from '../helpers/PdfViewer';
 import { pdfjs } from "react-pdf";
-import { docNames, docStatuses, docUrls, USER_ENDPOINT } from '../constants';
+import { BACKEND_BASEURL, API_BASE_URL, docNames, docStatuses, docUrls, USER_ENDPOINT } from '../constants';
 import { Box, Button, TextField, Typography } from '@mui/material'
 import Table from '@mui/material/Table';
 import TableBody from '@mui/material/TableBody';
@@ -12,11 +12,12 @@ import TableHead from '@mui/material/TableHead';
 import TableRow from '@mui/material/TableRow';
 import Paper from '@mui/material/Paper';
 import { useNavigate } from 'react-router-dom';
+import BACKEND_BASEURL from "../../../.env";
 
 //Setup woker for pdf loadings
 // the original url will cause MMIE issue so use the downloaded version of mjs file
 // pdfjs.GlobalWorkerOptions.workerSrc = "/pdf.worker.min.mjs";
-pdfjs.GlobalWorkerOptions.workerSrc = `http://localhost:3000/workers/pdf.worker.min.mjs`;
+pdfjs.GlobalWorkerOptions.workerSrc = `${BACKEND_BASEURL}/workers/pdf.worker.min.mjs`;
 const VisaStatusHR_all = ()=>{
     const today = new Date();
     const navigate = useNavigate()
@@ -43,7 +44,7 @@ const VisaStatusHR_all = ()=>{
     useEffect(() => {
         const fetchUsers = async () => {
         try {
-            const response = await axios.get('http://localhost:3000/api/users/alluser');
+            const response = await axios.get(`${API_BASE_URL}/users/alluser`);
             const { data } = response
             const newEmployees = []
             for (const employee of data) {
@@ -134,145 +135,6 @@ const VisaStatusHR_all = ()=>{
     const allFileApproved = (user_to_check) =>{
         return user_to_check.optStatus === "Approved" && user_to_check.eadStatus === "Approved" && user_to_check.i983Status === "Approved" && user_to_check.i20Status === "Approved";
     }
-
-
-    // const stepStatusChecker = (user_tocheck) =>{
-    //     const opt = user_tocheck.optStatus;
-    //     const ead = user_tocheck.eadStatus;
-    //     const i983 = user_tocheck.i983Status;
-    //     const i20 = user_tocheck.i20Status;
-    //     if(opt==="Pending" || opt === "Rejected" || opt === "Not Started"){
-    //         return "opt";
-    //     }
-    //     if(opt==="Approved" && (ead === "Pending" || ead ==="Rejected" || ead  === "Not Started")){
-    //         return "ead";
-    //     }
-    //     if(opt==="Approved" && ead === "Approved" &&(i983 === "Pending" || i983 ==="Rejected" || i983  === "Not Started")){
-    //         return "i983";
-    //     }
-    //     if(opt==="Approved" && ead === "Approved" && i983 === "Approved" &&(i20 === "Pending" || i20 ==="Rejected" || i20  === "Not Started")){
-    //         return "i20";
-    //     }
-    //     if(allFileApproved(user_tocheck)){
-    //         return "alldone";
-    //     }
-
-    // }
-
-    // const haveFileToReview = (user_to_check) =>{
-    //     if(stepStatusChecker(user_to_check)==="opt"){
-    //         return user_to_check.optUrl !== "";
-    //     }
-    //     if(stepStatusChecker(user_to_check)==="ead"){
-    //         return user_to_check.eadUrl !== "";
-    //     }
-    //     if(stepStatusChecker(user_to_check)==="i983"){
-    //         return user_to_check.i983Url !== "";
-    //     }
-    //     if(stepStatusChecker(user_to_check)==="i20"){
-    //         return user_to_check.i20Url !== "";
-    //     }
-    // }
-
-    // const nextstepsHandler = (user)=>{
-    //     // checks user status if Pending then pop to set next steps
-    //     const review_opt_receipt = "OPT receipt waiting for HR approval";
-    //     const review_ead = "EAD waiting for HR approval";
-    //     const review_i983 = "i983 waiting for HR approval";
-    //     const review_i20 = "i20 waiting for HR approval";
-    //     const submit_opt_receipt = "submit OPT receipt";
-    //     const submit_ead = "submit EAD";
-    //     const submit_i983 = "submit i983";
-    //     const submit_i20 = "submit i20";
-    //     const alldone = "all visa file submitted and reviewed";
-    //     if(stepStatusChecker(user) === "opt"){
-    //         if(user.optUrl){
-    //             //show the file, 
-    //             return review_opt_receipt;
-    //         }
-    //         return submit_opt_receipt;
-    //     }
-    //     if(stepStatusChecker(user) === "ead"){
-    //         //render the review document 
-    //         if(user.eadUrl){
-    //             return review_ead;
-    //         }
-
-    //         return submit_ead;
-            
-    //     }
-    //     if(stepStatusChecker(user) === "i983"){
-    //         //render the review document 
-    //         //setShowNotifyBtn(true);
-    //         if(user.i983Url){
-    //             return review_i983;
-    //         }
-    //         //setNotifyID(user._id);
-    //         return submit_i983;
-    //     }
-    //     if(stepStatusChecker(user) === "i20"){
-    //         //render the review document 
-    //         //setShowNotifyBtn(true);
-    //         if(user.i20Url){
-    //             return review_i20;
-    //         }
-    //        //setNotifyID(user._id);
-    //         return submit_i20;
-    //     }
-    //     if(allFileApproved(user)){
-    //         //render the review document 
-    //         //setShowNotifyBtn(true);
-    //         return alldone;
-    //     }
-
-    // }
-    // const notificationHandler = async(user) =>{
-    //     //send an email notification to the user
-    //     const step_status = stepStatusChecker(user);
-    //     let message_to_employee = "";
-    //     if(step_status!=="i20"){
-    //         message_to_employee = `Hello ${user.firstName} ${user.lastName}, your submission of ${step_status} has been approved, please submit the next document.`;
-    //     }else{
-    //         message_to_employee = `Hello ${user.firstName} ${user.lastName}, all of your submitted visa documents has been reviewed and approved.`;
-    //     }
-    //     //console.log(message_to_employee);
-    //     try {
-    //         const response = await axios.post(`http://localhost:3000/api/users/emailNotify`, {
-    //           id: user._id,
-    //           firstName: user.firstName,
-    //           lastName: user.lastName,
-    //           useremail: user.email,
-    //           notification:message_to_employee
-    //         });
-    //         console.log('Email Notification sent:', response.data);
-    //         alert('Email Notification sent successfully!');
-    //       } catch (error) {
-    //         console.error('Error Email Notification sent:', error);
-    //         alert('Failed to sent Email Notification!');
-    //       }
-    // }
-
-    // const viewFileHandler = (user) =>{
-    //     if(user._id !== fileDisplayId && showFileBtn){
-    //         setFileDisplayId(user._id);
-            
-    //     }else{
-    //         setFileDisplayId(null);
-    //     }
-    //     setShowFileBtn(!showFileBtn);
-    //     if(stepStatusChecker(user)==="opt"){
-    //         setCurrentFileUrl(user.optUrl);
-    //     }
-    //     if(stepStatusChecker(user)==="ead"){
-    //         setCurrentFileUrl(user.eadUrl);
-    //     }
-    //     if(stepStatusChecker(user)==="i983"){
-    //         setCurrentFileUrl(user.i983Url);
-    //     }
-    //     if(stepStatusChecker(user)==="i20"){
-    //         setCurrentFileUrl(user.i20Url);
-    //     }
-    // }
 
     const urlToName = (url) => {
         switch (url) {

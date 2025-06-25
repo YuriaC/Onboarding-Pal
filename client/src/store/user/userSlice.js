@@ -1,23 +1,22 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import axios from "axios";
-import { USER_ENDPOINT } from "../../constants";
+import {API_BASE_URL, USER_ENDPOINT } from "../../constants";
 
-// Thunks for async actions
 // Thunks for async actions
 // Create a register async thunk
 export const fetchApplicationsThunk = createAsyncThunk('user/fetchApplications', async () => {
-    const response = await axios.get("http://localhost:3000/api/users/applications", { withCredentials: true }); // Adjust with the correct API endpoint
+    const response = await axios.get(`${API_BASE_URL}/users/applications`, { withCredentials: true }); // Adjust with the correct API endpoint
     return response.data; // Assuming the API returns { pending: [...], approved: [...], rejected: [...] }
-});
+});  // target endpoint "http://localhost:3000/api/users/applications"
 
 export const registerUser = createAsyncThunk(
     "user/register",
     async (userData, { rejectWithValue }) => {
         try {
             const response = await axios.post(
-                "http://localhost:3000/api/users/register",
+                `${API_BASE_URL}/users/register`,
                 userData
-            );
+            );  // target end point ""http://localhost:3000/api/users/register"
             return response.data;
         } catch (error) {
             if (error.response && error.response.status === 409) {
@@ -35,8 +34,8 @@ export const checkToken = createAsyncThunk(
     async ({token}, { rejectWithValue }) => {
         try {
             const response = await axios.get(
-                `http://localhost:3000/api/users/register/${token}`
-            );
+                `${API_BASE_URL}/users/register/${token}`
+            );  // target url `http://localhost:3000/api/users/register/${token}`
             return response.data; // response should contain the email
         } catch (error) {
             return rejectWithValue(
@@ -50,8 +49,8 @@ export const loginUserThunk = createAsyncThunk(
     "user/login",
     async ({ form, navigate }, thunkAPI) => {
         try {
-            const response = await axios.post(
-                "http://localhost:3000/api/users/login",
+            const response = await axios.post(  // target end point "http://localhost:3000/api/users/login",
+                `${API_BASE_URL}/users/login`,
                 {
                     username: form.userInput,
                     password: form.password,
@@ -89,8 +88,8 @@ export const sendRegistrationLinkThunk = createAsyncThunk(
     "user/sendRegistrationLink",
     async ({email,name}, thunkAPI) => {
         try {
-            const response = await axios.post(
-                "http://localhost:3000/api/users/send-registration-link",
+            const response = await axios.post(  // target end point
+                `${API_BASE_URL}/users/send-registration-link`,
                 { email, name }
             ); // change api
             return response.data;
@@ -108,7 +107,7 @@ export const fetchRegistrationHistoryThunk = createAsyncThunk(
     async (_, thunkAPI) => {
         try {
             const response = await axios.get(
-                "http://localhost:3000/api/users/registration-history",
+                `${API_BASE_URL}/users/registration-history`,
                 {
                     withCredentials: true,
                 }
@@ -128,7 +127,7 @@ export const getUserThunk = createAsyncThunk(
     async (_, thunkAPI) => {
         try {
             const response = await axios.get(
-                "http://localhost:3000/api/users/userinfo",
+                `${API_BASE_URL}/users/userinfo`,
                 {
                     withCredentials: true, // Ensure it passes the cookies
                 }
@@ -148,7 +147,7 @@ export const logoutUserThunk = createAsyncThunk(
     async (_, thunkAPI) => {
         try {
             await axios.post(
-                "http://localhost:3000/api/users/logout",
+                `${API_BASE_URL}/users/logout`,
                 {},
                 {
                     withCredentials: true,

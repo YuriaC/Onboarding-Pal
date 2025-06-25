@@ -1,5 +1,3 @@
-// app.js
-
 require("dotenv").config(); // Load environment variables at the very beginning
 
 const express = require("express");
@@ -39,9 +37,6 @@ app.use(upload.any())
 // Routers (prefix API routes with /api)
 const Routes = require("./routers/index.js");
 Routes(app);
-
-// // Frontend Routes
-
 
 // Start the server
 module.exports = app;
