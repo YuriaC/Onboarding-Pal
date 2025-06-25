@@ -3,7 +3,7 @@ const House = require('../models/House');
 const User = require('../models/User');
 const { faker } = require('@faker-js/faker')
 const argon2 = require("argon2");
-const VITE_REACT_APP_BACKEND_BASEURL = require('../.emv');
+const BACKEND_BASEURL = require('../.emv');
 const MONGO_URI = process.env.MONGO_URI;
 const password = process.env.TEST_PWD;
 
@@ -32,7 +32,7 @@ mongoose.connect(MONGO_URI)
             const hashedPassword = await argon2.hash(password)
             const startdate = new Date(2023, 9, 12);
             const enddate = new Date(2025, 9, 12);
-            const pdfUrl = `${VITE_REACT_APP_BACKEND_BASEURL}/workers/dummy.pdf`
+            const pdfUrl = `${BACKEND_BASEURL}/workers/dummy.pdf`
 
             await House.insertMany(houses)
             const house = await House.findOne({}).exec();
