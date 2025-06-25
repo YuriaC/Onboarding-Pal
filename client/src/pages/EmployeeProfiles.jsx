@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useDispatch, useSelector } from 'react-redux';
 import { setSearchTerm } from '../store/user/searchTerm';
-import './EmployeeProfiles.css';
+import './employeeProfiles.css';
 import { API_BASE_URL } from '../constants';
 import { Container, Box, Button, TextField, CircularProgress, Typography } from '@mui/material'; // Material UI components
 
@@ -29,7 +29,6 @@ const EmployeeProfiles = () => {
     useEffect(()=>{
         searchEmployee('')
     }, [])
-
 
     return (
         // <div className="employee-profiles">
