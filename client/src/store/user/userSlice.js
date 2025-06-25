@@ -7,7 +7,7 @@ import {API_BASE_URL, USER_ENDPOINT } from "../../constants";
 export const fetchApplicationsThunk = createAsyncThunk('user/fetchApplications', async () => {
     const response = await axios.get(`${API_BASE_URL}/users/applications`, { withCredentials: true }); // Adjust with the correct API endpoint
     return response.data; // Assuming the API returns { pending: [...], approved: [...], rejected: [...] }
-});  // target endpoint "http://localhost:3000/api/users/applications"
+});  
 
 export const registerUser = createAsyncThunk(
     "user/register",
@@ -16,7 +16,7 @@ export const registerUser = createAsyncThunk(
             const response = await axios.post(
                 `${API_BASE_URL}/users/register`,
                 userData
-            );  // target end point ""http://localhost:3000/api/users/register"
+            ); 
             return response.data;
         } catch (error) {
             if (error.response && error.response.status === 409) {
@@ -35,7 +35,7 @@ export const checkToken = createAsyncThunk(
         try {
             const response = await axios.get(
                 `${API_BASE_URL}/users/register/${token}`
-            );  // target url `http://localhost:3000/api/users/register/${token}`
+            ); 
             return response.data; // response should contain the email
         } catch (error) {
             return rejectWithValue(
@@ -49,7 +49,7 @@ export const loginUserThunk = createAsyncThunk(
     "user/login",
     async ({ form, navigate }, thunkAPI) => {
         try {
-            const response = await axios.post(  // target end point "http://localhost:3000/api/users/login",
+            const response = await axios.post( 
                 `${API_BASE_URL}/users/login`,
                 {
                     username: form.userInput,

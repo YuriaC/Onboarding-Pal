@@ -3,6 +3,7 @@ import axios from 'axios';
 import { useDispatch, useSelector } from 'react-redux';
 import { setSearchTerm } from '../store/user/searchTerm';
 import './EmployeeProfiles.css';
+import { API_BASE_URL } from '../constants';
 import { Container, Box, Button, TextField, CircularProgress, Typography } from '@mui/material'; // Material UI components
 
 const EmployeeProfiles = () => {
@@ -14,7 +15,7 @@ const EmployeeProfiles = () => {
     const searchEmployee = async(value)=>{
         dispatch(setSearchTerm(value));
 
-        const filteredEmployees = await axios.get(`http://localhost:3000/api/users/employeesprofile`, {
+        const filteredEmployees = await axios.get(`${API_BASE_URL}/users/employeesprofile`, {
             withCredentials: true,
             params: {
                 searchTerm : value

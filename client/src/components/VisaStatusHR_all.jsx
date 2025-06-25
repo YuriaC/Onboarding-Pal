@@ -12,7 +12,6 @@ import TableHead from '@mui/material/TableHead';
 import TableRow from '@mui/material/TableRow';
 import Paper from '@mui/material/Paper';
 import { useNavigate } from 'react-router-dom';
-import BACKEND_BASEURL from "../../../.env";
 
 //Setup woker for pdf loadings
 // the original url will cause MMIE issue so use the downloaded version of mjs file
@@ -21,10 +20,6 @@ pdfjs.GlobalWorkerOptions.workerSrc = `${BACKEND_BASEURL}/workers/pdf.worker.min
 const VisaStatusHR_all = ()=>{
     const today = new Date();
     const navigate = useNavigate()
-    // const [fileDisplayId, setFileDisplayId] = useState();
-    // const [showFileBtn, setShowFileBtn] = useState(false);
-    // const [currentFileUrl, setCurrentFileUrl] = useState();
-    //const [submittedDoc, setSubmittedDoc] = useState({});
 
     //const [employees] = useState(dummy_user); // Static employee data
     const [search, setSearch] = useState({

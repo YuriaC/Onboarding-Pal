@@ -12,12 +12,12 @@ import TableHead from '@mui/material/TableHead';
 import TableRow from '@mui/material/TableRow';
 import Paper from '@mui/material/Paper';
 
-import { USER_ENDPOINT } from '../constants';
+import { BACKEND_BASEURL, API_BASE_URL, USER_ENDPOINT } from '../constants';
 import { toast } from 'react-toastify';
 import { useNavigate } from 'react-router-dom';
 
 
-pdfjs.GlobalWorkerOptions.workerSrc = `http://localhost:3000/workers/pdf.worker.min.mjs`;
+pdfjs.GlobalWorkerOptions.workerSrc = `${BACKEND_BASEURL}/workers/pdf.worker.min.mjs`;
 
 const docStatuses = ['optStatus', 'eadStatus', 'i983Status', 'i20Status']
 const docUrls = ['optUrl', 'eadUrl', 'i983Url', 'i20Url']
@@ -43,7 +43,7 @@ const VisaStatusHR_inprogress = () => {
     useEffect(() => {
         const fetchUsers = async () => {
         try {
-            const response = await axios.get('http://localhost:3000/api/users/alluser');
+            const response = await axios.get(`${API_BASE_URL}/users/alluser`);
             const initFeedbacks = []
             const newData = []
             for (const employee of response.data) {
@@ -166,7 +166,7 @@ const VisaStatusHR_inprogress = () => {
         }
         
         try {
-            const response = await axios.post(`http://localhost:3000/api/users/emailNotify`, {
+            const response = await axios.post(`${API_BASE_URL}/users/emailNotify`, {
               id: user._id,
               firstName: user.firstName,
               lastName: user.lastName,
